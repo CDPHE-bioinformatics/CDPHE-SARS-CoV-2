@@ -1,0 +1,385 @@
+accession_id,percent_coverage,pangolin_lineage,pangolin_version,report_to_epi,Run_Date,pangoLEARN_version
+2103376922,97.91,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103376923,98.86,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103376932,98.13,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103376943,94.44,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103376951,93.72,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103376973,91.3,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377195,99.3,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377197,99.36,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377199,99.12,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377201,99.34,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377203,95.88,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377207,98.96,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377255,98.98,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377269,91.71,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377282,96.73,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377285,98.6,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377288,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377289,98.97,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377292,98.8,BG.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377294,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377297,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377521,2.39,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377523,3.96,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377525,55.49,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377527,26.79,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377534,0.1,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377536,50.58,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377537,7.76,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377538,26.19,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377540,81.94,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377544,39.76,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377546,12.24,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377552,5.3,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377555,4.13,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377557,67.49,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377559,92.04,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377561,81.71,BA.5.5,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377562,78.28,BA.5.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377564,29.19,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377569,82.8,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377570,86.18,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377572,54.26,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377575,23.83,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377578,19.27,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377579,31.04,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377580,67.11,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377588,66.78,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377589,80.86,BA.4.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377591,10.71,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377592,0.95,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377593,35.82,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377595,88.13,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377602,41.99,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377606,61.71,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377612,73.91,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377617,48.44,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377619,86.9,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377623,84.39,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377626,98.46,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377629,41.13,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377635,16.89,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377638,54.64,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377639,0.68,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377642,76.76,BA.5.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377646,10.22,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377655,41.18,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377662,21.56,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377666,50.66,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377669,79.07,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377672,80.67,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377674,87.85,BA.5.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377676,35.34,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377677,35.38,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377679,85.71,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377682,17.05,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377696,83.49,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377699,58.33,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377701,0.88,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377703,31.29,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377708,73.75,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377711,67.09,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377726,12.12,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377934,97.35,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377951,82.42,BA.5.5,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377954,3.84,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377966,90.63,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103377968,64.47,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377972,4.02,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377982,77.21,BE.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377990,41.87,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103377994,10.42,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103382847,98.77,BG.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103382925,99.42,BA.2.9,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103382990,93.51,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103382994,98.56,BA.2.52,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383002,99.39,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383021,97.36,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383025,99.22,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383064,99.45,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383072,99.41,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383087,99.39,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383098,96.7,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383110,99.38,BA.2.18,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383207,98.63,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383218,96.54,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383241,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103383251,99.0,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383418,99.35,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383426,99.49,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383453,97.8,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383478,98.79,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383483,99.56,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383583,99.22,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383604,98.15,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383610,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383626,94.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383652,97.98,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383657,98.92,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383672,97.76,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383676,97.13,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383680,97.79,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383684,98.69,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103383754,93.7,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103386931,97.91,BA.1.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103386966,96.87,BA.1.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387010,97.47,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387015,98.03,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387117,83.27,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103387131,54.9,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103387135,98.93,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387141,99.34,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387146,87.0,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103387458,98.82,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387469,99.4,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387478,94.49,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387485,99.55,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387488,98.75,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387491,99.37,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387501,99.42,BA.2.48,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387506,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387514,37.04,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103387524,99.42,BA.2.56,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387534,97.71,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387541,99.05,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103387546,99.57,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103388399,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389027,98.16,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389246,99.36,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389260,99.22,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389285,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389293,99.57,BA.5.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389307,99.1,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389316,95.34,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389320,99.57,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389324,99.37,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389332,98.8,BA.2.22,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389340,96.82,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389345,99.02,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389347,96.72,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389351,99.56,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389378,96.01,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389388,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103389397,96.1,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389420,98.71,BE.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389436,99.3,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389444,99.13,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389450,99.56,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389472,99.47,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389479,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103389518,99.44,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390725,99.39,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390748,99.4,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390796,98.6,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390803,77.44,BA.5,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103390817,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390820,99.13,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390825,99.4,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390830,99.4,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390833,98.64,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390836,65.54,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103390840,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390844,85.81,BA.2.12.1,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+2103390861,98.32,BA.2.22,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390864,99.38,BA.5.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390874,99.4,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103390881,98.86,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400310,98.19,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400315,97.77,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400317,99.52,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400337,96.97,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400339,96.21,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400350,95.91,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400354,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400363,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400375,98.14,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400399,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400405,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400422,95.92,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400431,98.87,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400438,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400443,97.52,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400448,97.71,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400452,98.97,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400463,98.67,BA.2.12,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400479,99.21,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400484,99.02,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400489,98.69,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400517,99.42,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400525,99.06,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400530,96.48,BA.2.3,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400532,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400537,97.93,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400550,99.33,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400567,99.27,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400572,98.57,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400576,98.1,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400580,99.54,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400599,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400631,99.54,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400636,99.41,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400641,98.58,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103400644,92.88,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403045,99.39,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403135,98.39,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403137,96.67,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403140,98.75,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403141,97.68,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403145,99.54,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403148,97.94,BA.2.18,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403149,97.32,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403154,99.33,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403155,99.44,BA.5.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403157,99.4,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403158,99.03,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403163,99.4,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403169,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403180,99.13,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403184,98.62,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403186,98.54,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403188,97.34,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403190,98.59,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403192,98.63,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403194,99.4,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403199,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403202,98.64,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403205,98.35,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403207,97.6,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403210,99.35,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103403211,99.05,BG.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103413099,97.12,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416687,98.6,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416708,99.56,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103416710,99.1,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416712,98.57,BE.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416716,98.6,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103416718,98.31,BA.2.13,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416722,99.4,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416731,97.32,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416735,98.21,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416736,95.0,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416744,98.41,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416749,99.56,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416754,92.26,BA.2.37,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416755,98.8,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416757,98.88,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416759,99.0,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416761,99.37,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416763,99.14,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416765,98.51,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416768,91.74,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416773,96.43,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416775,99.28,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416778,99.12,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416783,98.71,BA.4,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416812,97.7,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416815,99.54,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416820,98.77,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416828,99.51,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416842,99.05,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416884,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416887,99.4,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416923,99.4,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103416930,99.37,BA.4,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416937,98.63,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416954,99.38,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103416958,99.54,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103416973,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103416985,99.47,BA.4.1.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417024,95.84,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417029,97.67,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417034,98.05,BA.2.18,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417088,98.63,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417107,99.07,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417115,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417122,98.41,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417133,99.35,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417139,97.26,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417155,99.35,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417224,97.43,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417230,99.23,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417239,99.53,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417245,98.93,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417249,98.82,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417302,99.42,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417311,95.93,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417315,99.55,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417318,98.88,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417320,99.4,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417325,99.5,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417331,99.39,BA.5.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417332,99.56,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417337,98.76,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417341,99.2,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417345,98.92,BA.5.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417347,93.73,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417349,98.6,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417351,96.45,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417353,99.38,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417355,98.84,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417365,95.16,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417368,94.95,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417371,99.37,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417372,99.54,BA.5.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417378,96.28,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417381,99.56,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417383,98.33,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417384,99.57,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417393,99.56,BE.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417396,98.63,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417403,99.57,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417408,99.5,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417412,99.41,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417415,99.25,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417486,99.2,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417487,91.41,BA.2.3,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417489,99.57,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417493,99.37,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417499,99.45,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417500,96.7,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417504,98.8,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417507,99.23,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417510,99.4,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417515,99.09,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417518,99.4,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417521,99.55,BA.5.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417534,99.12,BA.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417537,98.63,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417561,98.7,BA.2.13,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417565,99.1,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417570,98.42,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417573,96.87,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417578,99.58,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417580,99.56,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103417582,99.44,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417584,98.34,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417586,98.8,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417589,99.05,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417592,99.46,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417593,97.32,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417595,99.57,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417598,99.4,BA.5.3,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417599,98.65,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417602,99.4,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PANGO-v1.11
+2103417605,99.11,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417650,99.54,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417652,99.52,BA.2.12,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417654,98.8,BA.2.37,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417656,99.55,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417657,99.35,BA.5.3.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417659,99.4,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417685,98.23,BA.4.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417687,98.89,BA.5.5,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417689,98.94,BA.5.2.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417698,98.61,BA.4,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417705,99.53,BA.2.12.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+2103417727,99.56,BA.2,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+NTC_01,0.1,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+NTC_02,0.1,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+NTC_03,0.1,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+NTC_04,0.1,Unassigned,pangolin 4.1.1,sequence coverage not met,2022-07-06,PUSHER-v1.11
+POS_01,93.17,A.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+POS_02,93.22,A.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+POS_03,93.3,A.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
+POS_04,93.15,A.1,pangolin 4.1.1,VOC/VUI not assigned,2022-07-06,PUSHER-v1.11
