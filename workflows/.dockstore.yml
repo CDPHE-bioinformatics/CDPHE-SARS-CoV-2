@@ -1,0 +1,32 @@
+version: 1.2
+workflows:
+ - name: SC2_ont_assembly
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_ont_assembly.wdl
+ - name: SC2_transfer_ont_assembly
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_transfer_ont_assembly.wdl
+ - name: SC2_illumina_pe_assembly
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_illumina_pe_assembly.wdl
+ - name: SC2_transfer_illumina_pe_assembly
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_transfer_illumina_pe_assembly.wdl
+ - name: SC2_illumina_se_assembly
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_illumina_se_assembly.wdl
+ - name: SC2_transfer_illumina_se_assembly
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_transfer_illumina_se_assembly.wdl
+ - name: SC2_lineage_calling_and_results
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_lineage_calling_and_results.wdl
+ - name: SC2_wastewater_variant_calling
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_wastewater_variant_calling.wdl
+ - name: SC2_multifasta_lineage_calling
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_multifasta_lineage_calling.wdl
+ - name: SC2_transfer_nextrain
+   subclass: WDL
+   primaryDescriptorPath: /WDLs/SC2_transfer_nextrain.wdl
