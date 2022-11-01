@@ -156,10 +156,14 @@ task freyja_demix {
 
     command <<<
 
+        #get updated lineages for demixing
+        mkdir ./freyja_db
+        freyja update --outdir ./freyja_db
+        
         #creates a temp file with the same name as the intended output file that will get output in case of failure or overwritten in case of sucess
         echo -e "\t~{sample_id}\nsummarized\tLowCov\nlineages\tLowCov\nabundances\tLowCov\nresid\tLowCov\ncoverage\tLowCov" > ~{sample_id}_demixed.tsv
         
-        freyja demix --eps 0.01 --confirmedonly ~{variants} ~{depth} --output ~{sample_id}_demixed.tsv
+        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_id}_demixed.tsv
 
     >>>
 
