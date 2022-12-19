@@ -135,7 +135,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy"
+        docker:    "genomicpariscentre/guppy:6.0.1"
     }
 }
 
