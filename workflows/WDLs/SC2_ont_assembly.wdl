@@ -1,4 +1,4 @@
-version 1.0
+version 1.1
 
 workflow SC2_ont_assembly {
 
@@ -135,7 +135,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:6.0.1"
+        docker:    "genomicpariscentre/guppy"
     }
 }
 
