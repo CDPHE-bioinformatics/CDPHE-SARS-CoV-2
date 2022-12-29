@@ -130,7 +130,7 @@ task pangolin {
     command {
 
         pangolin --version > VERSION
-        pangolin --skip-scorpio --outfile pangolin_lineage_report.csv ${cat_fastas}
+        pangolin --skip-scorpio --expanded-lineage --outfile pangolin_lineage_report.csv ${cat_fastas}
 
     }
 
