@@ -9,6 +9,9 @@
 # updated 2022-07-07
 ## gets rid of the report_to_epi stuff in the wgs_horizon_csv (the column will just be blank).
 
+# update 2022-12-29
+## adds in the expanded pangolin lineage into the results output (no big changes)
+
 import argparse
 import sys
 import pandas as pd
@@ -406,6 +409,7 @@ def concat_results(sample_list, plate_name_file_list, plate_sample_well_file_lis
                  'percent_non_ambigous_bases',
                  'nextclade',
                  'pangolin_lineage',
+                 'expanded_lineage',
                  'assembler_version',
 
                  'omicron_spike_mutations',
@@ -459,6 +463,7 @@ def concat_results(sample_list, plate_name_file_list, plate_sample_well_file_lis
     j.nextclade = j.nextclade.fillna(value = '')
     j.nextclade_version = j.nextclade_version.fillna(value = next_version)
     j.pangolin_lineage = j.pangolin_lineage.fillna(value = 'Unassigned')
+    j.expanded_lineage = j.expanded_lineage.fillna(value = 'Unassigned')
     j.percent_non_ambigous_bases = j.percent_non_ambigous_bases.fillna(value = 0)
     j.mean_depth = j.mean_depth.fillna(value = 0)
     j.number_aligned_bases = j.number_aligned_bases.fillna(value = 0)
