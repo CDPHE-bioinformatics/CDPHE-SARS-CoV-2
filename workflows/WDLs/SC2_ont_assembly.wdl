@@ -37,6 +37,7 @@ workflow SC2_ont_assembly {
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
+            bai = Medaka.trimsort_bai,
             sample_id = sample_id,
             barcode = barcode
     }
@@ -214,6 +215,7 @@ task Bam_stats {
         String sample_id
         String barcode
         File bam
+        File bai
     }
 
     Int disk_size = 3 * ceil(size(bam, "GB"))
@@ -227,6 +229,7 @@ task Bam_stats {
         samtools coverage -m -o ${sample_id}_${barcode}_coverage_hist.txt ${bam}
 
         samtools coverage -o ${sample_id}_${barcode}_coverage.txt ${bam}
+
 
         # Calculate depth of coverage over entire S gene
         samtools coverage --region MN908947.3:21,563-25,384 \
