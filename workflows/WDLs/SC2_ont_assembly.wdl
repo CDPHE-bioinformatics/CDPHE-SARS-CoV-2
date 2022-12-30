@@ -267,7 +267,7 @@ task Bam_stats {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.10"
+        docker:    "staphb/samtools:1.16"
     }
 }
 
