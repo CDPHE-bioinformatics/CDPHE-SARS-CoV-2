@@ -249,9 +249,9 @@ task Bam_stats {
         File stats_out  = "${sample_id}_${barcode}_stats.txt"
         File covhist_out  = "${sample_id}_${barcode}_coverage_hist.txt"
         File cov_out  = "${sample_id}_${barcode}_coverage.txt"
-        File cov_s_gene_out = "{sample_id}_${barcode}_S_gene_coverage.txt"
-        File cov_s_gene_69_70_out = "{sample_id}_${barcode}_S_gene_69_70_amplicon_coverage.txt"
-        File cov_s_gene_xbb_drop_out = "{sample_id}_${barcode}_S_gene_XBB_dropout_amplicon_coverage.txt"
+        File cov_s_gene_out = "${sample_id}_${barcode}_S_gene_coverage.txt"
+        File cov_s_gene_69_70_out = "${sample_id}_${barcode}_S_gene_69_70_amplicon_coverage.txt"
+        File cov_s_gene_xbb_drop_out = "${sample_id}_${barcode}_S_gene_XBB_dropout_amplicon_coverage.txt"
     }
 
     runtime {
