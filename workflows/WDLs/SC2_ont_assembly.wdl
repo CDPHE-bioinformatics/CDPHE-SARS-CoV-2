@@ -228,6 +228,19 @@ task Bam_stats {
 
         samtools coverage -o ${sample_id}_${barcode}_coverage.txt ${bam}
 
+        # Calculate depth of coverage over entire S gene
+        samtools coverage --region MN908947.3:21,563-25,384 \
+            -o {sample_id}_${barcode}_S_gene_coverage.txt ${bam}
+
+        # Calculate depth of coverage over S gene amplicon region containing aa positions 69 and 70
+        samtools coverage --region MN908947.3:21,676-21,889 \
+            -o {sample_id}_${barcode}_S_gene_69_70_amplicon_coverage.txt ${bam}
+
+
+        # Calculate depth of coverage over S gene amplicon region with Artic V4.1 XBB dropout
+        samtools coverage --region MN908947.3:22,248-22,428 \
+            -o {sample_id}_${barcode}_S_gene_XBB_dropout_amplicon_coverage.txt ${bam}
+
     }
 
     output {
@@ -236,6 +249,9 @@ task Bam_stats {
         File stats_out  = "${sample_id}_${barcode}_stats.txt"
         File covhist_out  = "${sample_id}_${barcode}_coverage_hist.txt"
         File cov_out  = "${sample_id}_${barcode}_coverage.txt"
+        File cov_s_gene_out = "{sample_id}_${barcode}_S_gene_coverage.txt"
+        File cov_s_gene_69_70_out = "{sample_id}_${barcode}_S_gene_69_70_amplicon_coverage.txt"
+        File cov_s_gene_xbb_drop_out = "{sample_id}_${barcode}_S_gene_XBB_dropout_amplicon_coverage.txt"
     }
 
     runtime {
