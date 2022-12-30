@@ -73,6 +73,9 @@ workflow SC2_ont_assembly {
         File samstats_out = Bam_stats.stats_out
         File covhist_out = Bam_stats.covhist_out
         File cov_out = Bam_stats.cov_out
+        File cov_s_gene_out = Bam_stats.cov_s_gene_out
+        File cov_s_gene_69_70_out = Bam_stats.cov_s_gene_69_70_out
+        File cov_s_gene_xbb_drop_out = Bam_stats.cov_s_gene_xbb_drop_out
         File variants = Medaka.variants
         File consensus = Medaka.consensus
         File scaffold_consensus = Scaffold.scaffold_consensus
