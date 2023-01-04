@@ -238,15 +238,39 @@ task Bam_stats {
         samtools coverage --region MN908947.3:21,563-25,384 \
             -o ${sample_id}_${barcode}_S_gene_coverage.txt ${bam}
 
-        # Calculate depth of coverage over S gene amplicon region containing aa positions 69 and 70
-        samtools coverage --region MN908947.3:21,676-21,889 \
-            -o ${sample_id}_${barcode}_S_gene_69_70_amplicon_coverage.txt ${bam}
+                
+        # Calculate depth of coverage over S gene amplicon regions. 
 
+        # Artic V4.1 amplicon regions with MN908947.3 as reference. These regions
+        # exclude the overlapping ends with surrounding amplicons. If there are
+        # multiple (alt) primers, the smallest non-overlapping region is selected.
+        # 
+        # Comments annotate domain/region on S gene based on
+        # https://www.uniprot.org/uniprotkb/P0DTC2/entry
+        # Formulas to convert between amino acid position and S gene coords:
+        #     first_codon_nt = 21563 + 3(aa_pos - 1)
+        #     last_codon_nt = 21563 + 3(aa_pos) - 1
 
-        # Calculate depth of coverage over S gene amplicon region with Artic V4.1 XBB dropout
-        samtools coverage --region MN908947.3:22,248-22,428 \
-            -o ${sample_id}_${barcode}_S_gene_XBB_dropout_amplicon_coverage.txt ${bam}
+        declare -A S_gene_amplicons
+        S_gene_amplicons['amplicon_72']='21,676-21,889'  # S1-NTD; 69/70del site
+        S_gene_amplicons['amplicon_73']='21,905-22,113'  # S1-NTD
+        S_gene_amplicons['amplicon_74']='22,248-22,428'  # S1-NTD; XBB dropout
+        S_gene_amplicons['amplicon_75']='22,475-22,677'  # Begin receptor-binding domain
+        S_gene_amplicons['amplicon_76']='22,786-22,974'  # Receptor-binding motif
+        S_gene_amplicons['amplicon_77']='23,121-23,246'  # End eceptor-binding motif/domain
+        S_gene_amplicons['amplicon_78']='23,328-23,575'
+        S_gene_amplicons['amplicon_79']='23,612-23,876'  # Furin cleavage site; putative T-cell superantigen
+        S_gene_amplicons['amplicon_80']='23,928-24,194'  # Host TMPRSS2/CTSL cleavage site
+        S_gene_amplicons['amplicon_81']='24,234-24,448'
+        S_gene_amplicons['amplicon_82']='24,546-24,772'
+        S_gene_amplicons['amplicon_83']='24,815-25,076'
+        S_gene_amplicons['amplicon_84']='25,123-25,353'  # ER export motif, membrane localizing domain binding
 
+        for region in "${!S_gene_amplicons[@]}"; do
+            samtools coverage \
+                --region MN908947.3:${S_gene_amplicons[$region]} ${bam} \
+                -o ${sample_id}_${barcode}_${region}_coverage.txt ${bam}
+        done
     }
 
     output {
