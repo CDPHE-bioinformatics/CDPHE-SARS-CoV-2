@@ -266,11 +266,11 @@ task Bam_stats {
         S_gene_amplicons['amplicon_83']='24,815-25,076'
         S_gene_amplicons['amplicon_84']='25,123-25,353'  # ER export motif, membrane localizing domain binding
 
-        for region in "${!S_gene_amplicons[@]}"; do
-            samtools coverage \
-                --region MN908947.3:${S_gene_amplicons[$region]} ${bam} \
-                -o ${sample_id}_${barcode}_${region}_coverage.txt ${bam}
-        done
+        # for region in "${!S_gene_amplicons[@]}"; do
+        #     samtools coverage \
+        #         --region MN908947.3:${S_gene_amplicons[$region]} ${bam} \
+        #         -o ${sample_id}_${barcode}_${region}_coverage.txt ${bam}
+        # done
     }
 
     output {
