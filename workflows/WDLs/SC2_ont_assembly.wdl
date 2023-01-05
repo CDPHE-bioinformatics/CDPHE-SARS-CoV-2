@@ -10,7 +10,29 @@ workflow SC2_ont_assembly {
         File    covid_genome
         File    preprocess_python_script
         File    primer_bed
+        Array[Pair[Int, String]] artic_v4_1_s_gene_amplicons = [
+            (72, '21,676-21,889'), # S1-NTD; 69/70del site
+            (73, '21,905-22,113'), # S1-NTD
+            (74, '22,248-22,428'), # S1-NTD; XBB dropout
+            (75, '22,475-22,677'), # Begin receptor-binding domain
+            (76, '22,786-22,974'), # Receptor-binding motif
+            (77, '23,121-23,246'), # End receptor-binding motif/domain
+            (78, '23,328-23,575'), 
+            (79, '23,612-23,876'), # Furin cleavage site; putative T-cell superantigen
+            (80, '23,928-24,194'), # Host TMPRSS2/CTSL cleavage site
+            (81, '24,234-24,448'), 
+            (82, '24,546-24,772'), 
+            (83, '24,815-25,076'), 
+            (84, '25,123-25,353'), # ER export motif, membrane localizing domain binding
+        ]
     }
+    
+    scatter (pair in artic_v4_1_s_gene_amplicons) {
+        Int amplicon_names = pair.left
+        String amplicon_coords = pair.right
+    }
+    
+    
     call ListFastqFiles {
         input:
             gcs_fastq_dir = gcs_fastq_dir
@@ -37,9 +59,12 @@ workflow SC2_ont_assembly {
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
-            bai = Medaka.trimsort_bai,
+            bai = Medaka.trimsort_bam,
             sample_id = sample_id,
-            barcode = barcode
+            barcode = barcode,
+            amplicon_names = amplicon_names,
+            amplicon_coords = amplicon_coords
+            
     }
     call Scaffold {
         input:
@@ -74,8 +99,7 @@ workflow SC2_ont_assembly {
         File covhist_out = Bam_stats.covhist_out
         File cov_out = Bam_stats.cov_out
         File cov_s_gene_out = Bam_stats.cov_s_gene_out
-        File cov_s_gene_69_70_out = Bam_stats.cov_s_gene_69_70_out
-        File cov_s_gene_xbb_drop_out = Bam_stats.cov_s_gene_xbb_drop_out
+        Array[File] cov_amplicons_out = Bam_stats.cov_amplicons_out
         File variants = Medaka.variants
         File consensus = Medaka.consensus
         File scaffold_consensus = Scaffold.scaffold_consensus
@@ -219,27 +243,53 @@ task Bam_stats {
         String barcode
         File bam
         File bai
+        Array[Int] amplicon_names
+        Array[String] amplicon_coords
+        Int num_amplicons = length(amplicon_names)
     }
 
     Int disk_size = 3 * ceil(size(bam, "GB"))
 
-    command {
+    command <<<
 
-        samtools flagstat ${bam} > ${sample_id}_${barcode}_flagstat.txt
+        samtools flagstat ~{bam} > ~{sample_id}_~{barcode}_flagstat.txt
 
-        samtools stats ${bam} > ${sample_id}_${barcode}_stats.txt
+        samtools stats ~{bam} > ~{sample_id}_~{barcode}_stats.txt
 
-        samtools coverage -m -o ${sample_id}_${barcode}_coverage_hist.txt ${bam}
+        samtools coverage -m -o ~{sample_id}_~{barcode}_coverage_hist.txt ~{bam}
 
-        samtools coverage -o ${sample_id}_${barcode}_coverage.txt ${bam}
+
+        samtools coverage -o ~{sample_id}_~{barcode}_coverage.txt ~{bam}
 
 
         # Calculate depth of coverage over entire S gene
+        echo "Calculating overall S gene depth"
         samtools coverage --region MN908947.3:21,563-25,384 \
-            -o ${sample_id}_${barcode}_S_gene_coverage.txt ${bam}
+            -o ~{sample_id}_~{barcode}_S_gene_coverage.txt ~{bam}
 
-                
-    }
+        # Calculate depth of coverage over S gene amplicon regions. 
+
+        # Artic V4.1 amplicon regions with MN908947.3 as reference. These regions
+        # exclude the overlapping ends with surrounding amplicons. If there are
+        # multiple (alt) primers, the smallest non-overlapping region is selected.
+        # 
+        # Comments annotate domain/region on S gene based on
+        # https://www.uniprot.org/uniprotkb/P0DTC2/entry
+        # Formulas to convert between amino acid position and S gene coords:
+        #     first_codon_nt = 21563 + 3(aa_pos - 1)
+        #     last_codon_nt = 21563 + 3(aa_pos) - 1
+        
+        amplicon_names=(~{sep=" " amplicon_names})
+        amplicon_coords=(~{sep=" " amplicon_coords})
+        
+        for (( c=0; c<~{num_amplicons}; c++ ))
+        do
+            echo "Calculating depth for amplicon ${amplicon_names[$c]}"
+            samtools coverage --region MN908947.3:${amplicon_coords[$c]} \
+                -o ${sample_id}_${barcode}_amplicon_${amplicon_names[$c]}_coverage.txt ~{bam}
+        done
+        
+    >>>
 
     output {
 
@@ -248,8 +298,7 @@ task Bam_stats {
         File covhist_out  = "${sample_id}_${barcode}_coverage_hist.txt"
         File cov_out  = "${sample_id}_${barcode}_coverage.txt"
         File cov_s_gene_out = "${sample_id}_${barcode}_S_gene_coverage.txt"
-        File cov_s_gene_69_70_out = "${sample_id}_${barcode}_S_gene_69_70_amplicon_coverage.txt"
-        File cov_s_gene_xbb_drop_out = "${sample_id}_${barcode}_S_gene_XBB_dropout_amplicon_coverage.txt"
+        Array[File] cov_amplicons_out = glob("*amplicon*.txt")
     }
 
     runtime {
