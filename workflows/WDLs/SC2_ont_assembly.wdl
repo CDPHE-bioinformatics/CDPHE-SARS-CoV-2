@@ -286,7 +286,7 @@ task Bam_stats {
         do
             echo "Calculating depth for amplicon ${amplicon_names[$c]}"
             samtools coverage --region MN908947.3:${amplicon_coords[$c]} \
-                -o ${sample_id}_${barcode}_amplicon_${amplicon_names[$c]}_coverage.txt ~{bam}
+                -o ~{sample_id}_~{barcode}_amplicon_${amplicon_names[$c]}_coverage.txt ~{bam}
         done
         
     >>>
