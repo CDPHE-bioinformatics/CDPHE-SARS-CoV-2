@@ -59,7 +59,7 @@ workflow SC2_ont_assembly {
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
-            bai = Medaka.trimsort_bam,
+            bai = Medaka.trimsort_bai,
             sample_id = sample_id,
             barcode = barcode,
             amplicon_names = amplicon_names,
@@ -251,10 +251,6 @@ task Bam_stats {
     Int disk_size = 3 * ceil(size(bam, "GB"))
 
     command <<<
-
-        cp ~{bam} .
-        cp ~{bai} .
-        ls
 
         samtools flagstat ~{bam} > ~{sample_id}_~{barcode}_flagstat.txt
 
