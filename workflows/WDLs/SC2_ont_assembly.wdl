@@ -259,15 +259,13 @@ task Bam_stats {
                 line=$(echo -e "${amplicon}\t${coords}\t${description}\t")
 
                 # extract mean amplicon depth from samtools coverage output
-                line+=$(staphb-tk samtools coverage \
-                            --region MN908947.3:${coords} ~{bam} \
+                line+=$(samtools coverage --region MN908947.3:${coords} ~{bam} \
                             | cut -f 7 | sed '2q;d')
 
                 echo -e "$line" | tee -a $s_gene_depths
             done
         } < ~{s_gene_amplicons}
-        
-        
+
     >>>
 
     output {
