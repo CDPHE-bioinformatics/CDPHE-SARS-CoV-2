@@ -42,8 +42,7 @@ workflow SC2_ont_assembly {
             bai = Medaka.trimsort_bai,
             sample_id = sample_id,
             barcode = barcode,
-            amplicon_names = amplicon_names,
-            amplicon_coords = amplicon_coords
+            s_gene_amplicons = s_gene_amplicons
             
     }
     call Scaffold {
