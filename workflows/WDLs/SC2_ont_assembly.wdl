@@ -206,9 +206,6 @@ task Medaka {
         artic -v > VERSION
         artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_id}_~{barcode}
 
-        # create VCF index file for get_primer_site_variants task
-        tabix ~{sample_id}_~{barcode}.pass.vcf.gz
-
     >>>
 
     output {
