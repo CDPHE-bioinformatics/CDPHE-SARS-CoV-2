@@ -409,12 +409,12 @@ task get_primer_site_variants {
     command <<<
 
         bcftools view --regions-file ~{s_gene_primer_bed} --no-header ~{variants} \
-            | tee ~{sample_id}_primer_variants.txt
+            | tee ~{sample_id}_S_gene_primer_variants.txt
 
     >>>
 
     output {
-        File primer_site_variants = "${sample_id}_primer_variants.txt"
+        File primer_site_variants = "${sample_id}_S_gene_primer_variants.txt"
     }
 
     runtime {
