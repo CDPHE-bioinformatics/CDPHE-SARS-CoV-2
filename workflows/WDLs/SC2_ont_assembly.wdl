@@ -265,7 +265,7 @@ task Bam_stats {
 
                 echo -e "$line" | tee -a $s_gene_depths
             done
-        } < $s_gene_amplicons
+        } < ~{s_gene_amplicons}
         
         
     >>>
