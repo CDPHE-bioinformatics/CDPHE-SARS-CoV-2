@@ -223,7 +223,6 @@ task Bam_stats {
         File bam
         File bai
         File s_gene_amplicons
-        Int num_amplicons = length(amplicon_names)
     }
 
     Int disk_size = 3 * ceil(size(bam, "GB"))
