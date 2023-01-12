@@ -12,6 +12,9 @@ workflow SC2_transfer_ont_assembly {
         Array[File] variants
         Array[File] scaffold_consensus
         Array[File] renamed_consensus
+        Array[File] cov_s_gene_out
+        Array[File] cov_s_gene_amplicons_out
+        Array[File] primer_site_variants
         Array[String] out_dir
     }
 
@@ -23,9 +26,12 @@ workflow SC2_transfer_ont_assembly {
             samstats_out = samstats_out,
             covhist_out = covhist_out,
             cov_out = cov_out,
+            cov_s_gene_out = cov_s_gene_out,
+            cov_s_gene_amplicons_out = cov_s_gene_amplicons_out,
             variants = variants,
             scaffold_consensus = scaffold_consensus,
             renamed_consensus = renamed_consensus,
+            primer_site_variants = primer_site_variants,
             out_dir = out_dir
     }
     
@@ -42,9 +48,12 @@ task transfer_outputs {
         Array[File] samstats_out
         Array[File] covhist_out
         Array[File] cov_out
+        Array[File] cov_s_gene_out
+        Array[File] cov_s_gene_amplicons_out
         Array[File] variants
         Array[File] scaffold_consensus
         Array[File] renamed_consensus
+        Array[File] primer_site_variants
         Array[String] out_dir
     }
     
@@ -59,8 +68,11 @@ task transfer_outputs {
         gsutil -m cp ~{sep=' ' samstats_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{sep=' ' covhist_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{sep=' ' cov_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{sep=' ' cov_s_gene_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{sep=' ' cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{sep=' ' scaffold_consensus} ~{outdirpath}/assemblies/
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/variants/
+        gsutil -m cp ~{sep=' ' primer_site_variants} ~{outdirpath}/primer_site_variants/
         gsutil -m cp ~{sep=' ' renamed_consensus} ~{outdirpath}/assemblies/
         
         transferdate=`date`
