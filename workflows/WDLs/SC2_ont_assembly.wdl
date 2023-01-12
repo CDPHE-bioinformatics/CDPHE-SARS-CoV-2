@@ -10,6 +10,7 @@ workflow SC2_ont_assembly {
         File    covid_genome
         File    preprocess_python_script
         File    primer_bed
+        File    s_gene_primer_bed
         File    s_gene_amplicons
     }
     
@@ -66,6 +67,14 @@ workflow SC2_ont_assembly {
             preprocess_python_script = preprocess_python_script
     }
 
+    call get_primer_site_variants {
+        input:
+            variants = Medaka.variants,
+            variants_index = Medaka.variants_index,
+            sample_id = sample_id,
+            s_gene_primer_bed = s_gene_primer_bed
+    }
+
     output {
         File barcode_summary = Demultiplex.barcode_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
@@ -84,6 +93,7 @@ workflow SC2_ont_assembly {
         File scaffold_consensus = Scaffold.scaffold_consensus
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
+        File primer_site_variants = get_primer_site_variants.primer_site_variants
         String assembler_version = Medaka.assembler_version
     }
 }
@@ -196,6 +206,9 @@ task Medaka {
         artic -v > VERSION
         artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_id}_~{barcode}
 
+        # create VCF index file for get_primer_site_variants task
+        tabix ${sample_id}_${barcode}.pass.vcf.gz
+
     >>>
 
     output {
@@ -204,6 +217,7 @@ task Medaka {
         File trimsort_bam = "${sample_id}_${barcode}.primertrimmed.rg.sorted.bam"
         File trimsort_bai = "${sample_id}_${barcode}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_id}_${barcode}.pass.vcf.gz"
+        File variants_index = "${sample_id}_${barcode}.pass.vcf.gz.tbi"
         String assembler_version = read_string("VERSION")
     }
 
@@ -378,4 +392,35 @@ task calc_percent_cvg {
 
     }
 
+}
+
+task get_primer_site_variants {
+
+    meta {
+        description: "Get variants at primer-binding sites on the S gene"
+    }
+    input {
+        File variants
+        File variants_index
+        String sample_id
+        File s_gene_primer_bed
+    }
+
+    command <<<
+
+        bcftools view --regions-file ~{s_gene_primer_bed} --no-header ~{variants} \
+            | tee ~{sample_id}_primer_variants.txt
+
+    >>>
+
+    output {
+        File primer_site_variants = "${sample_id}_primer_variants.txt"
+    }
+
+    runtime {
+        docker: "staphb/bcftools:1.16"
+        memory: "1 GB"
+        cpu: 1
+        disks: "local-disk 10 SSD"
+    }
 }
