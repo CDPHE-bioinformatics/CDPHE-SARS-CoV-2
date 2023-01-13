@@ -114,7 +114,7 @@ task concatenate {
         docker: "ubuntu"
         memory: "1 GB"
         cpu:    1
-        disks: "local-disk 375 LOCAL"
+        disks: "local-disk 10 SSD"
         dx_instance_type: "mem1_ssd1_v2_x2"
     }
 }
