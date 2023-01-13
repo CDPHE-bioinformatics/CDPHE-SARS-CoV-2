@@ -259,7 +259,7 @@ task results_table {
         docker: "mchether/py3-bio:v2"
         memory: "16 GB"
         cpu:    4
-        disks: "local-disk 375 LOCAL"
+        disks: "local-disk 100 SSD"
         dx_instance_type: "mem1_ssd1_v2_x2"
     }
 }
