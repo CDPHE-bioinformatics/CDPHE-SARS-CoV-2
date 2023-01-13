@@ -7,7 +7,6 @@ workflow SC2_lineage_calling_and_results {
         Array[File?] assembly_fastas
         Array[File?] cov_out_txt
         Array[File?] percent_cvg_csv
-        File covid_genome
         File nextclade_json_parser_script
         File concat_results_script
         Array[String] out_dir
@@ -130,7 +129,9 @@ task pangolin {
     command {
 
         pangolin --version > VERSION
-        pangolin --skip-scorpio --expanded-lineage --outfile pangolin_lineage_report.csv ${cat_fastas}
+        
+        pangolin --skip-scorpio --expanded-lineage --threads 32 \
+            --outfile pangolin_lineage_report.csv ${cat_fastas}
 
     }
 
@@ -142,7 +143,7 @@ task pangolin {
     }
 
     runtime {
-        cpu:    4
+        cpu:    32
         memory:    "16 GiB"
         disks:    "local-disk 1 HDD"
         bootDiskSizeGb:    10
