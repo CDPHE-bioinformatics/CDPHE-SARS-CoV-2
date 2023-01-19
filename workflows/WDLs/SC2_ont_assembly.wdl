@@ -10,7 +10,10 @@ workflow SC2_ont_assembly {
         File    covid_genome
         File    preprocess_python_script
         File    primer_bed
+        File    s_gene_primer_bed
+        File    s_gene_amplicons
     }
+    
     call ListFastqFiles {
         input:
             gcs_fastq_dir = gcs_fastq_dir
@@ -37,8 +40,11 @@ workflow SC2_ont_assembly {
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
+            bai = Medaka.trimsort_bai,
             sample_id = sample_id,
-            barcode = barcode
+            barcode = barcode,
+            s_gene_amplicons = s_gene_amplicons
+            
     }
     call Scaffold {
         input:
@@ -61,6 +67,14 @@ workflow SC2_ont_assembly {
             preprocess_python_script = preprocess_python_script
     }
 
+    call get_primer_site_variants {
+        input:
+            variants = Medaka.variants,
+            variants_index = Medaka.variants_index,
+            sample_id = sample_id,
+            s_gene_primer_bed = s_gene_primer_bed
+    }
+
     output {
         File barcode_summary = Demultiplex.barcode_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
@@ -72,11 +86,14 @@ workflow SC2_ont_assembly {
         File samstats_out = Bam_stats.stats_out
         File covhist_out = Bam_stats.covhist_out
         File cov_out = Bam_stats.cov_out
+        File cov_s_gene_out = Bam_stats.cov_s_gene_out
+        File cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out
         File variants = Medaka.variants
         File consensus = Medaka.consensus
         File scaffold_consensus = Scaffold.scaffold_consensus
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
+        File primer_site_variants = get_primer_site_variants.primer_site_variants
         String assembler_version = Medaka.assembler_version
     }
 }
@@ -197,6 +214,7 @@ task Medaka {
         File trimsort_bam = "${sample_id}_${barcode}.primertrimmed.rg.sorted.bam"
         File trimsort_bai = "${sample_id}_${barcode}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_id}_${barcode}.pass.vcf.gz"
+        File variants_index = "${sample_id}_${barcode}.pass.vcf.gz.tbi"
         String assembler_version = read_string("VERSION")
     }
 
@@ -214,21 +232,52 @@ task Bam_stats {
         String sample_id
         String barcode
         File bam
+        File bai
+        File s_gene_amplicons
     }
 
     Int disk_size = 3 * ceil(size(bam, "GB"))
 
-    command {
+    command <<<
 
-        samtools flagstat ${bam} > ${sample_id}_${barcode}_flagstat.txt
+        samtools flagstat ~{bam} > ~{sample_id}_~{barcode}_flagstat.txt
 
-        samtools stats ${bam} > ${sample_id}_${barcode}_stats.txt
+        samtools stats ~{bam} > ~{sample_id}_~{barcode}_stats.txt
 
-        samtools coverage -m -o ${sample_id}_${barcode}_coverage_hist.txt ${bam}
+        samtools coverage -m -o ~{sample_id}_~{barcode}_coverage_hist.txt ~{bam}
 
-        samtools coverage -o ${sample_id}_${barcode}_coverage.txt ${bam}
 
-    }
+        samtools coverage -o ~{sample_id}_~{barcode}_coverage.txt ~{bam}
+
+
+        # Calculate depth of coverage over entire S gene
+        echo "Calculating overall S gene depth"
+        samtools coverage --region MN908947.3:21,563-25,384 \
+            -o ~{sample_id}_~{barcode}_S_gene_coverage.txt ~{bam}
+
+        # Calculate depth of coverage over S gene amplicon regions (excludes overlapping regions with adjacent amplicons)
+        echo "calculating depths for ~{s_gene_amplicons}"
+        {
+            s_gene_depths="~{sample_id}_S_gene_depths.tsv"
+
+            # write header line to s_gene_depths output file
+            read header
+            echo -e "${header}\tdepth" | tee $s_gene_depths
+
+            # write amplicon info and depths to output file
+            IFS=$'\t'
+            while read amplicon coords description; do
+                line=$(echo -e "${amplicon}\t${coords}\t${description}\t")
+
+                # extract mean amplicon depth from samtools coverage output
+                line+=$(samtools coverage --region MN908947.3:${coords} ~{bam} \
+                            | cut -f 7 | sed '2q;d')
+
+                echo -e "$line" | tee -a $s_gene_depths
+            done
+        } < ~{s_gene_amplicons}
+
+    >>>
 
     output {
 
@@ -236,6 +285,8 @@ task Bam_stats {
         File stats_out  = "${sample_id}_${barcode}_stats.txt"
         File covhist_out  = "${sample_id}_${barcode}_coverage_hist.txt"
         File cov_out  = "${sample_id}_${barcode}_coverage.txt"
+        File cov_s_gene_out = "${sample_id}_${barcode}_S_gene_coverage.txt"
+        File cov_s_gene_amplicons_out = "${sample_id}_S_gene_depths.tsv"
     }
 
     runtime {
@@ -245,7 +296,7 @@ task Bam_stats {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.10"
+        docker:    "staphb/samtools:1.16"
     }
 }
 
@@ -338,4 +389,35 @@ task calc_percent_cvg {
 
     }
 
+}
+
+task get_primer_site_variants {
+
+    meta {
+        description: "Get variants at primer-binding sites on the S gene"
+    }
+    input {
+        File variants
+        File variants_index
+        String sample_id
+        File s_gene_primer_bed
+    }
+
+    command <<<
+
+        bcftools view --regions-file ~{s_gene_primer_bed} --no-header ~{variants} \
+            | tee ~{sample_id}_S_gene_primer_variants.txt
+
+    >>>
+
+    output {
+        File primer_site_variants = "${sample_id}_S_gene_primer_variants.txt"
+    }
+
+    runtime {
+        docker: "staphb/bcftools:1.16"
+        memory: "1 GB"
+        cpu: 1
+        disks: "local-disk 10 SSD"
+    }
 }

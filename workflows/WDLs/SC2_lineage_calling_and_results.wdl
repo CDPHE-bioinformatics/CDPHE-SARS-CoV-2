@@ -7,7 +7,6 @@ workflow SC2_lineage_calling_and_results {
         Array[File?] assembly_fastas
         Array[File?] cov_out_txt
         Array[File?] percent_cvg_csv
-        File covid_genome
         File nextclade_json_parser_script
         File concat_results_script
         Array[String] out_dir
@@ -115,7 +114,7 @@ task concatenate {
         docker: "ubuntu"
         memory: "1 GB"
         cpu:    1
-        disks: "local-disk 375 LOCAL"
+        disks: "local-disk 10 SSD"
         dx_instance_type: "mem1_ssd1_v2_x2"
     }
 }
@@ -130,7 +129,9 @@ task pangolin {
     command {
 
         pangolin --version > VERSION
-        pangolin --skip-scorpio --expanded-lineage --outfile pangolin_lineage_report.csv ${cat_fastas}
+
+        pangolin --skip-scorpio --expanded-lineage --threads 32 \
+            --outfile pangolin_lineage_report.csv ${cat_fastas}
 
     }
 
@@ -142,7 +143,7 @@ task pangolin {
     }
 
     runtime {
-        cpu:    4
+        cpu:    32
         memory:    "16 GiB"
         disks:    "local-disk 1 HDD"
         bootDiskSizeGb:    10
@@ -258,7 +259,7 @@ task results_table {
         docker: "mchether/py3-bio:v2"
         memory: "16 GB"
         cpu:    4
-        disks: "local-disk 375 LOCAL"
+        disks: "local-disk 100 SSD"
         dx_instance_type: "mem1_ssd1_v2_x2"
     }
 }
@@ -297,6 +298,6 @@ task transfer {
         docker: "theiagen/utility:1.0"
         memory: "16 GB"
         cpu: 4
-        disks: "local-disk 10 SSD"
+        disks: "local-disk 100 SSD"
     }
 }
