@@ -78,6 +78,7 @@ workflow SC2_wastewater_variant_calling {
             sample_voc_tsv_counts = summary_prep.sample_voc_tsv_counts,
             voc_counts = combine_tsv.voc_counts,
             voc_summary = summary_tsv.voc_summary,
+            demix_aggregated = freyja_aggregate.demix_aggregated,
             demix_summary = combine_tsv.demix_summary,
             out_dir = out_dir
     }
@@ -431,6 +432,7 @@ task transfer_outputs {
         Array[File] sample_voc_tsv_counts
         File voc_summary
         File voc_counts
+        File demix_aggregated
         File demix_summary
         String out_dir
 
@@ -447,6 +449,7 @@ task transfer_outputs {
         gsutil -m cp ~{sep=' ' sample_voc_tsv_counts} ~{outdirpath}/waste_water_variant_calling/sample_variants/
         gsutil -m cp ~{voc_summary} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{voc_counts} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{demix_summary} ~{outdirpath}/waste_water_variant_calling/
 
         transferdate=`date`
