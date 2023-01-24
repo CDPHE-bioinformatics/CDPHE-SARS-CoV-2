@@ -52,6 +52,12 @@ workflow SC2_wastewater_variant_calling {
                 sample_id = id_bam.left
         }
     }
+
+    call freyja_aggregate {
+        input:
+            demix = freyja_demix.demix
+    }
+
     call combine_tsv {
         input:
             tsv = summary_prep.sample_voc_tsv_summary,
@@ -86,6 +92,7 @@ workflow SC2_wastewater_variant_calling {
         Array[File] sample_voc_tsv_summary = summary_prep.sample_voc_tsv_summary
         Array[File] sample_voc_tsv_counts = summary_prep.sample_voc_tsv_counts
         Array[File] demix_reformatted = demix_reformat.demix_reformatted
+        File demix_aggregated = freyja_aggregate.demix_aggregated
         File voc_summary_temp = combine_tsv.voc_summary_temp
         File voc_counts = combine_tsv.voc_counts
         File voc_summary = summary_tsv.voc_summary
@@ -177,6 +184,31 @@ task freyja_demix {
         cpu: 8
         disks: "local-disk 200 SSD"
         continueOnReturnCode: [0, 1]
+    }
+}
+
+task freyja_aggregate {
+    input {
+        Array[File] demix
+    }
+
+    command <<<
+
+        mkdir demix_outputs
+        mv ~{sep=' ' demix} demix_outputs/
+        freyja aggregate demix_outputs/ --output demix_aggregated.tsv
+
+    >>>
+
+    output {
+        File demix_aggregated = "demix_aggregated.tsv"
+    }
+
+    runtime {
+        docker: "staphb/freyja"
+        memory: "32 GB"
+        cpu: 8
+        disks: "local-disk 200 SSD"
     }
 }
 
