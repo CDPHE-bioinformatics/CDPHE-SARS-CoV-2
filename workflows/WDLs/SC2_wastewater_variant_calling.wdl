@@ -9,6 +9,8 @@ workflow SC2_wastewater_variant_calling {
         File voc_annotations
         Array[String] sample_id
         String out_dir
+        Array[String] seq_run_array
+        File dashboard_formatting_py
     }
 
     scatter (id_bam in zip(sample_id, trimsort_bam)) {
@@ -58,6 +60,13 @@ workflow SC2_wastewater_variant_calling {
             demix = freyja_demix.demix
     }
 
+    call format_freyja_aggregate_for_dashboard{
+        input:
+            dashboard_formatting_py = dashboard_formatting_py,
+            freyja_aggregate_file = freyja_aggregate.demix_aggregated,
+            seq_run_array = seq_run_array
+    }
+
     call combine_tsv {
         input:
             tsv = summary_prep.sample_voc_tsv_summary,
@@ -80,6 +89,8 @@ workflow SC2_wastewater_variant_calling {
             voc_summary = summary_tsv.voc_summary,
             demix_aggregated = freyja_aggregate.demix_aggregated,
             demix_summary = combine_tsv.demix_summary,
+            wwt_variant_abundances_long_format = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format,
+            wwt_variant_abundances_long_format_mean = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format_mean,
             out_dir = out_dir
     }
 
@@ -99,6 +110,8 @@ workflow SC2_wastewater_variant_calling {
         File voc_summary = summary_tsv.voc_summary
         File demix_summary = combine_tsv.demix_summary
         String transfer_date = transfer_outputs.transfer_date
+        File wwt_variant_abundances_long_format = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format
+        File wwt_variant_abundances_long_format_mean = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format_mean
 
     }
 }
@@ -210,6 +223,34 @@ task freyja_aggregate {
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
+    }
+}
+
+task format_freyja_aggregate_for_dashboard {
+    input {
+        File dashboard_formatting_py
+        File freyja_aggregate_file
+        Array[String] seq_run_array
+
+    }
+
+    command <<<
+    python ~{dashboard_formatting_py} \
+        --freyja_aggregate_path ~{freyja_aggregate_file} \
+        --seq_run ~{write_lines(seq_run_array)}
+    >>>
+
+    output{
+        File wwt_variant_abundances_long_format = "wwt_variant_abundances_long_format_${seq_run_array[0]}.csv"
+        File wwt_variant_abundances_long_format_mean = "wwt_variant_abundances_long_format_mean_${seq_run_array[0]}.csv"
+    }
+
+    runtime {
+        docker: "mchether/py3-bio:v2"
+        memory: "16 GB"
+        cpu:    4
+        disks: "local-disk 100 SSD"
+        dx_instance_type: "mem1_ssd1_v2_x2"
     }
 }
 
@@ -434,6 +475,8 @@ task transfer_outputs {
         File voc_counts
         File demix_aggregated
         File demix_summary
+        File wwt_variant_abundances_long_format
+        File wwt_variant_abundances_long_format_mean
         String out_dir
 
     }
@@ -451,6 +494,8 @@ task transfer_outputs {
         gsutil -m cp ~{voc_counts} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{demix_summary} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{wwt_variant_abundances_long_format} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{wwt_variant_abundances_long_format_mean} ~{outdirpath}/waste_water_variant_calling/
 
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
