@@ -83,26 +83,26 @@ task transfer_outputs {
 
     command <<<
         
-        gsutil -m cp ~{ fastqc_raw1_html} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_raw1_zip} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_raw2_html} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_raw2_zip} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_clean1_html} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_clean1_zip} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_clean2_html} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ fastqc_clean2_zip} ~{out_dir}/fastqc/
-        gsutil -m cp ~{ seqyclean_summary} ~{out_dir}/seqyclean/
-        gsutil -m cp ~{ filtered_reads_1} ~{out_dir}/seqyclean/
-        gsutil -m cp ~{ filtered_reads_2} ~{out_dir}/seqyclean/
-        gsutil -m cp ~{ trimsort_bam} ~{out_dir}/alignments/
-        gsutil -m cp ~{ trimsort_bamindex} ~{out_dir}/alignments/
-        gsutil -m cp ~{ consensus} ~{out_dir}/assemblies/
-        gsutil -m cp ~{ variants} ~{out_dir}/variants/
-        gsutil -m cp ~{ cov_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{ covhist_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{ flagstat_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{ stats_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{ renamed_consensus} ~{out_dir}/assemblies/
+        gsutil -m cp ~{fastqc_raw1_html} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_raw1_zip} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_raw2_html} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_raw2_zip} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_clean1_html} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_clean1_zip} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_clean2_html} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_clean2_zip} ~{out_dir}/fastqc/
+        gsutil -m cp ~{seqyclean_summary} ~{out_dir}/seqyclean/
+        gsutil -m cp ~{filtered_reads_1} ~{out_dir}/seqyclean/
+        gsutil -m cp ~{filtered_reads_2} ~{out_dir}/seqyclean/
+        gsutil -m cp ~{trimsort_bam} ~{out_dir}/alignments/
+        gsutil -m cp ~{trimsort_bamindex} ~{out_dir}/alignments/
+        gsutil -m cp ~{consensus} ~{out_dir}/assemblies/
+        gsutil -m cp ~{variants} ~{out_dir}/variants/
+        gsutil -m cp ~{cov_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{covhist_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{flagstat_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{stats_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{renamed_consensus} ~{out_dir}/assemblies/
         
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
