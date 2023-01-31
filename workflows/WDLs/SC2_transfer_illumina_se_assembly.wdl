@@ -3,23 +3,23 @@ version 1.0
 workflow SC2_transfer_illumina_se_assembly {
 
     input {
-        Array[File] fastqc_raw_html
-        Array[File] fastqc_raw_zip
-        Array[File] fastqc_clean_html
-        Array[File] fastqc_clean_zip
-        Array[File] adapter_stats
-        Array[File] PhiX_stats
-        Array[File] filtered_reads
-        Array[File] trimsort_bam
-        Array[File] trimsort_bamindex
-        Array[File] consensus
-        Array[File] variants
-        Array[File] cov_out
-        Array[File] covhist_out
-        Array[File] flagstat_out
-        Array[File] stats_out
-        Array[File] renamed_consensus
-        Array[String] out_dir
+        File fastqc_raw_html
+        File fastqc_raw_zip
+        File fastqc_clean_html
+        File fastqc_clean_zip
+        File adapter_stats
+        File PhiX_stats
+        File filtered_reads
+        File trimsort_bam
+        File trimsort_bamindex
+        File consensus
+        File variants
+        File cov_out
+        File covhist_out
+        File flagstat_out
+        File stats_out
+        File renamed_consensus
+        String out_dir
     }
 
     call transfer_outputs {
@@ -50,46 +50,43 @@ workflow SC2_transfer_illumina_se_assembly {
 
 task transfer_outputs {
     input {
-        Array[String] out_dir
-        Array[File] fastqc_raw_html
-        Array[File] fastqc_raw_zip
-        Array[File] fastqc_clean_html
-        Array[File] fastqc_clean_zip
-        Array[File] adapter_stats
-        Array[File] PhiX_stats
-        Array[File] filtered_reads
-        Array[File] trimsort_bam
-        Array[File] trimsort_bamindex
-        Array[File] consensus
-        Array[File] variants
-        Array[File] cov_out
-        Array[File] covhist_out
-        Array[File] flagstat_out
-        Array[File] stats_out
-        Array[File] renamed_consensus
+        String out_dir
+        File fastqc_raw_html
+        File fastqc_raw_zip
+        File fastqc_clean_html
+        File fastqc_clean_zip
+        File adapter_stats
+        File PhiX_stats
+        File filtered_reads
+        File trimsort_bam
+        File trimsort_bamindex
+        File consensus
+        File variants
+        File cov_out
+        File covhist_out
+        File flagstat_out
+        File stats_out
+        File renamed_consensus
     }
-    
-    String outdir = '${out_dir[0]}'
-    String outdirpath = sub(outdir, "/$", "")
 
     command <<<
         
-        gsutil -m cp ~{sep=' ' fastqc_raw_html} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{sep=' ' fastqc_raw_zip} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{sep=' ' fastqc_clean_html} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{sep=' ' fastqc_clean_zip} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{sep=' ' adapter_stats} ~{outdirpath}/filtered_reads/
-        gsutil -m cp ~{sep=' ' PhiX_stats} ~{outdirpath}/filtered_reads/
-        gsutil -m cp ~{sep=' ' filtered_reads} ~{outdirpath}/filtered_reads/
-        gsutil -m cp ~{sep=' ' trimsort_bam} ~{outdirpath}/alignments/
-        gsutil -m cp ~{sep=' ' trimsort_bamindex} ~{outdirpath}/alignments/
-        gsutil -m cp ~{sep=' ' consensus} ~{outdirpath}/assemblies/
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/variants/
-        gsutil -m cp ~{sep=' ' cov_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{sep=' ' covhist_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{sep=' ' flagstat_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{sep=' ' stats_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{sep=' ' renamed_consensus} ~{outdirpath}/assemblies/
+        gsutil -m cp ~{fastqc_raw_html} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_raw_zip} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_clean_html} ~{out_dir}/fastqc/
+        gsutil -m cp ~{fastqc_clean_zip} ~{out_dir}/fastqc/
+        gsutil -m cp ~{adapter_stats} ~{out_dir}/filtered_reads/
+        gsutil -m cp ~{PhiX_stats} ~{out_dir}/filtered_reads/
+        gsutil -m cp ~{filtered_reads} ~{out_dir}/filtered_reads/
+        gsutil -m cp ~{trimsort_bam} ~{out_dir}/alignments/
+        gsutil -m cp ~{trimsort_bamindex} ~{out_dir}/alignments/
+        gsutil -m cp ~{consensus} ~{out_dir}/assemblies/
+        gsutil -m cp ~{variants} ~{out_dir}/variants/
+        gsutil -m cp ~{cov_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{covhist_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{flagstat_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{stats_out} ~{out_dir}/bam_stats/
+        gsutil -m cp ~{renamed_consensus} ~{out_dir}/assemblies/
         
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
@@ -101,7 +98,7 @@ task transfer_outputs {
 
     runtime {
         docker: "theiagen/utility:1.0"
-        memory: "16 GB"
+        memory: "1 GB"
         cpu: 4
         disks: "local-disk 500 SSD"
     }
