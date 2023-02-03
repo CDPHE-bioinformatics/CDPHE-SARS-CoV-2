@@ -69,24 +69,26 @@ task transfer_outputs {
         File renamed_consensus
     }
 
+    String out_dir_path = sub('${out_dir}', "/$", "")
+
     command <<<
         
-        gsutil -m cp ~{fastqc_raw_html} ~{out_dir}/fastqc/
-        gsutil -m cp ~{fastqc_raw_zip} ~{out_dir}/fastqc/
-        gsutil -m cp ~{fastqc_clean_html} ~{out_dir}/fastqc/
-        gsutil -m cp ~{fastqc_clean_zip} ~{out_dir}/fastqc/
-        gsutil -m cp ~{adapter_stats} ~{out_dir}/filtered_reads/
-        gsutil -m cp ~{PhiX_stats} ~{out_dir}/filtered_reads/
-        gsutil -m cp ~{filtered_reads} ~{out_dir}/filtered_reads/
-        gsutil -m cp ~{trimsort_bam} ~{out_dir}/alignments/
-        gsutil -m cp ~{trimsort_bamindex} ~{out_dir}/alignments/
-        gsutil -m cp ~{consensus} ~{out_dir}/assemblies/
-        gsutil -m cp ~{variants} ~{out_dir}/variants/
-        gsutil -m cp ~{cov_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{covhist_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{flagstat_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{stats_out} ~{out_dir}/bam_stats/
-        gsutil -m cp ~{renamed_consensus} ~{out_dir}/assemblies/
+        gsutil -m cp ~{fastqc_raw_html} ~{out_dir_path}/fastqc/
+        gsutil -m cp ~{fastqc_raw_zip} ~{out_dir_path}/fastqc/
+        gsutil -m cp ~{fastqc_clean_html} ~{out_dir_path}/fastqc/
+        gsutil -m cp ~{fastqc_clean_zip} ~{out_dir_path}/fastqc/
+        gsutil -m cp ~{adapter_stats} ~{out_dir_path}/filtered_reads/
+        gsutil -m cp ~{PhiX_stats} ~{out_dir_path}/filtered_reads/
+        gsutil -m cp ~{filtered_reads} ~{out_dir_path}/filtered_reads/
+        gsutil -m cp ~{trimsort_bam} ~{out_dir_path}/alignments/
+        gsutil -m cp ~{trimsort_bamindex} ~{out_dir_path}/alignments/
+        gsutil -m cp ~{consensus} ~{out_dir_path}/assemblies/
+        gsutil -m cp ~{variants} ~{out_dir_path}/variants/
+        gsutil -m cp ~{cov_out} ~{out_dir_path}/bam_stats/
+        gsutil -m cp ~{covhist_out} ~{out_dir_path}/bam_stats/
+        gsutil -m cp ~{flagstat_out} ~{out_dir_path}/bam_stats/
+        gsutil -m cp ~{stats_out} ~{out_dir_path}/bam_stats/
+        gsutil -m cp ~{renamed_consensus} ~{out_dir_path}/assemblies/
         
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
