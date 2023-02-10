@@ -136,7 +136,7 @@ task seqyclean {
     runtime {
         cpu:    2
         memory:    "12 GiB"
-        disks:    "local-disk 1 HDD"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
