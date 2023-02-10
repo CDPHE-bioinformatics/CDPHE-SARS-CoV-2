@@ -248,7 +248,7 @@ task ivar_trim {
 
     runtime {
         cpu:    2
-        memory:    "8 GiB"
+        memory:    "12 GiB"
         disks:    "local-disk 1 HDD"
         bootDiskSizeGb:    10
         preemptible:    0
