@@ -19,6 +19,8 @@ workflow SC2_transfer_illumina_pe_assembly {
         File consensus
         File variants
         File cov_out
+        File cov_s_gene_out
+        File cov_s_gene_amplicons_out
         File covhist_out
         File flagstat_out
         File stats_out
@@ -44,6 +46,8 @@ workflow SC2_transfer_illumina_pe_assembly {
             consensus = consensus,
             variants = variants,
             cov_out = cov_out,
+            cov_s_gene_out = cov_s_gene_out,
+            cov_s_gene_amplicons_out = cov_s_gene_amplicons_out,
             covhist_out = covhist_out,
             flagstat_out = flagstat_out,
             stats_out = stats_out,
@@ -75,6 +79,8 @@ task transfer_outputs {
         File consensus
         File variants
         File cov_out
+        File cov_s_gene_out
+        File cov_s_gene_amplicons_out
         File covhist_out
         File flagstat_out
         File stats_out
@@ -101,6 +107,8 @@ task transfer_outputs {
         gsutil -m cp ~{consensus} ~{out_dir_path}/assemblies/
         gsutil -m cp ~{variants} ~{out_dir_path}/variants/
         gsutil -m cp ~{cov_out} ~{out_dir_path}/bam_stats/
+        gsutil -m cp ~{cov_s_gene_out} ~{out_dir_path}/bam_stats/
+        gsutil -m cp ~{cov_s_gene_amplicons_out} ~{out_dir_path}/bam_stats/
         gsutil -m cp ~{covhist_out} ~{out_dir_path}/bam_stats/
         gsutil -m cp ~{flagstat_out} ~{out_dir_path}/bam_stats/
         gsutil -m cp ~{stats_out} ~{out_dir_path}/bam_stats/
