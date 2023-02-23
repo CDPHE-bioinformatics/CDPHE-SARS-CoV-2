@@ -339,10 +339,10 @@ task bam_stats {
 
     command <<<
 
-        samtools flagstat ${bam} > ${sample_id}_flagstat.txt
-        samtools stats ${bam} > ${sample_id}_stats.txt
-        samtools coverage -m -o ${sample_id}_coverage_hist.txt ${bam}
-        samtools coverage -o ${sample_id}_coverage.txt ${bam}
+        samtools flagstat ~{bam} > ~{sample_id}_flagstat.txt
+        samtools stats ~{bam} > ~{sample_id}_stats.txt
+        samtools coverage -m -o ~{sample_id}_coverage_hist.txt ~{bam}
+        samtools coverage -o ~{sample_id}_coverage.txt ~{bam}
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
