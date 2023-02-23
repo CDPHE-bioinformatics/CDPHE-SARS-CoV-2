@@ -380,7 +380,7 @@ task bam_stats {
         File covhist_out  = "${sample_id}_coverage_hist.txt"
         File cov_out  = "${sample_id}_coverage.txt"
         File cov_s_gene_out = "${sample_id}_S_gene_coverage.txt"
-        File cov_s_gene_amplicons_out = "${sample_id}_S_gene_depths.txt"
+        File cov_s_gene_amplicons_out = "${sample_id}_S_gene_depths.tsv"
 
     }
 
