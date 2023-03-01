@@ -115,27 +115,17 @@ This script is called in the ``SC2_lineage_calling_and_results`` WDL workflow. T
 ### inputs
 The script takes the following inputs:
 
-  - ``--sample_list``: the list of the sample_IDs input variable (column in the terra data table) for the workflow written to a text file. This is provided in the terra data table upload.  See below in the header details about working with sample sets for more on how this is formated and generated within the wdl workflow.
+  - ``--sample_id_array``: the list of the sample_IDs input variable (column in the terra data table) for the workflow written to a text file. This is provided in the terra data table upload.  See below in the header details about working with sample sets for more on how this is formated and generated within the wdl workflow.
 
-  - ``--plate_name_file_list``: the list of the plate_name input variable (column in the terra data table) for the workflow written to a text file. This is provided in the terra data table upload.
+- ``workbook_path`` : the gcp file path to the workbook. The workbook can inlcude any column you'd like but must include at minimum the following columns: ``hsn``, ``sample_id``, ``project_name``, ``plate_name``,   ``run_name``. These columns can be left blank if needed.
 
-  - ``--plate_sample_well_file_list``: the list of the plate_sample_well variable (column in the terra data table) for the worfklow written to a text file. This is provided in the terra data table upload.
+  - ``--cov_out_files``: the list of the ``cov_out`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` from the bam stats task.
 
-  - ``--primer_set_file_list``: the list of the primer_set variable (column in the terra data table) for the worfklow written to a text file. This is provided in the terra data table upload.
-
-  - ``--tech_platform_file_list``: the list of the tech_platform variable (column in the terra data table) for the worfklow written to a text file. This is provided in the terra data table upload.
-
-  - ``--read_type_file_list``: the list of the read_type variable (column in the terra data table) for the worfklow written to a text file. This is provided in the terra data table upload.
-
-  - ``--bam_file_list``: the list of the cov_out_txt variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` from the bam stats task.
-
-  - ``--percent_cvg_file_list``: the list of the cov_out_txt variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows from the ``calc_percent_coverage.py`` script called during the ``calc_percent_cvg`` task.
+  - ``--percent_cvg_files``: the list of the ``percent_cvg_csv`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows from the ``calc_percent_coverage.py`` script called during the ``calc_percent_cvg`` task.
 
   - ``--pangolin_lineage_csv``: this is the lineage report csv file generated from pangolin during the ``pangolin`` task.
 
-  - ``--pangolin_version``: this is the pangolin version which is defined as output during the ``pangolin`` task.
-
-  - ``--assembler_version_table_list``: the list of the assembler_version variable (column in the terra data table) for the worfklow written to a text file. This is written to the terra data table during the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows.
+  - ``--assembler_version``: the assembler_version variable (column in the terra data table) for the worfklow . This is written to the terra data table during the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows.
 
   - ``--nextclade_clades_csv``: this is the ``{seq_run}_nextclade_results.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.
 
@@ -143,7 +133,6 @@ The script takes the following inputs:
 
   - ``--nextclade_version``: this is the nextclade version which is defined as output during the ``nextclade`` task.
 
-  - ``--seq_run_file_list``: the list of the seq_run variable (column in the terra data table) for the worfklow written to a text file. This is provided in the terra data table upload.
 
 ### outputs
 There are three outputs from this script. Example outputs can be found in the example data directory within this repo.   
