@@ -46,12 +46,12 @@ def calculate_percent_coverage(sample_id, fasta_file):
 
     # create pd df with calc_percent_cvg
     df = pd.DataFrame()
-    df['accession_id'] = [sample_id]
-    df['number_aligned_bases'] = [aligned_bases]
-    df['number_N_bases'] = [Ns]
-    df['number_non_ambigous_bases'] = [num_non_ambigous_bases]
-    df['percent_non_ambigous_bases'] = [coverage]
-    df['number_seqs_in_fasta'] = [num_records]
+    df['sample_id'] = [sample_id]
+    df['aligned_bases'] = [aligned_bases]
+    df['N_bases'] = [Ns]
+    df['non_ambiguous_bases'] = [num_non_ambigous_bases]
+    df['percent_coverage'] = [coverage]
+    # df['number_seqs_in_fasta'] = [num_records]
 
     outfile = '%s_consensus_cvg_stats.csv' % sample_id
     df.to_csv(outfile, index = False)
