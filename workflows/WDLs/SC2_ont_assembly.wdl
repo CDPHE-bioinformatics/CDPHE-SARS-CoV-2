@@ -8,10 +8,12 @@ workflow SC2_ont_assembly {
         String    barcode
         String    primer_set
         File    covid_genome
-        File    preprocess_python_script
         File    primer_bed
         File    s_gene_primer_bed
         File    s_gene_amplicons
+
+        # python scripts
+        File calc_percent_coverage_py
     }
     
     call ListFastqFiles {
@@ -64,7 +66,7 @@ workflow SC2_ont_assembly {
         input:
             sample_id = sample_id,
             fasta = rename_fasta.renamed_consensus,
-            preprocess_python_script = preprocess_python_script
+            calc_percent_coverage_py = calc_percent_coverage_py
     }
 
     call get_primer_site_variants {
@@ -365,11 +367,11 @@ task calc_percent_cvg {
 
         File fasta
         String sample_id
-        File preprocess_python_script
+        File calc_percent_coverage_py
     }
 
     command {
-        python ~{preprocess_python_script} \
+        python ~{calc_percent_coverage_py} \
           --sample_id ~{sample_id} \
           --fasta_file ~{fasta}
       }

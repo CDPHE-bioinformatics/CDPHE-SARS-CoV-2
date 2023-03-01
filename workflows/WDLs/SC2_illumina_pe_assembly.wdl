@@ -10,7 +10,9 @@ workflow SC2_illumina_pe_assembly {
         File    adapters_and_contaminants
         File    covid_genome
         File    covid_gff
-        File    preprocess_python_script
+
+        # python scripts
+        File    calc_percent_coverage_py
     }
 
     call seqyclean {
@@ -79,7 +81,7 @@ workflow SC2_illumina_pe_assembly {
         input:
             sample_id = sample_id,
             fasta = rename_fasta.renamed_consensus,
-            preprocess_python_script = preprocess_python_script
+            calc_percent_coverage_py = calc_percent_coverage_py
     }
 
     output {
@@ -397,12 +399,12 @@ task calc_percent_cvg {
 
         File fasta
         String sample_id
-        File preprocess_python_script
+        File calc_percent_coverage_py
 
     }
 
     command {
-        python ~{preprocess_python_script} \
+        python ~{calc_percent_coverage_py} \
           --sample_id ~{sample_id} \
           --fasta_file ~{fasta}
       }
