@@ -234,7 +234,7 @@ task results_table {
     }
 
     String assembler_version = assembler_version_array[0]
-    File workbook_path = workbok_path_array[0]
+    File workbook_path = workbook_path_array[0]
 
     command <<<
         python ~{concat_results_script} \
