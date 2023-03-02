@@ -1,5 +1,23 @@
 # SC2 wdl python scripts
 
+## Table of Contents
+
+1. [Overview](#overview)
+
+2. [calc_percent_coverage-py](#calc-percent-coverage-py)
+
+3. [nextclade_json_parser.py](#nextclade-json-parser-py)
+
+4. [concat-seq-metrics-and-lineage-results-py](#concat-seq-metrics-and-lineage-results-py)
+
+
+5. [details about working with sample sets](#details-about-working-with-sample-sets)
+
+
+
+<br/>
+<br/>
+
 ## Overview
 
 This repo contains three custom python scripts called in our SC2 wdl workflows. These scripts should be stored in a google bucket and linked to your workspace data within your Terra.bio workspace, so they can be used as inputs within each respective workflow. Below lists the three scripts and their associated workflows and further below provides greater detail about each script.  
@@ -9,11 +27,11 @@ This repo contains three custom python scripts called in our SC2 wdl workflows. 
 
 - ``concat_seq_metrics_and_lineage_results.py`` is called in the ``Sc2_lineage_calling_and_results.wdl``.  
 
+<br/>
 
 
-## calc_percent_coverage.py
-<details>
-<summary>click to expand</summary>
+## calc-percent-coverage-py
+
 
 ### overview
 This script is called in the `SC2_illumina_pe_assembly.wdl`, ``SC2_ilumina_se_assembly.wdl``, and ``SC2_nanopore_assembly.wdl`` WDL workflows. These workflows act on individual samples (as opposed to sample sets), therefore this script also works on individual samples. The script reads in a consensus genome as a fasta file and calculates the percent coverage of the sample consensus genome. Specifically, the percent coverage is calculated as:
@@ -46,11 +64,10 @@ The script also records the number of aligned bases, the number of ambigous base
 - number_seqs_in_fasta: should be 1, we included this column when we were having trouble with our ont assebly and never removed it.
 
 Thre is an example output in the example data directory within this repo.
-</details>
 
-## nextclade_json_parser.py
-<details>
-<summary>click to expand</summary>
+
+## nextclade-json-parser-py
+
 
 ### overview
 This script is called in the ``SC2_lineage_calling_and_results`` WDL workflow. This workflow acts on sample sets and so therefore this script also works on a sample set. This script is called in the ``parse_nextclade`` task within the workflow which can be seen in the ``SC2_lineage_calling_and_results.wdl`` workflow diagram in the README.md one directory out. Briefly, the workflow concatentates all consesnus sequences of the samples in the sample set into a single fasta file (``concatenate`` task). The concatentated fasta file is run through nextclade which generates a ``nextclade.json`` file (``nextclade`` task). Within the ``nextclade.json`` file is data for each sample consensus sequence inlcuding the nextclade clade designation, AA substitutions, deletions, insertions, etc. Generally, this script reads in the ``nextclade.json`` file, parses the json file to extract the data of interest, formats the data into a table and saves it as a csv file.
@@ -102,12 +119,11 @@ There are two outputs from this script, each accomplished from a seperate functi
 
   - total_AA_deletions: number of AA deletions in teh consensus genome
 
-</details>  
 
-## concat_seq_metrics_and_lineage_results.py
 
-<details>
-<summary>click to expand</summary>
+## concat-seq-metrics-and-lineage-results-py
+
+
 
 ### overview
 This script is called in the ``SC2_lineage_calling_and_results`` WDL workflow. This workflow acts on sample sets and so therefore this script also works on a sample set. This script is called in the ``results_table`` task within the workflow which can be seen in the ``SC2_lineage_calling_and_results.wdl`` workflow diagram in the README.md one directory out. Generally, this script pulls together a bunch of metadata and data regarding the consensus sequence and outputs the data in csv file.  
@@ -137,6 +153,7 @@ The script takes the following inputs:
 ### outputs
 There are three outputs from this script. Example outputs can be found in the example data directory within this repo.   
 1. ``{seq_run}_sequencing_results.csv``: summary of sequencing metrics for all samples within the sample set. Below is a table of the column headers and their description. There are a lot; we sort of just keep adding on.
+
 |column header name| description |
 |------------|-----------|
 |``accession_id``| sample name|
@@ -185,56 +202,7 @@ There are three outputs from this script. Example outputs can be found in the ex
 |``analysis_date``|date assembly workflow ran|
 
 
-2. ``{seq_run}_assembly_metrics.csv``: summary of sequencing metrics for all samples within the sample set. Very similiar to ``{seq_run}_sequencing_results.csv`` with a few less columns. For internal use to pull data from bucket. Below is a table of the column headers and their description.
-
-  |column header name| description |
-  |------------|-----------|
-  |``accession_id``| sample name|
-  |``plate_name``| internal id given to the sequencing plate|
-  |``plate_sample_well``| well location of the sample on the sequencing plate|
-  |``primer_set``|name of primer set used for tiled amplicon squenicng (Artic V3, Artic V4, Artic V4.1, Midnight or COVIDSeqV3)|
-  |``percent_non_ambigous_bases``| percent coverage; the total proportion of the genome that is covered not including regions where an N is called for a basecall|
-  |``nextclade``| the nextclade clade assignment|
-  |``panoglin_lineage``| the pangolin lineage assignment|
-  |``assembler_version``|assembler software version (either bwa or minimpa depending on assembly workflow used)|
-  |``omicron_spike_mutations``| list of spike mutations in the spike gene sequence that correspond to key omircon mutations identified in the sample consensus seqeunce|
-  |``delta_plus_spike_mutations``|list of spike mutations in the spike gene sequence that correspond to the ky delta plus mutations identified in the sample consensus sequence|
-  |``spike_mutations``| list of spike muations in the spike gene squence that correspond to key spike mutations identified in the sample consensus sequence (this column was created prior to VOCs and inlcudes spike mutatuations we were watching and has not been updated since)|
-  |``total_nucleotide_mutations``|number of SNPs in the consensus sequence genome|
-  |``total_AA substitutions``|number of amino acid substitions in the consensus sequence genome|
-  |``total_AA_deletions``|number of deletions in the consensus sequence genome|
-  |``mean_depth``| average number of reads per nucleotide site in the the conesnus sequnce genome|
-  |``number_aligned_bases``| total number of bases aligned to the refernece genome (including Ns; so pretty much tells you how much was cut of the ends of the genome)|
-  |``number_non_ambious_bases``|total number of non-N bases in the conesnus genome sequence|
-  |``number_seqs_in_fasta``|total number of sequences in the concensus fasta - should always be 1|
-  |``total_nucleotide_deletions``|number of deletions in the consensus genome sequence|
-  |``total_nucleotide_insertions``|number of insertions in the consensus genome seqeunce|
-  |``num_reads``|total sequencing reads|
-  |``mean_base_quality``|mean quality score across all reads|
-  |``mean_map_quality``|mean mapping quality score for reads mapping to reference genome sequence|
-  |``number_N_bases``|number of bases called as N in the consensus genome sequence|
-  |``nextclade_version``|nextclade version|
-  |``panolgin_version``| pangolin version|
-  |``pangoLEARN_conflict``|from pangolin lineage report file|
-  |``pangolin_ambiguity_score``|from pangolin lineage report file|
-  |``pangolin_scorpio_call``|from pangolin lineage report file|
-  |``pangolin_scropio_support``|from pangolin lineage report file|
-  |``pangolin_scropio_conflict``|from pangolin lineage report file|
-  |``panoglin_scorpio_notes``|from pangolin lineage report file|
-  |``pangolin_designation_Version``|from pangolin lineage report file|
-  |``pangolin_scorpio_version``|from pangolin lineage report file|
-  |``pangolin_constellation_version``|from pangolin lineage report file|
-  |``pngolin_is_designated``|from pangolin lineage report file|
-  |``pangolin_qc_status``|from pangolin lineage report file|
-  |``pangolin_qc_notes``|from pangolin lineage report file|
-  |``panoglin_note``|from pangolin lineage report file|
-  |``seq_run``|sequencing run name|
-  |``tech_platform``|seuqencing platform (e.g. Illumina MiSeq, Illumina NextSeq, Oxford Nanopore GridION)|
-  |``read_type``| single or paired end|
-  |``fasta_header``|name of the fasta header for gisaid submission (e.g. CO-CDPHE-{accession_id})|
-  |``analysis_date``|date assembly workflow ran|
-
-3. ``{seq_run}_wgs_horizon_report.csv``: for internal use, parsing sequencing results into LIMS.Below is a table of the column headers and their description.
+2. ``{seq_run}_wgs_horizon_report.csv``: for internal use, parsing sequencing results into LIMS.Below is a table of the column headers and their description.
 |column header name| description |
 |------------|-----------|
 |``accession_id``| sample name|
@@ -245,12 +213,11 @@ There are three outputs from this script. Example outputs can be found in the ex
 |``Run_Date``| date assembly workflow ran|
 |``pangoLEARN_version``| this column is also not used but we have to keep it|
 
-</details>
+
 
 ## details about working with sample sets
 (so it's written down somewhere and I don't forget)
-<details>
-<summary>click to expand</summary>
+
 
 Here I describe a way to create a single summary data table output for sample sets using a wwdl workflow in terra. (It's a bit clunkly but seems to work). Essentially this method enables one to create python lists from the columns in the terra data table when workflows are run as a sample set. The easiest way to explain this is with an example.
 
@@ -265,4 +232,3 @@ with open(plate_name_file_list) as f:
 
 Similiarly in some cases, instead of string variables being stored in a column wihtin the terra data table, file paths are stored (ie. the data type is a ``File`` or ``Array[File]`` in the case of sample sets). For example, in the ``concat_seq_metrics_and_lineage_results.py``, there is the input flag ``--percent_cvg_file_list``. As input for this flag I use ``${write_lines(percent_cvg_csv_non_empty)}``, where the percent_cvg_csv_non_empty variable corresponds to the column percent_cvg_csv. (note the non-empty part just means that the variable may be empty for some samples in the terra data table. To set the variable as input at the begining of the wdl I use: ``Array[File?] percent_cvg_csv``). Similiarly as above, the script will create a list of file paths from the text file. The script can then loop through the list of file paths, open each file, extract the data from that file, and store it in a list or other dataframe to be written out.
 
-</details>

@@ -15,7 +15,7 @@ workflow SC2_lineage_calling_and_results {
         # Array[String] tech_platform
         # Array[String] read_type
         Array[String?] assembler_version
-        Array[File] workbook_path
+        Array[File] workbook_path_array
 
         # python scripts
         File nextclade_json_parser_py
