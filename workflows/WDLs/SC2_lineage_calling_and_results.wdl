@@ -272,7 +272,7 @@ task results_table {
 
 task transfer {
     input {
-        Array[String] out_dir
+        String out_dir
         File cat_fastas
         File pangolin_lineage
         File nextclade_json
