@@ -27,7 +27,7 @@ workflow SC2_lineage_calling_and_results {
 
     # secret variables - for static values convert from array to single entity
     String project_name = project_name_array[0]
-    File workbook_path = workbook_path_array[0]
+    File workbook_path = select_all(workbook_path_array)[0]
     String assembler_version = select_all(assembler_version_array)[0]
     String out_dir = out_dir_array[0]
 
@@ -70,7 +70,8 @@ workflow SC2_lineage_calling_and_results {
         nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
-        assembler_version= assembler_version
+        assembler_version= assembler_version,
+        workbook_path = workbook_path
 
     }
 
