@@ -3,7 +3,7 @@ version 1.0
 workflow SC2_illumina_pe_assembly {
 
     input {
-        String    sample_id
+        String  sample_id
         File    fastq_1
         File    fastq_2
         File    primer_bed
@@ -11,6 +11,7 @@ workflow SC2_illumina_pe_assembly {
         File    covid_genome
         File    covid_gff
         File    preprocess_python_script
+        File    s_gene_amplicons
     }
 
     call seqyclean {
@@ -66,7 +67,9 @@ workflow SC2_illumina_pe_assembly {
     call bam_stats {
         input:
             sample_id = sample_id,
-            bam = ivar_trim.trimsort_bam
+            bam = ivar_trim.trimsort_bam,
+            bai = ivar_trim.trimsort_bamindex,
+            s_gene_amplicons = s_gene_amplicons
     }
 
     call rename_fasta {
@@ -105,6 +108,8 @@ workflow SC2_illumina_pe_assembly {
         File stats_out = bam_stats.stats_out
         File covhist_out = bam_stats.covhist_out
         File cov_out = bam_stats.cov_out
+        File cov_s_gene_out = bam_stats.cov_s_gene_out
+        File cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         String assembler_version = align_reads.assembler_version
@@ -295,7 +300,6 @@ task ivar_var {
 task ivar_consensus {
 
     input {
-
         String sample_id
         File ref
         File bam
@@ -310,9 +314,7 @@ task ivar_consensus {
     }
 
     output {
-
         File consensus_out = "${sample_id}_consensus.fa"
-
     }
 
     runtime {
@@ -329,19 +331,47 @@ task ivar_consensus {
 task bam_stats {
 
     input {
-
         String sample_id
         File bam
+        File bai
+        File s_gene_amplicons
     }
 
-    command {
+    command <<<
 
-        samtools flagstat ${bam} > ${sample_id}_flagstat.txt
-        samtools stats ${bam} > ${sample_id}_stats.txt
-        samtools coverage -m -o ${sample_id}_coverage_hist.txt ${bam}
-        samtools coverage -o ${sample_id}_coverage.txt ${bam}
+        samtools flagstat ~{bam} > ~{sample_id}_flagstat.txt
+        samtools stats ~{bam} > ~{sample_id}_stats.txt
+        samtools coverage -m -o ~{sample_id}_coverage_hist.txt ~{bam}
+        samtools coverage -o ~{sample_id}_coverage.txt ~{bam}
 
-    }
+        # Calculate depth of coverage over entire S gene
+        echo "Calculating overall S gene depth"
+        samtools coverage --region MN908947.3:21,563-25,384 \
+            -o ~{sample_id}_S_gene_coverage.txt ~{bam}
+
+        # Calculate depth of coverage over S gene amplicon regions (excludes overlapping regions with adjacent amplicons)
+        echo "calculating depths for ~{s_gene_amplicons}"
+        {
+            s_gene_depths="~{sample_id}_S_gene_depths.tsv"
+
+            # write header line to s_gene_depths output file
+            read header
+            echo -e "${header}\tdepth" | tee $s_gene_depths
+
+            # write amplicon info and depths to output file
+            IFS=$'\t'
+            while read amplicon coords description; do
+                line=$(echo -e "${amplicon}\t${coords}\t${description}\t")
+
+                # extract mean amplicon depth from samtools coverage output
+                line+=$(samtools coverage --region MN908947.3:${coords} ~{bam} \
+                            | cut -f 7 | sed '2q;d')
+
+                echo -e "$line" | tee -a $s_gene_depths
+            done
+        } < ~{s_gene_amplicons}
+
+    >>>
 
     output {
 
@@ -349,6 +379,8 @@ task bam_stats {
         File stats_out  = "${sample_id}_stats.txt"
         File covhist_out  = "${sample_id}_coverage_hist.txt"
         File cov_out  = "${sample_id}_coverage.txt"
+        File cov_s_gene_out = "${sample_id}_S_gene_coverage.txt"
+        File cov_s_gene_amplicons_out = "${sample_id}_S_gene_depths.tsv"
 
     }
 
@@ -359,7 +391,7 @@ task bam_stats {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.10"
+        docker:    "staphb/samtools:1.16"
     }
 }
 
