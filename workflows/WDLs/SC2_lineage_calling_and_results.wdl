@@ -257,8 +257,8 @@ task results_table {
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results.csv")
-        File wgs_horizon_report_csv = "{project_name}_wgs_horizon_report.csv")
+        File sequencing_results_csv = "~{project_name}_sequencing_results.csv"
+        File wgs_horizon_report_csv = "~{project_name}_wgs_horizon_report.csv"
     }
 
     runtime {

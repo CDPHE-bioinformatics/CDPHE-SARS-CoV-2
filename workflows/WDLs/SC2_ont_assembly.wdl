@@ -5,7 +5,7 @@ workflow SC2_ont_assembly {
     input {
         String    gcs_fastq_dir
         String    sample_name
-        String    barcode
+        String    index_1_id
         String    primer_set
         File    covid_genome
         File    primer_bed
@@ -23,12 +23,12 @@ workflow SC2_ont_assembly {
     call Demultiplex {
         input:
             fastq_files = ListFastqFiles.fastq_files,
-            barcode = barcode
+            index_1_id = index_1_id
     }
     call Read_Filtering {
         input:
             fastq_files = Demultiplex.guppy_demux_fastq,
-            barcode = barcode,
+            index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
     }
@@ -36,7 +36,7 @@ workflow SC2_ont_assembly {
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
             sample_name = sample_name,
-            barcode = barcode,
+            index_1_id = index_1_id,
             primer_bed = primer_bed
     }
     call Bam_stats {
@@ -44,14 +44,14 @@ workflow SC2_ont_assembly {
             bam = Medaka.trimsort_bam,
             bai = Medaka.trimsort_bai,
             sample_name = sample_name,
-            barcode = barcode,
+            index_1_id = index_1_id,
             s_gene_amplicons = s_gene_amplicons
             
     }
     call Scaffold {
         input:
             sample_name = sample_name,
-            barcode = barcode,
+            index_1_id = index_1_id,
             ref = covid_genome,
             fasta = Medaka.consensus
     }
@@ -78,7 +78,7 @@ workflow SC2_ont_assembly {
     }
 
     output {
-        File barcode_summary = Demultiplex.barcode_summary
+        File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
@@ -129,7 +129,7 @@ task ListFastqFiles {
 task Demultiplex {
     input {
         Array[File] fastq_files
-        String barcode
+        String index_1_id
     }
 
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
@@ -139,13 +139,13 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
+        guppy_index_1_idr --require_index_1_ids_both_ends --index_1_id_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
     output {
-        Array[File] guppy_demux_fastq = glob("demux_fastq/${barcode}/*.fastq")
-        File barcode_summary = "demux_fastq/barcoding_summary.txt"
+        Array[File] guppy_demux_fastq = glob("demux_fastq/${index_1_id}/*.fastq")
+        File index_1_id_summary = "demux_fastq/barcoding_summary.txt"
     }
 
     runtime {
@@ -161,7 +161,7 @@ task Demultiplex {
 task Read_Filtering {
     input {
         Array[File] fastq_files 
-        String barcode
+        String index_1_id
         String sample_name
         String primer_set
     }
@@ -174,12 +174,12 @@ task Read_Filtering {
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
         
-        artic guppyplex --min-length 400 --max-length ~{max_length} --directory fastq_files --output ~{sample_name}_~{barcode}.fastq
+        artic guppyplex --min-length 400 --max-length ~{max_length} --directory fastq_files --output ~{sample_name}_~{index_1_id}.fastq
 
     >>>
 
     output {
-        File guppyplex_fastq = "${sample_name}_${barcode}.fastq"
+        File guppyplex_fastq = "${sample_name}_${index_1_id}.fastq"
     }
 
     runtime {
@@ -193,7 +193,7 @@ task Read_Filtering {
 
 task Medaka {
     input {
-        String barcode
+        String index_1_id
         String sample_name
         File filtered_reads
         File primer_bed
@@ -206,17 +206,17 @@ task Medaka {
         cp ~{primer_bed} ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.scheme.bed
         
         artic -v > VERSION
-        artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_name}_~{barcode}
+        artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_name}_~{index_1_id}
 
     >>>
 
     output {
-        File consensus = "${sample_name}_${barcode}.consensus.fasta"
-        File sorted_bam = "${sample_name}_${barcode}.trimmed.rg.sorted.bam"
-        File trimsort_bam = "${sample_name}_${barcode}.primertrimmed.rg.sorted.bam"
-        File trimsort_bai = "${sample_name}_${barcode}.primertrimmed.rg.sorted.bam.bai"
-        File variants = "${sample_name}_${barcode}.pass.vcf.gz"
-        File variants_index = "${sample_name}_${barcode}.pass.vcf.gz.tbi"
+        File consensus = "${sample_name}_${index_1_id}.consensus.fasta"
+        File sorted_bam = "${sample_name}_${index_1_id}.trimmed.rg.sorted.bam"
+        File trimsort_bam = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam"
+        File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
+        File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
+        File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String assembler_version = read_string("VERSION")
     }
 
@@ -232,7 +232,7 @@ task Medaka {
 task Bam_stats {
     input {
         String sample_name
-        String barcode
+        String index_1_id
         File bam
         File bai
         File s_gene_amplicons
@@ -242,20 +242,20 @@ task Bam_stats {
 
     command <<<
 
-        samtools flagstat ~{bam} > ~{sample_name}_~{barcode}_flagstat.txt
+        samtools flagstat ~{bam} > ~{sample_name}_~{index_1_id}_flagstat.txt
 
-        samtools stats ~{bam} > ~{sample_name}_~{barcode}_stats.txt
+        samtools stats ~{bam} > ~{sample_name}_~{index_1_id}_stats.txt
 
-        samtools coverage -m -o ~{sample_name}_~{barcode}_coverage_hist.txt ~{bam}
+        samtools coverage -m -o ~{sample_name}_~{index_1_id}_coverage_hist.txt ~{bam}
 
 
-        samtools coverage -o ~{sample_name}_~{barcode}_coverage.txt ~{bam}
+        samtools coverage -o ~{sample_name}_~{index_1_id}_coverage.txt ~{bam}
 
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
         samtools coverage --region MN908947.3:21,563-25,384 \
-            -o ~{sample_name}_~{barcode}_S_gene_coverage.txt ~{bam}
+            -o ~{sample_name}_~{index_1_id}_S_gene_coverage.txt ~{bam}
 
         # Calculate depth of coverage over S gene amplicon regions (excludes overlapping regions with adjacent amplicons)
         echo "calculating depths for ~{s_gene_amplicons}"
@@ -283,11 +283,11 @@ task Bam_stats {
 
     output {
 
-        File flagstat_out  = "${sample_name}_${barcode}_flagstat.txt"
-        File stats_out  = "${sample_name}_${barcode}_stats.txt"
-        File covhist_out  = "${sample_name}_${barcode}_coverage_hist.txt"
-        File cov_out  = "${sample_name}_${barcode}_coverage.txt"
-        File cov_s_gene_out = "${sample_name}_${barcode}_S_gene_coverage.txt"
+        File flagstat_out  = "${sample_name}_${index_1_id}_flagstat.txt"
+        File stats_out  = "${sample_name}_${index_1_id}_stats.txt"
+        File covhist_out  = "${sample_name}_${index_1_id}_coverage_hist.txt"
+        File cov_out  = "${sample_name}_${index_1_id}_coverage.txt"
+        File cov_s_gene_out = "${sample_name}_${index_1_id}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
     }
 
@@ -305,7 +305,7 @@ task Bam_stats {
 task Scaffold {
     input {
         String sample_name
-        String barcode
+        String index_1_id
         File fasta
         File ref
     }
@@ -314,12 +314,12 @@ task Scaffold {
 
     command {
 
-        pyScaf.py -f ${fasta} -o ${sample_name}_${barcode}_consensus_scaffold.fa -r ${ref}
+        pyScaf.py -f ${fasta} -o ${sample_name}_${index_1_id}_consensus_scaffold.fa -r ${ref}
 
     }
 
     output {
-        File scaffold_consensus = "${sample_name}_${barcode}_consensus_scaffold.fa"
+        File scaffold_consensus = "${sample_name}_${index_1_id}_consensus_scaffold.fa"
     }
 
     runtime {
