@@ -26,7 +26,7 @@ import re
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
 
-    parser.add_argument('--sample_id_array')
+    parser.add_argument('--sample_name_array')
     parser.add_argument('--workbook_path')
     parser.add_argument("--cov_out_files",  help= "txt file with list of bam file paths")
     parser.add_argument('--percent_cvg_files', help = 'txt file with list of percent cvg file paths')
@@ -35,6 +35,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument('--nextclade_clades_csv', help = 'csv output from nextclade parser')
     parser.add_argument('--nextclade_variants_csv')
     parser.add_argument('--nextclade_version')
+    parser.add_argument('--project_name')
 
     options = parser.parse_args(args)
     return options
@@ -52,7 +53,7 @@ def concat_cov_out(cov_out_file_list):
 
      # initiate dataframe for concatenation
     df = pd.DataFrame()
-    sample_id_list = []
+    sample_name_list = []
     samtools_mapped_reads_list = []
     samtools_depth_list = []
     samtools_baseq_list = []
@@ -63,10 +64,10 @@ def concat_cov_out(cov_out_file_list):
         d = pd.read_csv(file, sep = '\t')
         if re.search('barcode', file):
             # for nanopore runs
-            sample_id = re.findall('/([0-9a-zA-Z_\-\.]+)_barcode', file)[0]
+            sample_name = re.findall('/([0-9a-zA-Z_\-\.]+)_barcode', file)[0]
         else:
             # for illumina runs
-            sample_id = re.findall('/([0-9a-zA-Z_\-\.]+)_coverage.txt', file)[0]
+            sample_name = re.findall('/([0-9a-zA-Z_\-\.]+)_coverage.txt', file)[0]
 
         # pull data from samtools output
         num_reads = d.numreads[0]
@@ -74,13 +75,13 @@ def concat_cov_out(cov_out_file_list):
         baseq = d.meanbaseq[0]
         mapq = d.meanmapq[0]
 
-        sample_id_list.append(sample_id)
+        sample_name_list.append(sample_name)
         samtools_mapped_reads_list.append(num_reads)
         samtools_depth_list.append(depth)
         samtools_baseq_list.append(baseq)
         samtools_mapq_list.append(mapq)
 
-    df['sample_id'] = sample_id_list
+    df['sample_name'] = sample_name_list
     df['mapped_reads'] = samtools_mapped_reads_list
     df['mean_depth'] = samtools_depth_list
     df['mean_base_quality'] = samtools_baseq_list
@@ -93,37 +94,90 @@ def concat_percent_cvg(percent_cvg_file_list):
     df_list = []
     for file in percent_cvg_file_list:
         d = pd.read_csv(file, dtype = {'accession_id' : object})
-        d = d.rename(columns = {'accession_id' : 'sample_id'})
+        d = d.rename(columns = {'accession_id' : 'sample_name'})
         df_list.append(d)
 
     df = pd.concat(df_list)
 
     return df
 
+def get_df_spike_mutations(variants_csv):
 
-def concat_results(sample_id_list, workbook_path, project_name, 
+    def get_sample_name(fasta_header):
+        sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
+        return sample_name 
+    
+    # read in variants file
+    variants = pd.read_csv(variants_csv, dtype = {'accession_id' : object})
+    variants = variants.rename(columns = {'sample_name' : 'fasta_header'})
+
+    variants['sample_name'] = variants.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
+    variants = variants.drop(columns = 'fasta_header')
+
+    #### filter variants for spike protein varaints in rbd and pbcs #####
+    crit = variants.gene == 'S'
+    critRBD = (variants.codon_position >= 461) & (variants.codon_position <= 509)
+    critPBCS = (variants.codon_position >= 677) & (variants.codon_position <= 694)
+    crit732 = variants.codon_position == 732
+    crit452 = variants.codon_position == 452
+    crit253 = variants.codon_position == 253
+    crit13 = variants.codon_position == 13
+    crit145 = variants.codon_position == 145 # delta plus AY.4.2
+    crit222 = variants.codon_position == 222 # delta plus AY.4.2
+    critdel = variants.variant_name.str.contains('del') # mainly for 69/70 del
+
+    spike_variants_df = variants[crit & (critRBD | critPBCS | crit732 | critdel | crit452 | crit253 | crit13 | crit145 | crit222)]
+
+    # generate a df of the sample and their spike variants
+    sample_name_list = spike_variants_df.sample_name.unique().tolist()
+
+    df = pd.DataFrame()
+    sample_name_list = []
+    variant_name_list = []
+
+    seperator = '; '
+
+    for sample_name in sample_name_list:
+        sample_name_list.append(sample_name)
+
+        crit = spike_variants_df.sample_name == sample_name
+        f = spike_variants_df[crit]
+        f = f.reset_index()
+
+        mutations = []
+        for row in range(f.shape[0]):
+            mutations.append(f.variant_name[row])
+        mutations_string = seperator.join(mutations)
+        variant_name_list.append(mutations_string)
+
+    df['sample_name'] = sample_name_list
+    df['spike_mutations'] = variant_name_list
+
+    return df
+
+def concat_results(sample_name_list, workbook_path, project_name, 
                    assembler_version, pangolin_lineage_csv,
                     nextclade_clades_csv, nextclade_version,
-                   cov_out_df, percent_cvg_df):
+                   cov_out_df, percent_cvg_df, spike_variants_df):
 
     # set some functions for getting data formatted
-    def get_sample_id_from_fasta_header(fasta_header):
-        sample_id = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
-        return sample_id
+    def get_sample_name_from_fasta_header(fasta_header):
+        sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
+        return sample_name
 
-    def create_fasta_header(sample_id):
-        return 'CO-CDPHE-%s' % sample_id
+    def create_fasta_header(sample_name):
+        return 'CO-CDPHE-%s' % sample_name
     
     # create dataframe and fill with constant strings
     df = pd.DataFrame()
-    df['sample_id'] = sample_id_list
-    df = df.set_index('sample_id')
+    df['sample_name'] = sample_name_list
+    df = df.set_index('sample_name')
     df['analysis_date'] = str(date.today())
     df['assembler_version'] = assembler_version
 
     # read in workbook
     workbook = pd.read_csv(workbook_path, sep = '\t')
-    workbook = workbook.set_index('sample_id')
+    workbook = workbook.set_index('sample_name')
 
     # read in panlogin results
     pangolin = pd.read_csv(pangolin_lineage_csv, dtype = {'taxon' : object})
@@ -143,26 +197,26 @@ def concat_results(sample_id_list, workbook_path, project_name,
                                           'qc_notes' : 'pangolin_qc_notes',
                                           'note' : 'pangolin_note'})
 
-    sample_id = pangolin.apply(lambda x:get_sample_id_from_fasta_header(x.fasta_header), axis = 1)
-    pangolin.insert(value = sample_id, column = 'sample_id', loc = 0)
+    sample_name = pangolin.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
+    pangolin.insert(value = sample_name, column = 'sample_name', loc = 0)
     pangolin = pangolin.drop(columns = 'fasta_header')
-    pangolin = pangolin.set_index('sample_id')
+    pangolin = pangolin.set_index('sample_name')
 
 
     # read in nextclade csv
     nextclade = pd.read_csv(nextclade_clades_csv, dtype = {'accession_id' : object})
     nextclade = nextclade.rename(columns = {'accession_id' : 'fasta_header'})
-    sample_id = nextclade.apply(lambda x:get_sample_id_from_fasta_header(x.fasta_header), axis = 1)
-    nextclade.insert(value = sample_id, column = 'sample_id', loc = 0)
+    sample_name = nextclade.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
+    nextclade.insert(value = sample_name, column = 'sample_name', loc = 0)
     nextclade = nextclade.drop(columns = 'fasta_header')
     nextclade['nextclade_version'] = nextclade_version
-    nextclade = nextclade.set_index('sample_id')
+    nextclade = nextclade.set_index('sample_name')
 
 
     # set index on the samtools_df and percent_cvg_df and variants_df to prepare for joining
-    cov_out_df = cov_out_df.set_index('sample_id')
-    percent_cvg_df = percent_cvg_df.set_index('sample_id')
-    # spike_mut_df = spike_mut_df.set_index('sample_id')
+    cov_out_df = cov_out_df.set_index('sample_name')
+    percent_cvg_df = percent_cvg_df.set_index('sample_name')
+    spike_variants_df = spike_variants_df.set_index('sample_name')
 
 
     # join
@@ -171,17 +225,29 @@ def concat_results(sample_id_list, workbook_path, project_name,
     j = j.join(samtools_df, how = 'left')
     j = j.join(nextclade, how = 'left')
     j = j.join(pangolin, how = 'left')
-    j = j.join(spike_mut_df, how = 'left')
+    j = j.join(spike_variants_df, how = 'left')
     j = j.reset_index()
 
     # add fasta header
-    j['fasta_header'] = j.apply(lambda x:create_fasta_header(x.sample_id), axis=1)
+    j['fasta_header'] = j.apply(lambda x:create_fasta_header(x.sample_name), axis=1)
+
+    # add assembled column and fill in failed assembles with 0% coveage
+    j.percent_coverage = j.perecent_coverage.fillna(value = 0)
+
+    def get_assembly_pass(percent_coverage):
+        if percent_coverage == 0:
+            return False
+        if percent_coverage > 0:
+            return True      
+    j['assembly_pass'] = j.apply(lambda x:get_assembly_pass(x.percent_coverage), axis = 1)
 
     # order columns
     columns = j.columns
     columns.sort()
-    primary_columns = ['hsn', 'sample_id', 'project_name', 'plate_name', 'run_name', 'analysis_date', 'run_date',
-                 'percent_coverage', 'nextclade', 'pangolin_lineage', 'expanded_lineage']
+    primary_columns = ['hsn', 'sample_name', 'project_name', 'plate_name', 
+                       'run_name', 'analysis_date', 'run_date', 'assembly_pass', 
+                 'percent_coverage', 'nextclade', 'pangolin_lineage', 
+                 'expanded_lineage', 'spike_mutations']
     for column in columns:
          if column not in primary_columns:
               primary_columns.append(column)
@@ -193,9 +259,9 @@ def concat_results(sample_id_list, workbook_path, project_name,
 #     j.spike_mutations = j.spike_mutations.fillna(value = '')
 #     j.nextclade = j.nextclade.fillna(value = '')
 #     j.nextclade_version = j.nextclade_version.fillna(value = next_version)
-    j.pangolin_lineage = j.pangolin_lineage.fillna(value = 'not assembled')
-    j.expanded_lineage = j.expanded_lineage.fillna(value = 'not assembled')
-    j.percent_non_ambigous_bases = j.percent_non_ambigous_bases.fillna(value = 0)
+    # j.pangolin_lineage = j.pangolin_lineage.fillna(value = 'not assembled')
+    # j.expanded_lineage = j.expanded_lineage.fillna(value = 'not assembled')
+    # j.percent_non_ambigous_bases = j.percent_non_ambigous_bases.fillna(value = 0)
 #     j.mean_depth = j.mean_depth.fillna(value = 0)
 #     j.number_aligned_bases = j.number_aligned_bases.fillna(value = 0)
 #     j.number_seqs_in_fasta = j.number_seqs_in_fasta.fillna(value = 0)
@@ -238,11 +304,12 @@ if __name__ == '__main__':
 
     options = getOptions()
 
-    sample_id_array = options.sample_id_array
+    sample_name_array = options.sample_name_array
     workbook_path = options.workbook_path
     cov_out_files = options.cov_out_files
     percent_cvg_files = options.percent_cvg_files
     assembler_version = options.assembler_version
+    project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
     pangolin_version = options.pangolin_version
@@ -252,19 +319,19 @@ if __name__ == '__main__':
     nextclade_version = options.nextclade_version
 
     # create lists from the column table txt file input
-    sample_id_list = create_list_from_write_lines_input(write_lines_input=sample_id_array)
+    sample_name_list = create_list_from_write_lines_input(write_lines_input=sample_name_array)
     cov_out_file_list = create_list_from_write_lines_input(write_lines_input = cov_out_files)
     percent_cvg_file_list = create_list_from_write_lines_input(write_lines_input=percent_cvg_files)
     
-    # get project_name
-    project_name = get_project_name(workbook_path=workbook_path)
-
     # concat cov_out files and percent_cvg files
     cov_out_df = concat_cov_out(cov_out_file_list=cov_out_file_list)
     percent_cvg_df = concat_percent_cvg(percent_cvg_file_list=percent_cvg_file_list)
 
+    # get df of relavant spike mutations (inlcuding 69/70 del) from nextclade file
+    spike_variants_df = get_df_spike_mutations(variants_csv = nextclade_variants_csv)
+
     # create results file
-    results_df = concat_results(sample_id_list = sample_id_list,
+    results_df = concat_results(sample_name_list = sample_name_list,
                                 workbook_path = workbook_path,
                                 project_name = project_name,
                                 assembler_version = assembler_version,
@@ -272,14 +339,15 @@ if __name__ == '__main__':
                                 nextclade_clades_csv=nextclade_clades_csv,
                                 nextclade_version=nextclade_version,
                                 cov_out_df=cov_out_df,
-                                percent_cvg_df=percent_cvg_df)
+                                percent_cvg_df=percent_cvg_df, 
+                                spike_variants_df = spike_variants_df)
     
     # create wgs horizon output
     make_wgs_horizon_output(project_name = project_name,
                             results_df=results_df)
     
 
-
+    print('DONE!')
 
 
 #def get_df_spike_mutations(variants_csv):

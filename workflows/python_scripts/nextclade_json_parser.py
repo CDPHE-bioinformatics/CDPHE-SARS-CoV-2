@@ -26,16 +26,16 @@ import argparse
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument("--nextclade_json",  help="nextclade json file")
-    parser.add_argument('--seq_run_file_list')
+    parser.add_argument('--project_name')
     options = parser.parse_args(args)
     return options
 
 
-def extract_variant_list(json_path, seq_run_file_list):
+def extract_variant_list(json_path, project_name):
 
     # create pd data frame to fill
     df = pd.DataFrame()
-    accession_id_list = []
+    sample_name_list = []
     mutation_list = []
     gene_list = []
     refAA_list = []
@@ -63,7 +63,7 @@ def extract_variant_list(json_path, seq_run_file_list):
 
                 mutation = '%s_%s%d%s' % (gene, refAA, pos, altAA)
                 
-                accession_id_list.append(data['results'][i]['seqName'])
+                sample_name_list.append(data['results'][i]['seqName'])
                 mutation_list.append(mutation)
                 gene_list.append(gene)
                 refAA_list.append(refAA)
@@ -90,7 +90,7 @@ def extract_variant_list(json_path, seq_run_file_list):
 
                 mutation = '%s_%s%d%s' % (gene, refAA, pos, altAA)
                 
-                accession_id_list.append(data['results'][i]['seqName'])
+                sample_name_list.append(data['results'][i]['seqName'])
                 mutation_list.append(mutation)
                 gene_list.append(gene)
                 refAA_list.append(refAA)
@@ -114,7 +114,7 @@ def extract_variant_list(json_path, seq_run_file_list):
                 nuc_end = item['codonNucRange']['end']
 
                 mutation = '%s_%s%d%s' % (gene, refAA, pos, altAA)
-                accession_id_list.append(data['results'][i]['seqName'])
+                sample_name_list.append(data['results'][i]['seqName'])
                 mutation_list.append(mutation)
                 gene_list.append(gene)
                 refAA_list.append(refAA)
@@ -124,7 +124,7 @@ def extract_variant_list(json_path, seq_run_file_list):
                 nuc_end_list.append(nuc_end)
 
 
-    df['accession_id'] = accession_id_list
+    df['sample_name'] = sample_name_list
     df['variant_name'] = mutation_list
     df['gene'] = gene_list
     df['codon_position'] = codon_pos_list
@@ -133,29 +133,21 @@ def extract_variant_list(json_path, seq_run_file_list):
     df['start_nuc_pos'] = nuc_start_list
     df['end_nuc_pos'] = nuc_end_list
 
-        
-    seq_run_list = []
-    with open(seq_run_file_list, 'r') as f:
-        for line in f:
-            seq_run_list.append(line.strip())
-        
-    path = '%s_nextclade_variant_summary.csv' % seq_run_list[0]
+    # save df    
+    path = f'{project_name}_nextclade_variant_summary.csv' 
     df.to_csv(path, index=False)
     
     
-def get_nextclade(json_path, seq_run_file_list):
+def get_nextclade(json_path, project_name):
 
     # create pd data frame to fill
-    accession_id_list = []
+    sample_name_list = []
     clade_list = []
     totalSubstitutions_list = []
     totalDeletions_list = []
     totalInsertions_list = []
     totalAASubstitutions_list = []
     totalAADeletions_list = []
-    
-    
-    
     df = pd.DataFrame()
 
     with open(json_path) as f:
@@ -163,7 +155,7 @@ def get_nextclade(json_path, seq_run_file_list):
 
     for i in range(len(data['results'])):
         if 'clade' in data['results'][i].keys():
-            accession_id_list.append(data['results'][i]['seqName'])
+            sample_name_list.append(data['results'][i]['seqName'])
             clade_list.append(data['results'][i]['clade'])
             totalSubstitutions_list.append(data['results'][i]['totalSubstitutions'])
             totalDeletions_list.append(data['results'][i]['totalDeletions'])
@@ -172,7 +164,7 @@ def get_nextclade(json_path, seq_run_file_list):
             totalAADeletions_list.append(data['results'][i]['totalAminoacidDeletions'])
             
 
-    df['accession_id'] = accession_id_list
+    df['sample_name'] = sample_name_list
     df['nextclade'] = clade_list
     df['total_nucleotide_mutations'] = totalSubstitutions_list
     df['total_nucleotide_deletions'] = totalDeletions_list
@@ -180,18 +172,17 @@ def get_nextclade(json_path, seq_run_file_list):
     df['total_AA_substitutions'] = totalAASubstitutions_list
     df['total_AA_deletions'] = totalAADeletions_list
     
-    seq_run_list = []
-    with open(seq_run_file_list, 'r') as f:
-        for line in f:
-            seq_run_list.append(line.strip())
-
-    path = '%s_nextclade_results.csv' % seq_run_list[0]
+    # save df to file
+    path = f'{project_name}_nextclade_results.csv' 
     df.to_csv(path, index = False)
 
     
 if __name__ == '__main__':
     
     options = getOptions()
-    get_nextclade(json_path = options.nextclade_json, seq_run_file_list = options.seq_run_file_list)
-    extract_variant_list(json_path = options.nextclade_json, seq_run_file_list = options.seq_run_file_list)
+    nextclade_json = options.nextclade_json
+    project_name = options.project_name
+
+    get_nextclade(json_path = nextclade_json, project_name = project_name)
+    extract_variant_list(json_path = nextclade_json, project_name = project_name)
         

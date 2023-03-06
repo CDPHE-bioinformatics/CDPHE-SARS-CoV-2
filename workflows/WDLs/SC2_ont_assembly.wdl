@@ -4,7 +4,7 @@ workflow SC2_ont_assembly {
 
     input {
         String    gcs_fastq_dir
-        String    sample_id
+        String    sample_name
         String    barcode
         String    primer_set
         File    covid_genome
@@ -29,13 +29,13 @@ workflow SC2_ont_assembly {
         input:
             fastq_files = Demultiplex.guppy_demux_fastq,
             barcode = barcode,
-            sample_id = sample_id,
+            sample_name = sample_name,
             primer_set = primer_set
     }
     call Medaka {
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
-            sample_id = sample_id,
+            sample_name = sample_name,
             barcode = barcode,
             primer_bed = primer_bed
     }
@@ -43,14 +43,14 @@ workflow SC2_ont_assembly {
         input:
             bam = Medaka.trimsort_bam,
             bai = Medaka.trimsort_bai,
-            sample_id = sample_id,
+            sample_name = sample_name,
             barcode = barcode,
             s_gene_amplicons = s_gene_amplicons
             
     }
     call Scaffold {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             barcode = barcode,
             ref = covid_genome,
             fasta = Medaka.consensus
@@ -58,13 +58,13 @@ workflow SC2_ont_assembly {
 
     call rename_fasta {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             fasta = Scaffold.scaffold_consensus
     }
 
     call calc_percent_cvg {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             fasta = rename_fasta.renamed_consensus,
             calc_percent_coverage_py = calc_percent_coverage_py
     }
@@ -73,7 +73,7 @@ workflow SC2_ont_assembly {
         input:
             variants = Medaka.variants,
             variants_index = Medaka.variants_index,
-            sample_id = sample_id,
+            sample_name = sample_name,
             s_gene_primer_bed = s_gene_primer_bed
     }
 
@@ -162,7 +162,7 @@ task Read_Filtering {
     input {
         Array[File] fastq_files 
         String barcode
-        String sample_id
+        String sample_name
         String primer_set
     }
 
@@ -174,12 +174,12 @@ task Read_Filtering {
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
         
-        artic guppyplex --min-length 400 --max-length ~{max_length} --directory fastq_files --output ~{sample_id}_~{barcode}.fastq
+        artic guppyplex --min-length 400 --max-length ~{max_length} --directory fastq_files --output ~{sample_name}_~{barcode}.fastq
 
     >>>
 
     output {
-        File guppyplex_fastq = "${sample_id}_${barcode}.fastq"
+        File guppyplex_fastq = "${sample_name}_${barcode}.fastq"
     }
 
     runtime {
@@ -194,7 +194,7 @@ task Read_Filtering {
 task Medaka {
     input {
         String barcode
-        String sample_id
+        String sample_name
         File filtered_reads
         File primer_bed
     }
@@ -206,17 +206,17 @@ task Medaka {
         cp ~{primer_bed} ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.scheme.bed
         
         artic -v > VERSION
-        artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_id}_~{barcode}
+        artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_name}_~{barcode}
 
     >>>
 
     output {
-        File consensus = "${sample_id}_${barcode}.consensus.fasta"
-        File sorted_bam = "${sample_id}_${barcode}.trimmed.rg.sorted.bam"
-        File trimsort_bam = "${sample_id}_${barcode}.primertrimmed.rg.sorted.bam"
-        File trimsort_bai = "${sample_id}_${barcode}.primertrimmed.rg.sorted.bam.bai"
-        File variants = "${sample_id}_${barcode}.pass.vcf.gz"
-        File variants_index = "${sample_id}_${barcode}.pass.vcf.gz.tbi"
+        File consensus = "${sample_name}_${barcode}.consensus.fasta"
+        File sorted_bam = "${sample_name}_${barcode}.trimmed.rg.sorted.bam"
+        File trimsort_bam = "${sample_name}_${barcode}.primertrimmed.rg.sorted.bam"
+        File trimsort_bai = "${sample_name}_${barcode}.primertrimmed.rg.sorted.bam.bai"
+        File variants = "${sample_name}_${barcode}.pass.vcf.gz"
+        File variants_index = "${sample_name}_${barcode}.pass.vcf.gz.tbi"
         String assembler_version = read_string("VERSION")
     }
 
@@ -231,7 +231,7 @@ task Medaka {
 
 task Bam_stats {
     input {
-        String sample_id
+        String sample_name
         String barcode
         File bam
         File bai
@@ -242,25 +242,25 @@ task Bam_stats {
 
     command <<<
 
-        samtools flagstat ~{bam} > ~{sample_id}_~{barcode}_flagstat.txt
+        samtools flagstat ~{bam} > ~{sample_name}_~{barcode}_flagstat.txt
 
-        samtools stats ~{bam} > ~{sample_id}_~{barcode}_stats.txt
+        samtools stats ~{bam} > ~{sample_name}_~{barcode}_stats.txt
 
-        samtools coverage -m -o ~{sample_id}_~{barcode}_coverage_hist.txt ~{bam}
+        samtools coverage -m -o ~{sample_name}_~{barcode}_coverage_hist.txt ~{bam}
 
 
-        samtools coverage -o ~{sample_id}_~{barcode}_coverage.txt ~{bam}
+        samtools coverage -o ~{sample_name}_~{barcode}_coverage.txt ~{bam}
 
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
         samtools coverage --region MN908947.3:21,563-25,384 \
-            -o ~{sample_id}_~{barcode}_S_gene_coverage.txt ~{bam}
+            -o ~{sample_name}_~{barcode}_S_gene_coverage.txt ~{bam}
 
         # Calculate depth of coverage over S gene amplicon regions (excludes overlapping regions with adjacent amplicons)
         echo "calculating depths for ~{s_gene_amplicons}"
         {
-            s_gene_depths="~{sample_id}_S_gene_depths.tsv"
+            s_gene_depths="~{sample_name}_S_gene_depths.tsv"
 
             # write header line to s_gene_depths output file
             read header
@@ -283,12 +283,12 @@ task Bam_stats {
 
     output {
 
-        File flagstat_out  = "${sample_id}_${barcode}_flagstat.txt"
-        File stats_out  = "${sample_id}_${barcode}_stats.txt"
-        File covhist_out  = "${sample_id}_${barcode}_coverage_hist.txt"
-        File cov_out  = "${sample_id}_${barcode}_coverage.txt"
-        File cov_s_gene_out = "${sample_id}_${barcode}_S_gene_coverage.txt"
-        File cov_s_gene_amplicons_out = "${sample_id}_S_gene_depths.tsv"
+        File flagstat_out  = "${sample_name}_${barcode}_flagstat.txt"
+        File stats_out  = "${sample_name}_${barcode}_stats.txt"
+        File covhist_out  = "${sample_name}_${barcode}_coverage_hist.txt"
+        File cov_out  = "${sample_name}_${barcode}_coverage.txt"
+        File cov_s_gene_out = "${sample_name}_${barcode}_S_gene_coverage.txt"
+        File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
     }
 
     runtime {
@@ -304,7 +304,7 @@ task Bam_stats {
 
 task Scaffold {
     input {
-        String sample_id
+        String sample_name
         String barcode
         File fasta
         File ref
@@ -314,12 +314,12 @@ task Scaffold {
 
     command {
 
-        pyScaf.py -f ${fasta} -o ${sample_id}_${barcode}_consensus_scaffold.fa -r ${ref}
+        pyScaf.py -f ${fasta} -o ${sample_name}_${barcode}_consensus_scaffold.fa -r ${ref}
 
     }
 
     output {
-        File scaffold_consensus = "${sample_id}_${barcode}_consensus_scaffold.fa"
+        File scaffold_consensus = "${sample_name}_${barcode}_consensus_scaffold.fa"
     }
 
     runtime {
@@ -337,19 +337,19 @@ task rename_fasta {
 
     input {
 
-        String sample_id
+        String sample_name
         File fasta
     }
 
     command {
 
-        sed 's/>.*/>CO-CDPHE-~{sample_id}/' ~{fasta} > ~{sample_id}_consensus_renamed.fa
+        sed 's/>.*/>CO-CDPHE-~{sample_name}/' ~{fasta} > ~{sample_name}_consensus_renamed.fa
 
     }
 
     output {
 
-        File renamed_consensus  = "${sample_id}_consensus_renamed.fa"
+        File renamed_consensus  = "${sample_name}_consensus_renamed.fa"
 
     }
 
@@ -366,19 +366,19 @@ task calc_percent_cvg {
     input {
 
         File fasta
-        String sample_id
+        String sample_name
         File calc_percent_coverage_py
     }
 
     command {
         python ~{calc_percent_coverage_py} \
-          --sample_id ~{sample_id} \
+          --sample_name ~{sample_name} \
           --fasta_file ~{fasta}
       }
 
     output {
 
-      File percent_cvg_csv  = "${sample_id}_consensus_cvg_stats.csv"
+      File percent_cvg_csv  = "${sample_name}_consensus_cvg_stats.csv"
 
     }
 
@@ -401,19 +401,19 @@ task get_primer_site_variants {
     input {
         File variants
         File variants_index
-        String sample_id
+        String sample_name
         File s_gene_primer_bed
     }
 
     command <<<
 
         bcftools view --regions-file ~{s_gene_primer_bed} --no-header ~{variants} \
-            | tee ~{sample_id}_S_gene_primer_variants.txt
+            | tee ~{sample_name}_S_gene_primer_variants.txt
 
     >>>
 
     output {
-        File primer_site_variants = "${sample_id}_S_gene_primer_variants.txt"
+        File primer_site_variants = "${sample_name}_S_gene_primer_variants.txt"
     }
 
     runtime {

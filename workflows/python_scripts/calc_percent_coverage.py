@@ -11,13 +11,13 @@ from Bio import SeqIO
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     
-    parser.add_argument("--sample_id",  help= "")
+    parser.add_argument("--sample_name",  help= "")
     parser.add_argument('--fasta_file', help = '')
     options = parser.parse_args(args)
     return options
 
 
-def calculate_percent_coverage(sample_id, fasta_file):
+def calculate_percent_coverage(sample_name, fasta_file):
     # first check that there is only one sequence in the fasta files
     num_records = 0
     with open(fasta_file, 'r') as fasta_handle:
@@ -31,33 +31,33 @@ def calculate_percent_coverage(sample_id, fasta_file):
         aligned_bases = len(record.seq)
         if aligned_bases == 0:
             Ns = 29903
-            num_non_ambigous_bases = 0
+            num_non_ambiguous_bases = 0
             coverage = 0
         else:
             uncorrected_Ns = record.seq.count('N')
             Ns = (29903 - aligned_bases) + uncorrected_Ns
-            num_non_ambigous_bases = aligned_bases - uncorrected_Ns
+            num_non_ambiguous_bases = aligned_bases - uncorrected_Ns
             coverage = round((1-(Ns/29903)) * 100, 2)
     else:
         aligned_bases = np.NaN
         Ns = np.NaN
-        num_non_ambigous_bases = np.NaN
+        num_non_ambiguous_bases = np.NaN
         coverage = np.NaN
 
     # create pd df with calc_percent_cvg
     df = pd.DataFrame()
-    df['sample_id'] = [sample_id]
+    df['sample_name'] = [sample_name]
     df['aligned_bases'] = [aligned_bases]
     df['N_bases'] = [Ns]
-    df['non_ambiguous_bases'] = [num_non_ambigous_bases]
+    df['non_ambiguous_bases'] = [num_non_ambiguous_bases]
     df['percent_coverage'] = [coverage]
     # df['number_seqs_in_fasta'] = [num_records]
 
-    outfile = '%s_consensus_cvg_stats.csv' % sample_id
+    outfile = '%s_consensus_cvg_stats.csv' % sample_name
     df.to_csv(outfile, index = False)
     
     
 if __name__ == '__main__':
     
     options = getOptions()
-    calculate_percent_coverage(sample_id = options.sample_id, fasta_file = options.fasta_file)
+    calculate_percent_coverage(sample_name = options.sample_name, fasta_file = options.fasta_file)
