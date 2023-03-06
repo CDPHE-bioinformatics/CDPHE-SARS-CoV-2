@@ -247,7 +247,7 @@ task results_table {
             --workbook_path ~{workbook_path} \ 
             --cov_out_files ~{cov_out} \
             --percent_cvg_files ~{write_lines(percent_cvg_csv)} \
-            --assembler_version ~{assember_version} \
+            --assembler_version ~{assembler_version} \
             --pangolin_lineage_csv ~{pangolin_lineage_csv} \
             --pangolin_version ~{pangolin_version} \
             --nextclade_clades_csv ~{nextclade_clades_csv} \
