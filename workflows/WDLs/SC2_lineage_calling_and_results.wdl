@@ -243,17 +243,17 @@ task results_table {
     }
 
     command <<<
-        python ~{concat_seq_results_py} \
-            --sample_name_array "~{write_lines(sample_name)}" \ 
-            --workbook_path "~{workbook_path}" \ 
-            --cov_out_files "~{write_lines(cov_out)}" \
-            --percent_cvg_files "~{write_lines(percent_cvg_csv)}" \
-            --assembler_version "~{assembler_version}" \
-            --pangolin_lineage_csv "~{pangolin_lineage_csv}" \
-            --nextclade_variants_csv "~{nextclade_variants_csv}" \
-            --nextclade_clades_csv "~{nextclade_clades_csv}" \
-            --nextclade_version "~{nextclade_version}" \ 
-            --project_name "~{project_name}" 
+    python ~{concat_seq_results_py} \
+        --sample_name_array "~{write_lines(sample_name)}" \ 
+        --workbook_path "~{workbook_path}" \
+        --cov_out_files "~{write_lines(cov_out)}" \
+        --percent_cvg_files "~{write_lines(percent_cvg_csv)}" \
+        --assembler_version "~{assembler_version}" \
+        --pangolin_lineage_csv "~{pangolin_lineage_csv}" \
+        --nextclade_variants_csv "~{nextclade_variants_csv}" \
+        --nextclade_clades_csv "~{nextclade_clades_csv}" \
+        --nextclade_version "~{nextclade_version}" \
+        --project_name "~{project_name}" 
 
     >>>
 
