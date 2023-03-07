@@ -244,7 +244,7 @@ task results_table {
 
     command <<<
     python ~{concat_seq_results_py} \
-        --sample_name_array "~{write_lines(sample_name)}" \ 
+        --sample_name_array "~{write_lines(sample_name)}" \
         --workbook_path "~{workbook_path}" \
         --cov_out_files "~{write_lines(cov_out)}" \
         --percent_cvg_files "~{write_lines(percent_cvg_csv)}" \
