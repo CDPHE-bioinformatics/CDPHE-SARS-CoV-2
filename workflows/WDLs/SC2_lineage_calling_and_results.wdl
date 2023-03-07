@@ -65,7 +65,7 @@ workflow SC2_lineage_calling_and_results {
         cov_out = select_all(cov_out),
         percent_cvg_csv = select_all(percent_cvg_csv),
         pangolin_lineage_csv = pangolin.lineage,
-        pangolin_version = pangolin.pangolin_version,
+        # pangolin_version = pangolin.pangolin_version,
         nextclade_clades_csv = parse_nextclade.nextclade_clades_csv,
         nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
         nextclade_version = nextclade.nextclade_version,
