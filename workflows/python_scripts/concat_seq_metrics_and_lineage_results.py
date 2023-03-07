@@ -25,7 +25,6 @@ import re
 #### FUNCTIONS #####
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
-
     parser.add_argument('--sample_name_array')
     parser.add_argument('--workbook_path')
     parser.add_argument("--cov_out_files",  help= "txt file with list of bam file paths")
