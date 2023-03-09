@@ -1,5 +1,16 @@
 # CDPHE_SARS-CoV-2 Workflows
 
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Getting Set Up](#getting-set-up)
+3. [Reference Based Assembly Workfflows](#reference-based-assembly-workflows)
+4. [Transfer workflows](#transfer-workflows)
+5. [Lineage and Clade Assignment Workflows](#lineage-and-clade-assignment-workflows)
+6. [Wastewater Workflow](#wastewater-workflow) 
+7. [Nextstrain Workflow](#nextstrain-workflow)
+
+
 ## Overview
 
 The following documentation describes the Colorado Department of Public Health and Environments's workflows for the assembly and analysis of whole genome sequencing data of SARS-CoV-2 on GCP's Terra.bio platform. Workflows are written in WDL and can be imported into a Terra.bio workspace through dockstore.
@@ -8,9 +19,12 @@ Our SARS-CoV-2 whole genome reference-based assembly workflows are highly adapta
 
 Briefly, we begin with one of our processing python scripts (see ''../preprocess_python_scripts'' for more details), which organizes raw fastq files from either Illumina or ONT platforms, pushes the reads to a specified google bucket, and generates an input data table for Terra.bio. Next, using the platform appropriate assembly workflow on Terra.bio (``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, or ``SC2_ont_assembly``), we perform quality control, trimming, and filtering of raw reads, and perform reference-guided whole genome assembly. Following assembly, intermediate and results files are transfered to a user defined google storage bucket using the appropriate transfer workflow (``SC2_transfer_illumina_pe_assembly``, ``SC2_transfer_illumina_se_assembly``, or ``SC2_transfer_ont_assembly``). Next, we use Pangolin and Nextclade to peform clade and lineage assignment on the consesnus assemblies and produce a results summary file for the set of sequences analyzed using the ``SC2_lineage_calling_and_results`` workflow. If you already have a multifasta, you can use the ``SC2_multifasta_lineage_calling`` workflow for clade and lineage assignment. We genearte a nextstrain build usig the publically available Nextstrain workflow ((https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:v2.1.33.9?tab=info). For wastewater samples, bam files generated from one of the three assembly workflows can be used as input in our ``SC2_wastewater_variant_calling workflow``.  Below is a high level overview of our workflow process that gets us from fastq files to lineage calls.
 
+<br/>
 
 ![SC2 high level overview workflow diagram](./workflow_diagrams/SC2_overview_workflow_diagram.png "high level overview of SC2 workflow")
 
+<br/>
+<br/>
 
 
 ## Getting set up
@@ -24,24 +38,32 @@ The reference files can be found in this repository in the ``workspace_data`` di
 
 | workspace variable name | file name | description |
 |-------------------|-----------------|--------------------|
-| ``adapters_and_contaminants`` | Adapters_plus_PhiX_174.fasta | adapaters sequences and contaiment sequences removed during fastq cleaning and filtering using SeqyClean. Thanks to Erin Young at Utah Public Health Laboratory for providing this file!  |
-| ``covid_gff`` | reference.gff | whole genome reference sequence annotation file in gff format (we use NCBI genbank ID MN908947.3) |
-| ``covid_genome`` | reference.fasta | SARS-CoV-2 whole genome reference sequence in fasta format (we use NCBI genbank ID MN908947.3) |
-| ``V3artic`` | V3_nCov-2019.primer.bed | primer bed file for the Artic V3 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| ``V4artic`` | V4_nCoV-2021.primer.bed | primer bed file for the Artic V4 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| ``V4-1Artic`` | V4-1_nCoV-2021.primer.bed | primer bed file for the Artic V4.1 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| ``midnight_primers`` | Midnight_Primers_SARS-CoV-2.scheme.bed | primer bed file for the Midnight tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| `` voc_annotations ``| SC2_voc_annotations_{date}.tsv | For wastewater only. List of amino acid (AA) subsitiutions and lineages containing those AA substitutions; for a lineage to be associated with a given AA subsitution, 90% of publically available sequences must contain the AA substition (the 90% cutoff was determined using outbreak.info) |
-| ``voc_bed``| SC2_voc_mutations_{date}.tsv |  For wastewater only. List of nucleotide genome positions in relation to the MN908947.3 reference genome of know mutations |
-| ``preprocess_python_script`` | calc_percent_coverage.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
-| ``nextclade_json_parser_scrpt`` | nextclade_json_parser.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
-| ``concat_results_scripts`` | concat_seq_metrics_and_lineages_results.py | see detailed description in the readme file found in ``./python_scripts`` repo directory |
+| ``adapters_and_contaminants_fa`` | Adapters_plus_PhiX_174.fasta | adapaters sequences and contaiment sequences removed during fastq cleaning and filtering using SeqyClean. Thanks to Erin Young at Utah Public Health Laboratory for providing this file!  |
+| ``covid_genome_gff`` | reference.gff | whole genome reference sequence annotation file in gff format (we use NCBI genbank ID MN908947.3) |
+| ``covid_genome_fa`` | reference.fasta | SARS-CoV-2 whole genome reference sequence in fasta format (we use NCBI genbank ID MN908947.3) |
+| ``artic_v3_bed`` | V3_nCov-2019.primer.bed | primer bed file for the Artic V3 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+| ``artic_v4_bed` | V4_nCoV-2021.primer.bed | primer bed file for the Artic V4 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+| ``artic_v4-1_bed`` | V4-1_nCoV-2021.primer.bed | primer bed file for the Artic V4.1 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+|``artic_v4-1_s_gene_amplicons``||
+|``artic_v4-1_s_gene_primer_bed``||
+| ``midnight_bed`` | Midnight_Primers_SARS-CoV-2.scheme.bed | primer bed file for the Midnight tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+| `` covid_voc_annotations_tsv``| SC2_voc_annotations_{date}.tsv | For wastewater only. List of amino acid (AA) subsitiutions and lineages containing those AA substitutions; for a lineage to be associated with a given AA subsitution, 90% of publically available sequences must contain the AA substition (the 90% cutoff was determined using outbreak.info) |
+| ``covid_voc_bed_tsv``| SC2_voc_mutations_{date}.tsv |  For wastewater only. List of nucleotide genome positions in relation to the MN908947.3 reference genome of know mutations |
+| ``covid_calc_per_cov_py`` | calc_percent_coverage.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
+| ``covid_nextclade_json_parser_py`` | nextclade_json_parser.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
+| ``covid_concat_results_py`` | concat_seq_metrics_and_lineages_results.py | see detailed description in the readme file found in ``./python_scripts`` repo directory |
 
 
 </details>
 
+<br/>
+<br/>
+
 ## Reference-Based Assembly workflows
 The following three workflows describe the reference based assembly methods for paired-end and single end illumina seuqencing data and ONT sequencing data. Each workflow accepts "sample" as the root entity type. Click each drop down to expand for details.
+
+<br/>
+
 
 ### SC2_illumina_pe_assembly.wdl
 <details>
@@ -165,6 +187,7 @@ Below is a summary of the workflow input variables along with the syntax used fo
 
 </details>
 
+<br/>
 
 ### SC2_illumina_se_assembly.wdl
 <details>
@@ -284,6 +307,8 @@ Below is a summary of the workflow input variables along with the syntax used fo
 
 </details>
 
+<br/>
+
 ### SC2_ont_assembly.wdl
 <details>
 <summary>click to expand</summary>
@@ -391,10 +416,14 @@ Below is a summary of the workflow input variables along with the syntax used fo
 
 </details>
 
+<br/>
+<br/>
 
 ## Transfer Workflows
 
 After assembly, the assembly workflow outputs are then transferred from Terra back to a user specified google bucket for additional analysis and storage. Each workflow accepts "sample set" as the root entity type and uses the data table from the corresponding assembly workflow data table that has been filled in with file paths to the outputs. If using the preprocess python scripts to generate the terra data table the user defined google bucket will be defined in the ``out_dir`` column in the terra datatable. Click each drop down to expand for details.
+
+<br/>
 
 ### SC2_transfer_illumina_pe_assembly.wdl
 <details>
@@ -423,6 +452,8 @@ This workflow transfers the output file generated from SC2_illumina_pe_assemby t
 
 </details>
 
+<br/>
+
 ### SC2_transfer_illumina_se_assembly.wdl
 <details>
 <summary>click to expand</summary>
@@ -449,6 +480,7 @@ This workflow transfers the output file generated from SC2_illumina_se_assemby t
 
 </details>
 
+<br/>
 
 ### SC2_transfer_ont_assembly.wdl
 <details>
@@ -472,9 +504,13 @@ This workflow transfers the output file generated from SC2_ont_assemby to a user
 
 </details>
 
+<br/>
+<br/>
+
 ## Lineage and Clade Assignment Workflows
 The following workflows will perform clade and lineage assignment using Nextclade and Pangolin, respectively. The SC2_lineage_calling_and_results.wdl should be run following assembly with one of the three above reference-based assembly workflows. The SC2_mulitfasta_lineage_calling can be run on any multifasta file and is not dependent on any of the above workflows.  
 
+<br/>
 
 ### SC2_lineage_calling_and_results.wdl
 <details>
@@ -531,6 +567,7 @@ This workflow generates several output files which are transfered to the user de
 
 </details>
 
+<br/>
 
 ### SC2_multifasta_lineage_calling.wdl
 <details>
@@ -573,6 +610,9 @@ This workflow generates several output files which are transfered to the user de
 
 
 </details>
+
+<br/>
+<br/>
 
 ## Wastewater Workflow
 
@@ -630,15 +670,15 @@ This workflow generates several output files which are transfered to the user de
 
 </details>
 
+<br/>
+<br/>
+
 ## Nextstrain Workflow
+Finally, we use the publicly available Nexstrain workflow to generate Nextstrain builds (https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info), and then transfer the results using this transfer workflow.
 
 <details>
 <summary>click to expand</summary>
 
-Finally, we use the publicly available Nexstrain workflow to generate Nextstrain builds (https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info), and then transfer the results using this transfer workflow.
-
-</details>
-<summary>click to expand</summary>
 This workflow transfers the output file generated from the publicly available sarscov2_nextstrain workflow (https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info) to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  
 
 |workflow variable| attribute (input syntax into workflow) | google bucket path|

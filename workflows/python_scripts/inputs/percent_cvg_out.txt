@@ -1,0 +1,2 @@
+/home/molly_hetheringtonrauth/sandbox/pipeline_fixes/CDPHE-SARS-CoV-2/workflows/python_scripts/inputs/2103718924-1A_consensus_cvg_stats.csv
+/home/molly_hetheringtonrauth/sandbox/pipeline_fixes/CDPHE-SARS-CoV-2/workflows/python_scripts/inputs/2103733707-1A_consensus_cvg_stats.csv

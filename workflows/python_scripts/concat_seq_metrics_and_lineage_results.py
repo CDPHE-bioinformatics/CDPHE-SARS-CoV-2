@@ -107,11 +107,12 @@ def get_df_spike_mutations(variants_csv):
         return sample_name 
     
     # read in variants file
-    variants = pd.read_csv(variants_csv, dtype = {'accession_id' : object})
+    variants = pd.read_csv(variants_csv, dtype = {'sample_name' : object})
     variants = variants.rename(columns = {'sample_name' : 'fasta_header'})
 
     variants['sample_name'] = variants.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
     variants = variants.drop(columns = 'fasta_header')
+    # print(variants)
 
     #### filter variants for spike protein varaints in rbd and pbcs #####
     crit = variants.gene == 'S'
@@ -126,9 +127,12 @@ def get_df_spike_mutations(variants_csv):
     critdel = variants.variant_name.str.contains('del') # mainly for 69/70 del
 
     spike_variants_df = variants[crit & (critRBD | critPBCS | crit732 | critdel | crit452 | crit253 | crit13 | crit145 | crit222)]
+    spike_variants_df = spike_variants_df.reset_index(drop = True)
+    # print(spike_variants_df)
 
     # generate a df of the sample and their spike variants
-    sample_name_list = spike_variants_df.sample_name.unique().tolist()
+    sample_name_list_variants = spike_variants_df.sample_name.unique().tolist()
+    # print(sample_name_list)
 
     df = pd.DataFrame()
     sample_name_list = []
@@ -136,8 +140,9 @@ def get_df_spike_mutations(variants_csv):
 
     seperator = '; '
 
-    for sample_name in sample_name_list:
+    for sample_name in sample_name_list_variants:
         sample_name_list.append(sample_name)
+
 
         crit = spike_variants_df.sample_name == sample_name
         f = spike_variants_df[crit]
@@ -151,6 +156,7 @@ def get_df_spike_mutations(variants_csv):
 
     df['sample_name'] = sample_name_list
     df['spike_mutations'] = variant_name_list
+    print(df)
 
     return df
 
@@ -173,7 +179,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     df = df.set_index('sample_name')
     df['analysis_date'] = str(date.today())
     df['assembler_version'] = assembler_version
-
+    # print(df)
     # read in workbook
     workbook = pd.read_csv(workbook_path, sep = '\t')
     workbook = workbook.set_index('sample_name')
@@ -216,7 +222,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     cov_out_df = cov_out_df.set_index('sample_name')
     percent_cvg_df = percent_cvg_df.set_index('sample_name')
     spike_variants_df = spike_variants_df.set_index('sample_name')
-
+    print(spike_variants_df)
 
     # join
     j = df.join(workbook, how = 'left')
@@ -226,7 +232,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     j = j.join(pangolin, how = 'left')
     j = j.join(spike_variants_df, how = 'left')
     j = j.reset_index()
-
+    # print(j)
     # add fasta header
     j['fasta_header'] = j.apply(lambda x:create_fasta_header(x.sample_name), axis=1)
 

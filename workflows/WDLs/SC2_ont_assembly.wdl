@@ -139,7 +139,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_index_1_idr --require_index_1_ids_both_ends --index_1_id_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
+        guppy_barcoder --require_index_1_ids_both_ends --index_1_id_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 

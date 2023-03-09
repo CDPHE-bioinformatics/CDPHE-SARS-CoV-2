@@ -44,86 +44,75 @@ $$
 where the number_non_ambigous_bases is the number of basepair calls not including Ns in the sample consensus sequence and 29903 is the number of basepairs in the reference genome (NC_045512).
 
 ### inputs
-  - ``--sample_id``: sample id
 
-  - ``--fasta_file``: consensus sequence saved as a fasta file
+| flag | description |
+|------|-------------|
+|``--sample_name``| sample name as recorded in the``entity:sample_ID`` column in the terra data table |
+|``--fasta_file``|renamed consensus sequence fasta file; generated during the ivar_consnesus (illumina data) or mekdata (ont data) and rename fasta tasks of the assembly workflows|
+
 
 ### outputs
-The script also records the number of aligned bases, the number of ambigous bases (Ns), and the number of nonambigous bases (A,G,C,T). The output is a csv file called ``{accession_id}_consensus_cvg_stats.csv`` and has the following column headers:
 
-- accession_id: sample name and the sample id found in the ``entity:sample_ID`` column in the terra data table.
+The script also records the number of aligned bases, the number of ambiguous bases (Ns), and the number of nonambiguous bases (A,G,C,T). The output is a csv file called ``{sample_name}_consensus_cvg_stats.csv`` and has the following column headers:
+| column header| description |
+|------|-------------|
+|``sample_name``| sample name as recorded in the``entity:sample_ID`` column in the terra data table |
+|``number_aligned_bases``|the total lenght of the consensus genome (inlcuding Ns)|
+|``number_N_bases``| the number of ambiguous (N) bases in the consensus genome |
+|``number_non_ambiguous_bases``|the number of non-ambigous (A, C, G, T) bases in the consensus genome|
+|``percent_coverage``| perecent coverage of the reference genome represented in the consensus sequence as calculated above |
 
-- number_aligned_bases: the total lenght of the consensus genome (inlcuding Ns)
+There is an example output in the example data directory within this repo.
 
-- number_N_bases: the number of ambigous (N) bases in the consensus genome
-
-- number_non_ambigous_bases: the number of non-ambigous (A, C, G, T) bases in the consenuss genome
-
-- percent_non_ambigous_bases: as calcuated above
-
-- number_seqs_in_fasta: should be 1, we included this column when we were having trouble with our ont assebly and never removed it.
-
-Thre is an example output in the example data directory within this repo.
-
+<br/>
+<br/>
 
 ## nextclade-json-parser-py
-
 
 ### overview
 This script is called in the ``SC2_lineage_calling_and_results`` WDL workflow. This workflow acts on sample sets and so therefore this script also works on a sample set. This script is called in the ``parse_nextclade`` task within the workflow which can be seen in the ``SC2_lineage_calling_and_results.wdl`` workflow diagram in the README.md one directory out. Briefly, the workflow concatentates all consesnus sequences of the samples in the sample set into a single fasta file (``concatenate`` task). The concatentated fasta file is run through nextclade which generates a ``nextclade.json`` file (``nextclade`` task). Within the ``nextclade.json`` file is data for each sample consensus sequence inlcuding the nextclade clade designation, AA substitutions, deletions, insertions, etc. Generally, this script reads in the ``nextclade.json`` file, parses the json file to extract the data of interest, formats the data into a table and saves it as a csv file.
 
 ### inputs
-There are 2 inputs for this script:
-1. ``--nextclade_json``: the nextclade.json file generated in the ``nextclade`` task of the workflow.
-
-2. ``--seq_run_file_list``: the list of the seq_run input variable for the workflow saved as a text file. See below in the header details about working with sample sets for more on how this is formated and generated within the wdl workflow.
+| flag | description |
+|------|-------------|
+|``--nextclade_json``| the nextclade.json file generated in the ``nextclade`` task of the workflow. |
+|``--project_name``|the project name of the sequencing run|
 
 
 ### outputs
 There are two outputs from this script, each accomplished from a seperate function within the script. Example outputs can be found in the example data directory within this repo. These functions are:
 
-1. ``extract_variant_list()`` function : This function generates a summmary of the AA substitions, insertions, and deletions for each sample within the ``nextclade.json`` file. The output is a csv file called ``{seq_run}_nextclade_variant_summary.csv`` which is one of the files that is transfered to the google bucket as outputs of the workflow. The data is formatted such that each row corresponds to a either an AA substition, insertion, or deletion, such that each consensus seuqence can have more than one row of data. The csv file has the following column headers:
+1. ``extract_variant_list()`` function : This function generates a summmary of the AA substitions, insertions, and deletions for each sample within the ``nextclade.json`` file. The output is a csv file called ``{project_name}_nextclade_variant_summary.csv`` which is one of the files that is transfered to the google bucket as outputs of the workflow. The data is formatted such that each row corresponds to a either an AA substition, insertion, or deletion, such that each consensus seuqence can have more than one row of data. The csv file has the following column headers:
 
-  - accession_id: the sample name as listed in the fasta header (therefore there will be a "CO-CDPHE-" prefix added to the accession id)
+| column header| description |
+|------|-------------|
+|``sample_name``| the sample name as listed in the fasta header (therefore there will be a "CO-CDPHE-" prefix added to the sample_name as listed in the entity column in the terra datatable) |
+|``variant_name``|the full name of the variant formatted as {gene}_{refAA}{AApos}{altAA} (e.g. S_L452Q or S_L24del); For insertions the gene is not listed, the refAA is defined as "ins", the AA position is the nucleotide position in the genome and the altAA is listed as the string of nucleotides. So the variant is formated to look something like this: "_ins1027T" which would be interpreted as an insertion of a T nucleotide occured at genome position 1027|
+|``gene``|the gene where the AA substition, deletion or insertion occurs (e.g. N, S, ORF1a, M etc.). No gene is listed for insertions |
+|``codon_position``|the codon position (or protien position) within the gene where the AA substition, deletion or insertion occured. For insertions it is the nucleotide genome position|
+|``refAA``| the reference AA at the position where the AA substition, deletion, or insertion occured. For insertions the refAA is listed as "ins".
+ |
+|``altAA``|he AA in the consensus sequence at the position where the AA substition, deletion, or insertion occured. For insertions the altAA is the string of nucleotide base pairs that were inserted |
+|``start_nuc_pos``|the starting nucleotide position within the genome where the AA substition, deletion, or insertion occured|
+|``end_nuc_pos``| the ending nucleotide position within the genome where the AA substition, deletion, or insertion occured (for a single AA substition the start_ncu_pos and end_nuc_pos will be a difference of 3) |
 
-  - variant_name: the full name of the variant formatted as {gene}_{refAA}{AApos}{altAA} (e.g. S_L452Q or S_L24del).
+<br/>
+<br/>
 
-    - For insertions the gene is not listed, the refAA is defined as "ins", the AA position is the nucleotide position in the genome and the altAA is listed as the string of nucleotides. So the variant is formated to look something like this: "_ins1027T" which would be interpreted as an insertion of a T nucleotide occured at genome position 1027.
-
-  -  gene: the gene where the AA substition, deletion or insertion occurs (e.g. N, S, ORF1a, M etc.). No gene is listed for insertions.
-
-  - codon_position: the codon position (or protien position) within the gene where the AA substition, deletion or insertion occured. For insertions it is the nucleotide genome position.
-
-  - refAA: the reference AA at the position where the AA substition, deletion, or insertion occured. For insertions the refAA is listed as "ins".
-
-  - altAA: the AA in the consensus sequence at the position where the AA substition, deletion, or insertion occured. For insertions the altAA is the string of nucleotide base pairs that were inserted.
-
-  - start_nuc_pos: the starting nucleotide position within the genome where the AA substition, deletion, or insertion occured.
-
-  - end_nuc_pos: the ending nucleotide position within the genome where the AA substition, deletion, or insertion occured (for a single AA substition the start_ncu_pos and end_nuc_pos will be a difference of 3).
-
-    -
 
 2.  ``get_nextclade()`` function: This function generates a summary of the nextclade designation, total nucleotide and AA substitions, total nucleotide and AA deletions, and total nucleotide insertions. The output file is called ``{seq_run}_nextclade_results.csv`` and is used as input for the ``concat_seq_metrics_and_lineage_results.py`` called in the ``results_table`` task in the workflow. The output file has the following column headers:
-  - accession_id: the sample name as listed in the fasta header (therefore there will be a "CO-CDPHE-" prefix added to the accession id)
 
-  - nextclade: nextclade clade designation (e.g. 22C (Omicron))
-
-  - total_nucleotide_mutations: number of SNPs in consensus genome
-
-  - total_nucleotide_deletions: number of deletions in conesnuss genome
-
-  - total_nucleotide_insertions: number of insertions in consensus genome
-
-  - total_AA_substitutions: number of AA substitions in the consensus genome
-
-  - total_AA_deletions: number of AA deletions in teh consensus genome
-
-
+| column header| description |
+|------|-------------|
+|``sample_name``| the sample name as listed in the fasta header (therefore there will be a "CO-CDPHE-" prefix added to the sample_name as listed in the entity column in the terra datatable) |
+|``nextclade``|nextclade clade designation (e.g. 22C (Omicron))|
+|``total_nucleotide_mutations``| number of SNPs in consensus sequence |
+|``total_nucleotide_deletions``|number of deletions in the consensus sequence|
+|``total_nucleotide_insertions``| number of insertions in the consensus sequence |
+|``total_AA_substitutions``|number of AA substitions in the consensus sequence|
+|``total_AA_deletions``|number of AA deletions in the consensus sequence|
 
 ## concat-seq-metrics-and-lineage-results-py
-
-
 
 ### overview
 This script is called in the ``SC2_lineage_calling_and_results`` WDL workflow. This workflow acts on sample sets and so therefore this script also works on a sample set. This script is called in the ``results_table`` task within the workflow which can be seen in the ``SC2_lineage_calling_and_results.wdl`` workflow diagram in the README.md one directory out. Generally, this script pulls together a bunch of metadata and data regarding the consensus sequence and outputs the data in csv file.  
@@ -131,41 +120,35 @@ This script is called in the ``SC2_lineage_calling_and_results`` WDL workflow. T
 ### inputs
 The script takes the following inputs:
 
-  - ``--sample_id_array``: the list of the sample_IDs input variable (column in the terra data table) for the workflow written to a text file. This is provided in the terra data table upload.  See below in the header details about working with sample sets for more on how this is formated and generated within the wdl workflow.
+| flag | description |
+|------|-------------|
+|``sample_name``| the sample_name variables for the set of samples as an array and written to a txt file using the wdl function ``write_lines`` |
+|``workbook_path``|the gcp file path to the workbook. The workbook can inlcude any column you'd like but must include at minimum the following columns: ``hsn``, ``sample_id``, ``project_name``, ``plate_name``,   ``run_name``. These columns can be left blank if needed.|
+|``cov_out_filles``| the list of the ``cov_out`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` from the bam stats task. |
+|``percent_cvg_files``|the list of the ``percent_cvg_csv`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows from the ``calc_percent_coverage.py`` script called during the ``calc_percent_cvg`` task.|
+|``assembler_version``| nthe assembler_version variable (column in the terra data table) for the worfklow . This is written to the terra data table during the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows.|
+|``pangolin_lineage_csv``|this is the lineage report csv file generated from pangolin during the ``pangolin`` task|
+|``nextclade_clades_csv``|this is the ``{seq_run}_nextclade_results.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.|
+|``nextclade_variants_csv``|  this is the ``{seq_run}_nextclade_variant_summary.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.|
+|``nextclade_version``|this is the nextclade version which is defined as output during the ``nextclade`` task.|
+|``project_name``| project_name from column in terra data table|
 
-- ``workbook_path`` : the gcp file path to the workbook. The workbook can inlcude any column you'd like but must include at minimum the following columns: ``hsn``, ``sample_id``, ``project_name``, ``plate_name``,   ``run_name``. These columns can be left blank if needed.
 
-  - ``--cov_out_files``: the list of the ``cov_out`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` from the bam stats task.
-
-  - ``--percent_cvg_files``: the list of the ``percent_cvg_csv`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows from the ``calc_percent_coverage.py`` script called during the ``calc_percent_cvg`` task.
-
-  - ``--pangolin_lineage_csv``: this is the lineage report csv file generated from pangolin during the ``pangolin`` task.
-
-  - ``--assembler_version``: the assembler_version variable (column in the terra data table) for the worfklow . This is written to the terra data table during the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows.
-
-  - ``--nextclade_clades_csv``: this is the ``{seq_run}_nextclade_results.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.
-
-  - ``--nextclade_variants_csv``: this is the ``{seq_run}_nextclade_variant_summary.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.
-
-  - ``--nextclade_version``: this is the nextclade version which is defined as output during the ``nextclade`` task.
 
 
 ### outputs
 There are three outputs from this script. Example outputs can be found in the example data directory within this repo.   
-1. ``{seq_run}_sequencing_results.csv``: summary of sequencing metrics for all samples within the sample set. Below is a table of the column headers and their description. There are a lot; we sort of just keep adding on.
-
+1. ``{project_name}_sequencing_results.csv``: summary of sequencing metrics for all samples within the sample set. Below is a table of the column headers and their description. Currently all headers from the sequencing workbook which get carried over to the terra datatable are inlcuded in this output file. The list below includes some but not all of the columns in the file. 
 |column header name| description |
 |------------|-----------|
-|``accession_id``| sample name|
-|``plate_name``| internal id given to the sequencing plate|
-|``plate_sample_well``| well location of the sample on the sequencing plate|
+|``sample_name``| sample name|
+|``hsn``| hsn (horizon serial number)|
 |``primer_set``|name of primer set used for tiled amplicon squenicng (Artic V3, Artic V4, Artic V4.1, Midnight or COVIDSeqV3)|
-|``percent_non_ambigous_bases``| percent coverage; the total proportion of the genome that is covered not including regions where an N is called for a basecall|
+|``percent_coverage``| percent coverage; the total proportion of the genome that is covered not including regions where an N is called for a basecall|
 |``nextclade``| the nextclade clade assignment|
 |``panoglin_lineage``| the pangolin lineage assignment|
+|``pangolin_expanded_lineage``| the expanded panglin lineage |
 |``assembler_version``|assembler software version (either bwa or minimpa depending on assembly workflow used)|
-|``omicron_spike_mutations``| list of spike mutations in the spike gene sequence that correspond to key omircon mutations identified in the sample consensus seqeunce|
-|``delta_plus_spike_mutations``|list of spike mutations in the spike gene sequence that correspond to the ky delta plus mutations identified in the sample consensus sequence|
 |``spike_mutations``| list of spike muations in the spike gene squence that correspond to key spike mutations identified in the sample consensus sequence (this column was created prior to VOCs and inlcudes spike mutatuations we were watching and has not been updated since)|
 |``total_nucleotide_mutations``|number of SNPs in the consensus sequence genome|
 |``total_AA substitutions``|number of amino acid substitions in the consensus sequence genome|

@@ -1,0 +1,4 @@
+accession_id,percent_coverage,pangolin_lineage,pangolin_version,report_to_epi,Run_Date,pangoLEARN_version
+2103718924.0,75.96,BA.5.1.3,4.2,,2023-03-09,PUSHER-v1.18.1.1
+2103771704.0,0.0,,,,2023-03-09,
+2103733707.0,61.34,Unassigned,4.2,,2023-03-09,PUSHER-v1.18.1.1

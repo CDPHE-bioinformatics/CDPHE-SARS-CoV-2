@@ -1,0 +1,8 @@
+sample_name,nextclade,total_nucleotide_mutations,total_nucleotide_deletions,total_nucleotide_insertions,total_AA_substitutions,total_AA_deletions
+CO-CDPHE-POS-A,19B,6,0,0,4,0
+CO-CDPHE-2103718924-1A,22B,49,33,0,36,14
+CO-CDPHE-2103733707-1A,22B,32,34,0,13,10
+CO-CDPHE-2103753484-1A,23A,87,30,0,63,13
+CO-CDPHE-TP20230207-1A,22B,14,9,0,10,6
+CO-CDPHE-WL20230209-1A,22B,15,9,0,12,6
+CO-CDPHE-TR20230208-1A,recombinant,7,0,0,6,0
