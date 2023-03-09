@@ -284,7 +284,7 @@ task transfer {
         File wgs_horizon_report_csv
     }
 
-    String outdir = '${out_dir[0]}'
+    # String outdir = '${out_dir[0]}'
     String outdirpath = sub(out_dir, "/$", "")
 
     command <<<
