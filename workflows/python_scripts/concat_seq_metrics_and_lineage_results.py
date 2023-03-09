@@ -204,7 +204,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
 
     # read in nextclade csv
     nextclade = pd.read_csv(nextclade_clades_csv, dtype = {'accession_id' : object})
-    nextclade = nextclade.rename(columns = {'accession_id' : 'fasta_header'})
+    nextclade = nextclade.rename(columns = {'sample_name' : 'fasta_header'})
     sample_name = nextclade.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     nextclade.insert(value = sample_name, column = 'sample_name', loc = 0)
     nextclade = nextclade.drop(columns = 'fasta_header')
@@ -221,7 +221,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     # join
     j = df.join(workbook, how = 'left')
     j = j.join(percent_cvg_df, how = 'left')
-    j = j.join(samtools_df, how = 'left')
+    j = j.join(cov_out_df, how = 'left')
     j = j.join(nextclade, how = 'left')
     j = j.join(pangolin, how = 'left')
     j = j.join(spike_variants_df, how = 'left')
@@ -231,7 +231,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     j['fasta_header'] = j.apply(lambda x:create_fasta_header(x.sample_name), axis=1)
 
     # add assembled column and fill in failed assembles with 0% coveage
-    j.percent_coverage = j.perecent_coverage.fillna(value = 0)
+    j.percent_coverage = j.percent_coverage.fillna(value = 0)
 
     def get_assembly_pass(percent_coverage):
         if percent_coverage == 0:
@@ -241,7 +241,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     j['assembly_pass'] = j.apply(lambda x:get_assembly_pass(x.percent_coverage), axis = 1)
 
     # order columns
-    columns = j.columns
+    columns = j.columns.tolist()
     columns.sort()
     primary_columns = ['hsn', 'sample_name', 'project_name', 'plate_name', 
                        'run_name', 'analysis_date', 'run_date', 'assembly_pass', 
@@ -277,22 +277,32 @@ def concat_results(sample_name_list, workbook_path, project_name,
 
     return j
 
-def get_project_name(workbook_path):
-    df = pd.read_csv(workbook_path, sep = '\t')
-    project_name = df.project_name[0]
+# def get_project_name(workbook_path):
+#     df = pd.read_csv(workbook_path, sep = '\t')
+#     project_name = df.project_name[0]
 
-    return project_name
+#     return project_name
 
 
 def make_wgs_horizon_output (results_df, project_name):
 
-    # d = results_df.rename(columns = {'percent_non_ambigous_bases' : 'percent_coverage'})
-
     results_df['report_to_epi'] = ''
     results_df['Run_Date'] = str(date.today())
 
+    # rename columns 
+    results_df = results_df.rename(columns = {'hsn' : 'accession_id', 'pango_designation_version' : 'pangoLEARN_version'})
+
+    # # add pangolin to the as prefix to version
+    # # pull out panglin version 
+    
+    # for row in range(results_df.shape[0]):
+    #     version = results_df.pangolin_version[row]
+    #     new_version_txt = f'pangolin {version}'
+    #     results_df.at[row, 'pangolin_version'] = new_version_txt
+
     col_order = ['accession_id', 'percent_coverage', 'pangolin_lineage', 'pangolin_version',
                  'report_to_epi', 'Run_Date', 'pangoLEARN_version']
+    
     results_df = results_df[col_order]
 
     outfile = "%s_wgs_horizon_report.csv" % project_name
@@ -311,7 +321,7 @@ if __name__ == '__main__':
     project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
-    pangolin_version = options.pangolin_version
+    # pangolin_version = options.pangolin_version
 
     nextclade_clades_csv = options.nextclade_clades_csv
     nextclade_variants_csv = options.nextclade_variants_csv

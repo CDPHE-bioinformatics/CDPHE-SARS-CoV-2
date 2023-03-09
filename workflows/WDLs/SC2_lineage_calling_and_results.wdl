@@ -285,7 +285,7 @@ task transfer {
     }
 
     String outdir = '${out_dir[0]}'
-    String outdirpath = sub(outdir, "/$", "")
+    String outdirpath = sub(out_dir, "/$", "")
 
     command <<<
 
