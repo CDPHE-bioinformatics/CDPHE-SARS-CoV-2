@@ -1,5 +1,7 @@
 # SC2 wdl python scripts
 
+**updated 2023-03-09 to sync with universal naming switch over**
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -122,16 +124,16 @@ The script takes the following inputs:
 
 | flag | description |
 |------|-------------|
-|``sample_name``| the sample_name variables for the set of samples as an array and written to a txt file using the wdl function ``write_lines`` |
-|``workbook_path``|the gcp file path to the workbook. The workbook can inlcude any column you'd like but must include at minimum the following columns: ``hsn``, ``sample_id``, ``project_name``, ``plate_name``,   ``run_name``. These columns can be left blank if needed.|
-|``cov_out_filles``| the list of the ``cov_out`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` from the bam stats task. |
-|``percent_cvg_files``|the list of the ``percent_cvg_csv`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows from the ``calc_percent_coverage.py`` script called during the ``calc_percent_cvg`` task.|
-|``assembler_version``| nthe assembler_version variable (column in the terra data table) for the worfklow . This is written to the terra data table during the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows.|
-|``pangolin_lineage_csv``|this is the lineage report csv file generated from pangolin during the ``pangolin`` task|
-|``nextclade_clades_csv``|this is the ``{seq_run}_nextclade_results.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.|
-|``nextclade_variants_csv``|  this is the ``{seq_run}_nextclade_variant_summary.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.|
-|``nextclade_version``|this is the nextclade version which is defined as output during the ``nextclade`` task.|
-|``project_name``| project_name from column in terra data table|
+|``--sample_name``| the sample_name variables for the set of samples as an array and written to a txt file using the wdl function ``write_lines`` |
+|``--workbook_path``|the gcp file path to the workbook. The workbook can inlcude any column you'd like but must include at minimum the following columns: ``hsn``, ``sample_id``, ``--project_name``, ``plate_name``,   ``run_name``. These columns can be left blank if needed.|
+|``--cov_out_filles``| the list of the ``cov_out`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` from the bam stats task. |
+|``--percent_cvg_files``|the list of the ``percent_cvg_csv`` variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows from the ``calc_percent_coverage.py`` script called during the ``calc_percent_cvg`` task.|
+|``--assembler_version``| nthe assembler_version variable (column in the terra data table) for the worfklow . This is written to the terra data table during the ``SC2_ont_assembly.wdl``, ``SC2_ilumina_se_assembly.wdl`` or ``SC2_illumina_pe_assembly.wdl`` workflows.|
+|``--pangolin_lineage_csv``|this is the lineage report csv file generated from pangolin during the ``pangolin`` task|
+|``--nextclade_clades_csv``|this is the ``{seq_run}_nextclade_results.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.|
+|``--nextclade_variants_csv``|  this is the ``{seq_run}_nextclade_variant_summary.csv`` file generated from the ``nextclade_json_parser.py`` script during the ``parse_nextclade`` task.|
+|``--nextclade_version``|this is the nextclade version which is defined as output during the ``nextclade`` task.|
+|``--project_name``| project_name from column in terra data table|
 
 
 
@@ -139,6 +141,7 @@ The script takes the following inputs:
 ### outputs
 There are three outputs from this script. Example outputs can be found in the example data directory within this repo.   
 1. ``{project_name}_sequencing_results.csv``: summary of sequencing metrics for all samples within the sample set. Below is a table of the column headers and their description. Currently all headers from the sequencing workbook which get carried over to the terra datatable are inlcuded in this output file. The list below includes some but not all of the columns in the file. 
+
 |column header name| description |
 |------------|-----------|
 |``sample_name``| sample name|
@@ -185,7 +188,11 @@ There are three outputs from this script. Example outputs can be found in the ex
 |``analysis_date``|date assembly workflow ran|
 
 
+<br/>
+<br/>
+
 2. ``{seq_run}_wgs_horizon_report.csv``: for internal use, parsing sequencing results into LIMS.Below is a table of the column headers and their description.
+
 |column header name| description |
 |------------|-----------|
 |``accession_id``| sample name|
@@ -196,7 +203,8 @@ There are three outputs from this script. Example outputs can be found in the ex
 |``Run_Date``| date assembly workflow ran|
 |``pangoLEARN_version``| this column is also not used but we have to keep it|
 
-
+<br/>
+<br/>
 
 ## details about working with sample sets
 (so it's written down somewhere and I don't forget)

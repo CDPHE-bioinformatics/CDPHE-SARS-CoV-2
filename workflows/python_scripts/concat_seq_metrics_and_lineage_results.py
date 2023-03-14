@@ -156,7 +156,7 @@ def get_df_spike_mutations(variants_csv):
 
     df['sample_name'] = sample_name_list
     df['spike_mutations'] = variant_name_list
-    print(df)
+    # print(df)
 
     return df
 
@@ -179,7 +179,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     df = df.set_index('sample_name')
     df['analysis_date'] = str(date.today())
     df['assembler_version'] = assembler_version
-    # print(df)
+    print(df)
     # read in workbook
     workbook = pd.read_csv(workbook_path, sep = '\t')
     workbook = workbook.set_index('sample_name')
@@ -222,7 +222,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     cov_out_df = cov_out_df.set_index('sample_name')
     percent_cvg_df = percent_cvg_df.set_index('sample_name')
     spike_variants_df = spike_variants_df.set_index('sample_name')
-    print(spike_variants_df)
+    # print(spike_variants_df)
 
     # join
     j = df.join(workbook, how = 'left')
