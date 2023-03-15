@@ -31,6 +31,10 @@ def getOptions(args=sys.argv[1:]):
     return options
 
 
+def get_sample_name_from_fasta_header(fasta_header):
+    sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
+    return sample_name 
+
 def extract_variant_list(json_path, project_name):
 
     # create pd data frame to fill
@@ -124,7 +128,8 @@ def extract_variant_list(json_path, project_name):
                 nuc_end_list.append(nuc_end)
 
 
-    df['sample_name'] = sample_name_list
+    df['fasta_header'] = sample_name_list
+    df['sample_name'] = df.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     df['variant_name'] = mutation_list
     df['gene'] = gene_list
     df['codon_position'] = codon_pos_list
@@ -164,7 +169,8 @@ def get_nextclade(json_path, project_name):
             totalAADeletions_list.append(data['results'][i]['totalAminoacidDeletions'])
             
 
-    df['sample_name'] = sample_name_list
+    df['fasta_header'] = sample_name_list
+    df['sample_name'] = df.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     df['nextclade'] = clade_list
     df['total_nucleotide_mutations'] = totalSubstitutions_list
     df['total_nucleotide_deletions'] = totalDeletions_list

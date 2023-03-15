@@ -92,8 +92,8 @@ def concat_percent_cvg(percent_cvg_file_list):
 
     df_list = []
     for file in percent_cvg_file_list:
-        d = pd.read_csv(file, dtype = {'accession_id' : object})
-        d = d.rename(columns = {'accession_id' : 'sample_name'})
+        d = pd.read_csv(file, dtype = {'sample_name' : object})
+        # d = d.rename(columns = {'accession_id' : 'sample_name'})
         df_list.append(d)
 
     df = pd.concat(df_list)
@@ -108,9 +108,9 @@ def get_df_spike_mutations(variants_csv):
     
     # read in variants file
     variants = pd.read_csv(variants_csv, dtype = {'sample_name' : object})
-    variants = variants.rename(columns = {'sample_name' : 'fasta_header'})
+    # variants = variants.rename(columns = {'sample_name' : 'fasta_header'})
 
-    variants['sample_name'] = variants.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
+    # variants['sample_name'] = variants.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
     variants = variants.drop(columns = 'fasta_header')
     # print(variants)
 
@@ -181,7 +181,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     df['assembler_version'] = assembler_version
     print(df)
     # read in workbook
-    workbook = pd.read_csv(workbook_path, sep = '\t')
+    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'sample_name' : object, 'hsn' : object})
     workbook = workbook.set_index('sample_name')
 
     # read in panlogin results
@@ -209,10 +209,10 @@ def concat_results(sample_name_list, workbook_path, project_name,
 
 
     # read in nextclade csv
-    nextclade = pd.read_csv(nextclade_clades_csv, dtype = {'accession_id' : object})
-    nextclade = nextclade.rename(columns = {'sample_name' : 'fasta_header'})
-    sample_name = nextclade.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
-    nextclade.insert(value = sample_name, column = 'sample_name', loc = 0)
+    nextclade = pd.read_csv(nextclade_clades_csv, dtype = {'sample_name' : object})
+    # nextclade = nextclade.rename(columns = {'sample_name' : 'fasta_header'})
+    # sample_name = nextclade.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
+    # nextclade.insert(value = sample_name, column = 'sample_name', loc = 0)
     nextclade = nextclade.drop(columns = 'fasta_header')
     nextclade['nextclade_version'] = nextclade_version
     nextclade = nextclade.set_index('sample_name')
