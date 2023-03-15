@@ -353,12 +353,12 @@ task bam_stats {
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
         samtools coverage --region MN908947.3:21,563-25,384 \
-            -o ~{sample_id}_S_gene_coverage.txt ~{bam}
+            -o ~{sample_name}_S_gene_coverage.txt ~{bam}
 
         # Calculate depth of coverage over S gene amplicon regions (excludes overlapping regions with adjacent amplicons)
         echo "calculating depths for ~{s_gene_amplicons}"
         {
-            s_gene_depths="~{sample_id}_S_gene_depths.tsv"
+            s_gene_depths="~{sample_name}_S_gene_depths.tsv"
 
             # write header line to s_gene_depths output file
             read header
