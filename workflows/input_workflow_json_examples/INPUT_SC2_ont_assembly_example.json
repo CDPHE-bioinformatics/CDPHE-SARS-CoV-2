@@ -1,0 +1,9 @@
+{"SC2_ont_assembly.index_1_id":"${this.index_1_id}",                
+"SC2_ont_assembly.covid_genome":"${workspace.covid_genome_fa}",                
+"SC2_ont_assembly.gcs_fastq_dir":"${this.fastq_dir}",                
+"SC2_ont_assembly.calc_percent_coverage_py":"${workspace.covid_calc_percent_coverage_py}",                
+"SC2_ont_assembly.primer_bed":"${workspace.artic_v4-1_bed}",                
+"SC2_ont_assembly.primer_set":"${this.primer_set}",                
+"SC2_ont_assembly.s_gene_amplicons":"${workspace.artic_v4-1_s_gene_amplicons}",                
+"SC2_ont_assembly.s_gene_primer_bed":"${workspace.artic_v4-1_s_gene_primer_bed}",                
+"SC2_ont_assembly.sample_name":"${this.entity_name_id}"}

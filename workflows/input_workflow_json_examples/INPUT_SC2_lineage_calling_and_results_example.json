@@ -1,0 +1,10 @@
+{"SC2_lineage_calling_and_results.assembler_version_array":"${this.entity-names.assembler_version}",                     
+"SC2_lineage_calling_and_results.renamed_consensus":"${this.entity-names.renamed_consensus}",                     
+"SC2_lineage_calling_and_results.concat_seq_results_py":"${workspace.covid_concat_results_py}",                     
+"SC2_lineage_calling_and_results.cov_out":"${this.entity_names.cov_out}",                     
+"SC2_lineage_calling_and_results.nextclade_json_parser_py":"${workspace.covid_nextclade_json_parser_py}",                     
+"SC2_lineage_calling_and_results.out_dir_array":"${this.entity-names.out_dir}",                     
+"SC2_lineage_calling_and_results.percent_cvg_csv":"${this.entity-names.percent_cvg_csv}",                     
+"SC2_lineage_calling_and_results.workbook_path_array" : "${this.entity-names.workbook_path}",                     
+"SC2_lineage_calling_and_results.sample_name":"${this.entity-names.entity_name_id}",                     
+"SC2_lineage_calling_and_results.project_name_array":"${this.entity-names.project_name}"}

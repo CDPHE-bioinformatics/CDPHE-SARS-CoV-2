@@ -1,0 +1,14 @@
+amplicon	coords	description
+70	21,697-21,894	S1-NTD; 69/70del site
+71	21,928-22,189	S1-NTD
+72	22,239-22,494	S1-NTD;
+73	22,518-22,774	Begin receptor-binding domain
+74	22,840-22,954	Receptor-binding motif
+75	23,120-23,258	End receptor-binding motif/domain
+76	23,297-23,589	
+77	23,610-23,853	Furin cleavage site; putative T-cell superantigen
+78	23,915-24,189	Host TMPRSS2/CTSL cleavage site
+79	24,210-24,468	
+80	24,536-24,774	
+81	24,816-25,082	
+82	25,121-25,402	ER export motif, membrane localizing domain binding

@@ -19,6 +19,8 @@ Our SARS-CoV-2 whole genome reference-based assembly workflows are highly adapta
 
 Briefly, we begin with one of our processing python scripts (see ''../preprocess_python_scripts'' for more details), which organizes raw fastq files from either Illumina or ONT platforms, pushes the reads to a specified google bucket, and generates an input data table for Terra.bio. Next, using the platform appropriate assembly workflow on Terra.bio (``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, or ``SC2_ont_assembly``), we perform quality control, trimming, and filtering of raw reads, and perform reference-guided whole genome assembly. Following assembly, intermediate and results files are transfered to a user defined google storage bucket using the appropriate transfer workflow (``SC2_transfer_illumina_pe_assembly``, ``SC2_transfer_illumina_se_assembly``, or ``SC2_transfer_ont_assembly``). Next, we use Pangolin and Nextclade to peform clade and lineage assignment on the consesnus assemblies and produce a results summary file for the set of sequences analyzed using the ``SC2_lineage_calling_and_results`` workflow. If you already have a multifasta, you can use the ``SC2_multifasta_lineage_calling`` workflow for clade and lineage assignment. We genearte a nextstrain build usig the publically available Nextstrain workflow ((https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:v2.1.33.9?tab=info). For wastewater samples, bam files generated from one of the three assembly workflows can be used as input in our ``SC2_wastewater_variant_calling workflow``.  Below is a high level overview of our workflow process that gets us from fastq files to lineage calls.
 
+As of Jan 2023, ``SC2_illumina_se_assembly`` is no longer maintained. This workflow was developed for the assembly of Illumina 72 bp single-end read data using the Illumina COVIDSEQ library prep protocol. We no longer use this library prep method. 
+
 <br/>
 
 ![SC2 high level overview workflow diagram](./workflow_diagrams/SC2_overview_workflow_diagram.png "high level overview of SC2 workflow")
@@ -31,27 +33,31 @@ Briefly, we begin with one of our processing python scripts (see ''../preprocess
 <details>
 <summary>click to expand</summary>
 
+<br/>
+
 Prior to running any of the workflows, you must set up the terra table and link reference files and custom python scripts to your workspace data. Below is a table detailing the workspace data you will need to set up.
+
+<br/>
 
 #### Workspace data
 The reference files can be found in this repository in the ``workspace_data`` directory. Python scripts can be found in the listed repsoitory directory.
 
-| workspace variable name | file name | description |
-|-------------------|-----------------|--------------------|
-| ``adapters_and_contaminants_fa`` | Adapters_plus_PhiX_174.fasta | adapaters sequences and contaiment sequences removed during fastq cleaning and filtering using SeqyClean. Thanks to Erin Young at Utah Public Health Laboratory for providing this file!  |
-| ``covid_genome_gff`` | reference.gff | whole genome reference sequence annotation file in gff format (we use NCBI genbank ID MN908947.3) |
-| ``covid_genome_fa`` | reference.fasta | SARS-CoV-2 whole genome reference sequence in fasta format (we use NCBI genbank ID MN908947.3) |
-| ``artic_v3_bed`` | V3_nCov-2019.primer.bed | primer bed file for the Artic V3 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| ``artic_v4_bed` | V4_nCoV-2021.primer.bed | primer bed file for the Artic V4 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| ``artic_v4-1_bed`` | V4-1_nCoV-2021.primer.bed | primer bed file for the Artic V4.1 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-|``artic_v4-1_s_gene_amplicons``||
-|``artic_v4-1_s_gene_primer_bed``||
-| ``midnight_bed`` | Midnight_Primers_SARS-CoV-2.scheme.bed | primer bed file for the Midnight tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
-| `` covid_voc_annotations_tsv``| SC2_voc_annotations_{date}.tsv | For wastewater only. List of amino acid (AA) subsitiutions and lineages containing those AA substitutions; for a lineage to be associated with a given AA subsitution, 90% of publically available sequences must contain the AA substition (the 90% cutoff was determined using outbreak.info) |
-| ``covid_voc_bed_tsv``| SC2_voc_mutations_{date}.tsv |  For wastewater only. List of nucleotide genome positions in relation to the MN908947.3 reference genome of know mutations |
-| ``covid_calc_per_cov_py`` | calc_percent_coverage.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
-| ``covid_nextclade_json_parser_py`` | nextclade_json_parser.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
-| ``covid_concat_results_py`` | concat_seq_metrics_and_lineages_results.py | see detailed description in the readme file found in ``./python_scripts`` repo directory |
+| workspace variable name | workflow|  file name | description | 
+|-------------------|-----------------|--------------------|-----------------|
+| ``adapters_and_contaminants_fa`` | ``SC2_illumina_pe_assembly``| Adapters_plus_PhiX_174.fasta | adapaters sequences and contaiment sequences removed during fastq cleaning and filtering using SeqyClean. Thanks to Erin Young at Utah Public Health Laboratory for providing this file!  |
+| ``covid_genome_gff`` |``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, ``SC2_ont_assembly`` | NC_045512-2_reference.gff| whole genome reference sequence annotation file in gff format (we use NCBI genbank ID MN908947.3) |
+| ``covid_genome_fa`` | ``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, ``SC2_ont_assembly``|MN908947-2_reference.fasta | SARS-CoV-2 whole genome reference sequence in fasta format (we use NCBI genbank ID MN908947.3) |
+| ``artic_v3_bed`` |  ``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, ``SC2_ont_assembly``|artic_V3_nCoV-2019.primer.bed| primer bed file for the Artic V3 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+| ``artic_v4_bed`` | ``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, ``SC2_ont_assembly``|artic_V4_nCoV-2019.primer.bed | primer bed file for the Artic V4 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+| ``artic_v4-1_bed`` | ``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, ``SC2_ont_assembly``|artic_V4-1_nCoV-2019.primer.bed | primer bed file for the Artic V4.1 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+|``artic_v4-1_s_gene_amplicons``|``SC2_illumina_pe_assembly``,  ``SC2_ont_assembly``|artic_v4_1_s_gene_amplicons.tsv||
+|``artic_v4-1_s_gene_primer_bed``|``SC2_illumina_pe_assembly``,  ``SC2_ont_assembly``| S_gene_V4-1_nCoV-2021.primer.bed||
+| ``midnight_bed`` | ``SC2_ont_assembly``| Midnight_Primers_SARS-CoV-2.scheme.bed | primer bed file for the Midnight tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file! |
+| `` covid_voc_annotations_tsv``|``SC2_wastewater_variant_calling workflow``| SC2_voc_annotations_20220711.tsv | For wastewater only. List of amino acid (AA) subsitiutions and lineages containing those AA substitutions; for a lineage to be associated with a given AA subsitution, 90% of publically available sequences must contain the AA substition (the 90% cutoff was determined using outbreak.info) |
+| ``covid_voc_bed_tsv``|``SC2_wastewater_variant_calling workflow``.| SC2_voc_mutations_20220711.tsv |  For wastewater only. List of nucleotide genome positions in relation to the MN908947.3 reference genome of know mutations |
+| ``covid_calc_per_cov_py`` |``SC2_illumina_pe_assembly``, ``SC2_illumina_se_assembly``, ``SC2_ont_assembly`` |calc_percent_coverage.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
+| ``covid_nextclade_json_parser_py`` | ``SC2_lineage_calling_and_results``| nextclade_json_parser.py | see detailed description in the readme file found in ``./python_scripts/`` repo directory|
+| ``covid_concat_results_py`` | ``SC2_lineage_calling_and_results``| concat_seq_metrics_and_lineages_results.py | see detailed description in the readme file found in ``./python_scripts`` repo directory |
 
 
 </details>
@@ -68,6 +74,8 @@ The following three workflows describe the reference based assembly methods for 
 ### SC2_illumina_pe_assembly.wdl
 <details>
 <summary>click to expand</summary>
+
+<br/>
 
 ### Overview
 This workflow was developed for the assembly of Illumina 150 bp paired-end read data using the Illumina Nextera XT library prep protocol. The workflow accepts "sample" as the root entity type. The workflow will:
@@ -86,110 +94,90 @@ This workflow was developed for the assembly of Illumina 150 bp paired-end read 
 
 ![SC2_illumina_pe_assembly.wdl workflow diagram](./workflow_diagrams/SC2_illumina_pe_assembly.png "SC2_illumina_pe_assembly.wdl workflow diagram")
 
+
+<br/>
+
 ### Inputs
 1. Terra data table.
 
-  The terra data table can be generated using the preprocess python scripts available in the [preprocess_python_scripts directory](./../preprocess_python_scripts) directory. The terra data table must include the following columns as listed below. Note that optional columns are not neccessary for the assembly workflow but must be present for the SC2_lineage_calling_and results.wdl and Transfer workflows described below under ``Lineage Calling Workflows`` and ``Transfer Workflows``, respecitively.
+   The terra data table must include the following columns as listed below. Note that optional columns are not neccessary for the assembly workflow but must be present for the SC2_lineage_calling_and results.wdl and Transfer workflows described below under ``Lineage Calling Workflows`` and ``Transfer Workflows``, respecitively.
 
-  1. ``entity:sample_id``: column with the list of sample names/ids. Note that if there is more than one data table in the Terra Workspace, you need to add a number after the word sample to keep the datatables seperate (e.g. ``entity:sample2_id``).
-  2. ``fastq_1``: The google bucket path to the R1 fastq file.
-  3. ``fastq_2``: The google bucket path to the R2 fastq file.
-  4. ``seq_run`` (optional): the name of the sequencing run (e.g. COVSEQ_0101)
-  5. ``tech_platform`` (optional) : e.g. Illumina MiSeq
-  6. ``read_type`` (optional): paired
-  7. ``primer_set`` (optional): Artic V3, Artic V4, Artic V4.1
-  8. ``plate_name`` (optional): name of sequencing plate  
-  9. ``plate_sample_well`` (optional): location of well on sequencing plate
-  10. ``out_dir`` (optional): user defined google bucket for where the files will be transfered during the transfer workflows.
+| column header | description | 
+|-------------------|-----------------|
+| ``entity:sample_id``| column with the list of sample names. (e.g. ``entity:covwwt-0203_id``) |
+| ``fastq_1``| The google bucket path to the R1 fastq file.|
+|``fastq_2``| The google bucket path to the R2 fastq file.|
+|``out_dir``| User defined google bucket for where the files will be transfered during the transfer workflows. |
+|``workbook_path``| (optional; required for lineage calling workflow) | 
+|``project_name``| (optional; requried for lineage calling workflow) |
 
+<br/>
 
 2. Terra Workspace Data.
 
-  The following reference files can be found in the [workspace_data](./workspace/) directory and the [python_scripts](./python_scripts/) directory. These files should be saved as Workspace data in your Terra Workspace. To do so, upload the files to a google bucket an link the file path to the wrokspace data variable. Once saved as workspace data variables, they can be used as inputs for the workflow.
+  See [Getting set up](#getting-set-up) above. 
 
-  1. ``covid_genome``: the path to the google bucket directory contianing the SARS-CoV-2 reference genome fasta (we use NCBI genbank ID MN908947.3).
-  2. ``covid_gff``: the path to the google bucket directory containing the SARS-CoV-2 reference genome gff annotation file (we use NCBI genbank ID MN908947.3)
-  3. ``adapter_and_contaminants``: the path to the google bucket directory containing a fasta file of adapter sequences and PhiX sequences as potential contaminants
-  4. ``primer_bed``: the path to the google bucket directory containing a bed file with the primers used for amplicon sequencing
-    - currenly we have bed files for Artic V3, Artic V4, Artic V4.1 and Midnight.
-  5. ``preprocess_python_script``: the path to the google bucket containing the ``calc_percent_coverage.py`` script.
+<br/>
 
+3. Setting up the workflow inputs
 
-Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this." syntax refers Terra to pull the variable from the terra datatable (#1 above). The  "workspace." syntax refers Terra to pull the variable from the terra workspace data (#2 above).
+  For setting up the worklfow inputs, use the ``SC2_illumina_pe_assembly-input.json`` in the ``workflow_inputs`` directory.
 
   |workflow variable| attribute (input syntax into workflow) |
   |------------|-----------|
-  |``adapters_and_contaminants``| workspace.adapters_and_contaminants|
-  |``covid_genome``| workspace.covid_genome|
-  |``covid_gff``| workspace.covid_gff
-  |``fastq_1``| this.fastq_1|
-  |``fastq_2``| this.fastq_2|
-  |``preprocess_python_script``| workspace.preprocess_python_script|
-  |``primer_bed``|workspace.V4-1Artic|
-  |``sample_id``| this.sample{terra_datatable_name}_id|
+  |``adapters_and_contaminants``|workspace.adapters_and_contaminants_fa|
+  |``calc_percent_coverage_py``|workspace.covid_calc_percent_coverage_py|
+  |``covid_genome``|workspace.covid_genome_fa|
+  |``covid_gff``|workspace.covid_genome_gff|
+  |``fastq_1``|this.fastq_1|
+  |``fastq_2``|this.fastq_2|
+  |``primer_bed``|workspace.artic_v4-1_bed|
+  |``s_gene_amplicons``|workspace.artic_v4-1_s_gene_amplicons|
+  |``sample_name``|this.{entity_name}_id|
+
+<br/>
 
 ### Outputs
-1. Output files from Seqyclean
-  - ``filtered_reads_1``: file
-  - ``filtered_reads_2``: file
-  - ``seqyclean_summary``: file
+
+| WDL task name | software/program | variable name | description |
+|---------------|------------------|---------------|-------------|
+|seqyclean| seqyclean| ``filtered_reads_1``| file|
+|seqyclean| seqyclean| ``filtered_reads_2``| file|
+|seqyclean| seqyclean| ``seqyclean_summary``| file|
+|fastqc as fastqc_raw| fastqc| ``fastqc_raw1_html``| file|
+|fastqc as fastqc_raw| fastqc| ``fastqc_raw1_zip``| file|
+|fastqc as fastqc_raw| fastqc| ``fastqc_raw2_html``| file|
+|fastqc as fastqc_raw| fastqc| ``fastqc_raw2_zip``| file|
+|fastqc as fastqc_cleaned| fastqc| ``fastqc_clean1_html``| file|
+|fastqc as fastqc_cleaned| fastqc| ``fastqc_clean1_zip``| file|
+|fastqc as fastqc_cleaned| fastqc|``fastqc_clean2_html``| file|
+|fastqc as fastqc_cleaned| fastqc| ``fastqc_clean2_zip``| file|
+|align_reads|bwa and samtools| ``out_bam``| file|
+|align_reads|bwa and samtools| ``out_bamindex``| file|
+|align_reads|bwa and samtools|``assembler_version``| string recording the version for bwa, this information is used later for submitting to public repositories.|
+|ivar trim |ivar trim and samtools| ``trim_bam`` | file|
+|ivar trim |ivar trim and samtools| ``trimsort_bam`` | file|
+|ivar trim |ivar trim and samtools| ``trimsort_bamindex`` | file|
+|ivar variants| ivar variants| ``variants``| vcf file formatted as a tsv|
+|ivar consensus| ivar consnesus| ``consensus``| fasta file of conensus genome, Ns are called in places with less than 10 bp read depth. |
+|bam_stats|samtools flagstat, stats, percent_coverage | ``flagstat_out``| file|
+|bam_stats|samtools flagstat, stats, percent_coverage | ``stats_out``| file|
+|bam_stats|samtools flagstat, stats, percent_coverage |  ``covhist_out``| file|
+|bam_stats|samtools flagstat, stats, percent_coverage |  ``cov_out``| file|
+|bam_stats|samtools flagstat, stats, percent_coverage | ``cov_s_gene_amplcions_out``| file|
+|bam_stats|samtools flagstat, stats, percent_coverage | ``cov_s_gene_out``|file|
+|rename_fasta| N/A | ``renamed_consensus``|fasta file; consesnus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_name}|
+|calc_percent_cvg|calc_percent_coverage.py| ``percent_cvg_csv``|csv file, see calc_percent_cvg.py script readme for details found in the ./python_scripts directory of this repository.|
 
 
-2. Output files from FastQC
-  - ``fastqc_raw1_html``: file
-  - ``fastqc_raw1_zip``: file
-  - ``fastqc_raw2_html``: file
-  - ``fastqc_raw2_zip``: file
-  - ``fastqc_clean1_html``: file
-  - ``fastqc_clean1_zip``: file
-  - ``fastqc_clean2_html``: file
-  - ``fastqc_clean2_zip``: file
-
-
-3. Output files from bwa and samtools (align reads)
-  - ``out_bam``: file
-  - ``out_bamindex``: file
-
-
-4. Output files from iVar trim and samtools
-  - ``trim_bam``: file
-  - ``trimsort_bam``: file
-  - ``trimsort_bamindex``: file
-
-
-5. Output files from iVar variants
-  - ``variants``: vcf file formated as a tsv
-
-
-6. Output files from iVar consensus
-  - ``conesnus``: fasta file of conensus genome, Ns are called in places with less than 10 bp read depth.  
-
-
-7. Output files from Samtools flagstat, stats, and percent_coverage
-  - ``fagstat_out``: file
-  - ``stats_out``: file
-  - ``covhist_out``: file
-  - ``cov_out``: file
-
-
-8. Output from rename consensus fasta headers
-  - ``renamed_consensus``: fasta file; consesnus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_id}
-
-
-9. Output from calc_percent_coverage.py
-  - ``percent_cvg_csv``: csv file, see calc_percent_cvg.py script readme for details found in the ./python_scripts directory of this repository.
-
-
-10. bwa assembler version string output  
-  - ``assembler_version``: string recording the version for bwa, this information is used later for submitting to public repositories.
-
-
+<br/>
 
 </details>
 
 <br/>
 
 ### SC2_illumina_se_assembly.wdl
+**This workflow is no longer maintained**
 <details>
 <summary>click to expand</summary>
 
@@ -313,6 +301,8 @@ Below is a summary of the workflow input variables along with the syntax used fo
 <details>
 <summary>click to expand</summary>
 
+<br/>
+
 ### Overview
 This workflow was developed for the assembly of Oxford Nanopore Technology (ONT) read data following the ARTIC SARS-CoV-2 sequencing protocol and using the ONT native barcoding kit. This workflow assumes that basecalling and conversion of fast5 files into fastq has already occurred (e.g. using MinKNOW). The workflow accepts "sample" as the root entity type. The workflow will:
 1. Demuliplex basecalled fastq files using guppy_barcoder
@@ -331,88 +321,73 @@ This workflow was developed for the assembly of Oxford Nanopore Technology (ONT)
 
 ![SC2_ont_assembly.wdl workflow diagram](./workflow_diagrams/SC2_ont_assembly.png "SC2_ont_assembly.wdl workflow diagram")
 
+<br/>
 
 ### Inputs
 1. Terra data table.
 
   The terra data table can be generated using the preprocess python scripts available in the [preprocess_python_scripts directory](./../preprocess_python_scripts) directory. The terra data table must include the following columns as listed below. Note that optional columns are not neccessary for the assembly workflow but but be present for the SC2_lineage_calling_and results.wdl and Transfer workflows described below under ``Lineage Calling Workflows`` and ``Transfer Workflows`` , respecitively.
 
-  1. ``entity:sample_id``: column with the list of sample names/ids. Note that if there is more than one data table in the Terra Workspace, you need to add a number after the word sample to keep the datatables seperate (e.g. ``entity:sample2_id``).
-  2. ``barcode``: the ont barcode associated with the sample.
-  3. ``fastq_dir``: the google bucket path with the set of fastq files
-  4. ``seq_run`` (optional): the name of the sequencing run (e.g. COVMIN_0900)
-  5. ``tech_platform`` (optional) : Oxford Nanopore Technology
-  6. ``read_type`` (optional): single
-  7. ``primer_set`` (optional): Artic V3, Artic V4, Artic V4.1, or Midnight
-  8. ``plate_name`` (optional): name of sequencing plate  
-  9. ``plate_sample_well`` (optional): location of well on sequencing plate
-  10. ``out_dir`` (optional): user defined google bucket fro where the files will be transfered during the transfer workflows.  
+
+  | column header | description | 
+|-------------------|-----------------|
+| ``entity:sample_id``| column with the list of sample names. (e.g. ``entity:covwwt-0203_id``) |
+| ``index_1_id``| the ont barcode associated with the sample|
+|``fastq_dir``| the google bucket path with the set of fastq files|
+|``out_dir``| User defined google bucket for where the files will be transfered during the transfer workflows. |
+|``workbook_path``| (optional; required for lineage calling workflow) | 
+|``project_name``| (optional; requried for lineage calling workflow) |
+
+<br/>
 
 2. Terra Workspace Data.
 
-  The following reference files can be found in the [workspace_data](./workspace/) directory and the [python_scripts](./python_scripts/) directory. These files should be saved as Workspace data in your Terra Workspace. To do so, upload the files to a google bucket an link the file path to the wrokspace data variable. Once saved as workspace data variables, they can be used as inputs for the workflow.
+  See [Getting set up](#getting-set-up) above. 
 
-  1. ``covid_genome``: the path to the google bucket directory contianing the SARS-CoV-2 reference genome fasta (we use NCBI genbank ID MN908947.3).
-  2. ``covid_gff``: the path to the google bucket directory containing the SARS-CoV-2 reference genome gff annotation file (we use NCBI genbank ID MN908947.3)
-  4. ``primer_bed``: the path to the google bucket directory containing a bed file with the primers used for amplicon sequencing
-    - currenly we have bed files for Artic V3, Artic V4, Artic V4.1 and Midnight.
-  5. ``preprocess_python_script``: [do we want to change the name of this variable in the WDL to match the python script name?] the path to the google bucket containing the ``calc_percent_coverage.py`` script.
+<br/>
 
-Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this." syntax refers Terra to pull the variable from the terra datatable (#1 above). The  "workspace." syntax refers Terra to pull the variable from the terra workspace data (#2 above).
+3. Setting up the workflow inputs
 
-|workflow variable| attribute (input syntax into workflow) |
-|------------|-----------|
-|``barcode``| this.barcode|
-|``covid_genome``| workspace.covid_genome|
-|``gcs_fastq_dir``| this.fastq_dir|
-|``preprocess_python_script``| workspace.preprocess_python_script|
-|``primer_bed``|workspace.V4-1Artic|
-|``primer_set``| this.primer_set|
-|``sample_id``| this.sample{terra_datatable_name}_id|
+  For setting up the worklfow inputs, use the ``SC2_ont_assembly-input.json`` in the ``workflow_inputs`` directory. 
+
+  |workflow variable| attribute (input syntax into workflow) |
+  |------------|-----------|
+  |``calc_percent_coverage_py``|workspace.covid_calc_percent_coverage_py|
+  |``covid_genome``|workspace.covid_genome_fa|
+  |``gcs_fastq_dir``| this.fastq_dir|
+  |``index_1_id`` | this.index_1_id|
+  |``primer_bed``| workspace.artic_v4-1_bed|
+  |``primer_set``| this.primer_set|
+  |``s_gene_amplicons``| workspace.artic_v4-1_s_gene_amplicons|
+  |``s_gene_primer_bed``| workspace.artic_v4-1_s_gene_primer_bed|
+  |``sample_name``|this.{entity_name}_id|
 
 
 
 
 ### Outputs
-1. outputs from guppy_barcoder demuliplexing
-  - ``barcode_summary``: file
-  - ``guppy_demux_fastq``: file
+
+| WDL task name | software/program | variable name | description |
+|---------------|------------------|---------------|-------------|
+|Demultiplex|guppy_barcoder| ``barcode_summary``| file|
+|Demultiplex|guppy_barcoder| ``guppy_dmux_fastq``| file|
+|guppyplex quality filtering| ``filtered_fatsq``| file|
+|Medaka|medaka and minimap2| ``sorted_bam``| file|
+|Medaka|medaka and minimap2| ``trim_sort_bam``| file|
+|Medaka|medaka and minimap2| ``trimsort_bai``| file|
+|Medaka|medaka and minimap2| ``variants``| file|
+|Medaka|medaka and minimap2| ``consensus``| file|
+|Medaka|medaka and minimap2| ``assembler_version``| string recording the version for artic medaka, this information is used later for submitting to public repositories.|
+|Bam_stats |samtools flagstat, stats, percent_coverage | ``flagstat_out``| file|
+|Bam_stats |samtools flagstat, stats, percent_coverage |  ``stats_out``| file|
+|Bam_stats |samtools flagstat, stats, percent_coverage |  ``covhist_out``| file|
+|Bam_stats |samtools flagstat, stats, percent_coverage | ``cov_out``| file|
+|Scaffold|pyScaf | ``scaffold_consensus``| consesnus sequence as a fasta file|
+|rename_fasta|N/A| ``renamed_consensus``|fasta file; consesnus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_name}|
+|calc_percent_cvg|calc_percent_coverage.py| ``percent_cvg_csv``|csv file, see calc_percent_cvg.py script readme for details found in the ./python_scripts directory of this repository.|
+|get_primer_site_variants| bcftools | ``primer_site_variants`` | file |
 
 
-2. outputs from guppyplex quality filtering
-  - ``filtered_fastq``: file
-
-
-3. outputs from medaka and minimap2
-  - ``sorted_bam``: file
-  - ``trimsort_bam`` : file
-  - ``trimsort_bai``: file
-  - ``variants``: vcf file
-  - ``consensus``: consensus genome sequence as a fasta file
-
-
-4. outputs from Samtools
-  - ``fagstat_out``: file
-  - ``samstats_out`` : file
-  - ``samstats_out`` : file
-  - ``covhist_out`` : file
-  - ``cov_out`` : file
-
-
-5. outputs from pyScaf
-  - ``scaffold_consensus``: consensus sequnce as a fasta file
-
-
-6. outputs from rename fasta
-  - ``rename_consensus``: fasta file; consesnus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_id}
-
-
-7. outputs from calc_percent_cvg
-  - ``percent_cvg_csv`` : csv file; for details see readme in the ./python_scripts/ directory
-
-
-8. outputs from assembler_version
-  - ``assember_version``: string recording the version for artic medaka, this information is used later for submitting to public repositories.
 
 </details>
 
@@ -421,32 +396,35 @@ Below is a summary of the workflow input variables along with the syntax used fo
 
 ## Transfer Workflows
 
-After assembly, the assembly workflow outputs are then transferred from Terra back to a user specified google bucket for additional analysis and storage. Each workflow accepts "sample set" as the root entity type and uses the data table from the corresponding assembly workflow data table that has been filled in with file paths to the outputs. If using the preprocess python scripts to generate the terra data table the user defined google bucket will be defined in the ``out_dir`` column in the terra datatable. Click each drop down to expand for details.
+After assembly, the assembly workflow outputs are then transferred from Terra back to a user specified google bucket for additional analysis and storage. Each workflow accepts "sample" as the root entity type and uses the data table from the corresponding assembly workflow data table that has been filled in with file paths to the outputs. 
 
 <br/>
 
 ### SC2_transfer_illumina_pe_assembly.wdl
 <details>
 <summary>click to expand</summary>
+
+<br/>
+
 This workflow transfers the output file generated from SC2_illumina_pe_assemby to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  
 
 |workflow variable| attribute (input syntax into workflow) | google bucket path|
 |------------|-----------|----------|
-|``consensus``| this.sample{terra_datatable_name}s.consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
-|``covhist_out``| this.sample{terra_datatable_name}s.coverage_hist| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
-|``cov_out``| this.sample{terra_datatable_name}s.coverage_out| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
-|``fastqc_clean1_html``| this.sample{terra_datatable_name}s.fastq_clean1_html| ``gs://{user_defined_gcp_bucket}/fastqc/``|
-|``fastqc_clean1_zip``|this.sample{terra_datatable_name}s.fastqc_clean1_zip|``gs://{user_defined_gcp_bucket}/fastqc/``|
-|``fastqc_clean2_html``| this.sample{terra_datatable_name}s.fastqc_clean2_html| ``gs://{user_defined_gcp_bucket}/fastqc/``|
-|``fastqc_clean2_zip ``| this.sample{terra_datatable_name}s.fastqc_clean2_zip|``gs://{user_defined_gcp_bucket}/fastqc/``|
-|``filtered_reads_1``| this.sample{terra_datatable_name}s.filtered_reads_1| ``gs://{user_defined_gcp_bucket}/seqyclean/``|
-|``filtered_reads_2``|this.sample{terra_datatable_name}s.filtered_reads_2| ``gs://{user_defined_gcp_bucket}/seqclean/``|
-|``flagstat_out``| this.sample{terra_datatable_name}s.flagstat_out| ``gs://{user_defined_gcp_bucket}/bamstats/``|
-|``out_dir``| this.sample{terra_datatable_name}s.out_dir| N/A |
-|``renamed_consensus``| this.sample{terra_datatable_name}s.renmaed_consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
-|``trimsort_bam``| this.sample{terra_datatable_name}s.trimsort_bam|``gs://{user_defined_gcp_bucket}/alignments/``|
-|``trimsort_bamindex``| this.sample{terra_datatable_name}s.trimsort_bamindex| ``gs://{user_defined_gcp_bucket}/alignments/``|
-|``variants`` | this.sample{terra_datatable_name}s.variants| ``gs://{user_defined_gcp_bucket}/variants/``|
+|``consensus``| this.consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
+|``covhist_out``| this.coverage_hist| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
+|``cov_out``| this.coverage_out| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
+|``fastqc_clean1_html``| this.fastq_clean1_html| ``gs://{user_defined_gcp_bucket}/fastqc/``|
+|``fastqc_clean1_zip``|this.fastqc_clean1_zip|``gs://{user_defined_gcp_bucket}/fastqc/``|
+|``fastqc_clean2_html``| this.fastqc_clean2_html| ``gs://{user_defined_gcp_bucket}/fastqc/``|
+|``fastqc_clean2_zip ``| this.fastqc_clean2_zip|``gs://{user_defined_gcp_bucket}/fastqc/``|
+|``filtered_reads_1``| this.filtered_reads_1| ``gs://{user_defined_gcp_bucket}/seqyclean/``|
+|``filtered_reads_2``|this.filtered_reads_2| ``gs://{user_defined_gcp_bucket}/seqclean/``|
+|``flagstat_out``| this.flagstat_out| ``gs://{user_defined_gcp_bucket}/bamstats/``|
+|``out_dir``| this.out_dir| N/A |
+|``renamed_consensus``| this.renmaed_consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
+|``trimsort_bam``| this.trimsort_bam|``gs://{user_defined_gcp_bucket}/alignments/``|
+|``trimsort_bamindex``| this.trimsort_bamindex| ``gs://{user_defined_gcp_bucket}/alignments/``|
+|``variants`` | this.variants| ``gs://{user_defined_gcp_bucket}/variants/``|
 
 ![SC2_transfer_illumina_pe_assembly.wdl workflow diagram](./workflow_diagrams/SC2_transfer_illumina_pe_assembly.png "SC2_transfer_illumina_pe_assembly.wdl workflow diagram")
 
@@ -455,6 +433,8 @@ This workflow transfers the output file generated from SC2_illumina_pe_assemby t
 <br/>
 
 ### SC2_transfer_illumina_se_assembly.wdl
+**this workflow is not longer maintained**
+
 <details>
 <summary>click to expand</summary>
 This workflow transfers the output file generated from SC2_illumina_se_assemby to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  
@@ -485,20 +465,22 @@ This workflow transfers the output file generated from SC2_illumina_se_assemby t
 ### SC2_transfer_ont_assembly.wdl
 <details>
 <summary>click to expand</summary>
+<br/>
+
 This workflow transfers the output file generated from SC2_ont_assemby to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  
 
-|workflow variable| attribute (input syntax into workflow) | google bucket path|
+|workflow variable| attribute (input syntax into workflow) | google bucket path when transfered|
 |------------|-----------|----------|
-|``covhist_out``| this.sample{terra_datatable_name}s.coverage_hist| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
-|``cov_out``| this.sample{terra_datatable_name}s.coverage_out| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
-|``filtered_fastq``| this.sample{terra_datatable_name}s.filtered_fastq| ``gs://{user_defined_gcp_bucket}/filtered_fastq/``|
-|``flagstat_out``| this.sample{terra_datatable_name}s.flagstat_out| ``gs://{user_defined_gcp_bucket}/bamstats/``|
-|``out_dir``| this.sample{terra_datatable_name}s.out_dir| N/A |
-|``renamed_consensus``| this.sample{terra_datatable_name}s.renmaed_consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
-|``samstats_out``| this.sample{terra_datatable_name}s.samstats_out| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
-|``scaffold_consensus``| this.sample{terra_datatable_name}s.scaffold_consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
-|``trimsort_bam``| this.sample{terra_datatable_name}s.trimsort_bam|``gs://{user_defined_gcp_bucket}/alignments/``|
-|``variants`` | this.sample{terra_datatable_name}s.variants| ``gs://{user_defined_gcp_bucket}/variants/``|
+|``covhist_out``| this.coverage_hist| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
+|``cov_out``| this.coverage_out| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
+|``filtered_fastq``| this.filtered_fastq| ``gs://{user_defined_gcp_bucket}/filtered_fastq/``|
+|``flagstat_out``| this.flagstat_out| ``gs://{user_defined_gcp_bucket}/bamstats/``|
+|``out_dir``| this.out_dir| N/A |
+|``renamed_consensus``| this.renmaed_consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
+|``samstats_out``| this.samstats_out| ``gs://{user_defined_gcp_bucket}/bam_stats/``|
+|``scaffold_consensus``| this.scaffold_consensus| ``gs://{user_defined_gcp_bucket}/assemblies/``|
+|``trimsort_bam``| this.trimsort_bam|``gs://{user_defined_gcp_bucket}/alignments/``|
+|``variants`` | this.variants| ``gs://{user_defined_gcp_bucket}/variants/``|
 
 ![SC2_transfer_ont_assembly.wdl workflow diagram](./workflow_diagrams/SC2_transfer_ont_assembly.png "SC2_transfer_ont_assembly.wdl workflow diagram")
 
@@ -532,21 +514,18 @@ Below is a summary of the workflow input variables along with the syntax used fo
 
 |workflow variable| attribute (input syntax into workflow) |
 |------------|-----------|
-|``assembler_version``|this.sample{terra_datatable_name}s.assembler_version|
-|``assembly_fastas``| this.sample{terra_datatable_name}s.renamed_consesnus|
-|``concat_results_script``| workspace.concat_results_script|
-|``cov_out_txt``| this.sample{terra_datatable_name}s.cov_out|
-|``covid_genome``|workspace.covid_genome|
-|``nextclade_json_parser_script``| workspace.nextclade_json_parser_script|
-|``out_dir``| this.sample{terra_datatable_name}s.out_dir|
+|``assembler_version_array``|this.sample{terra_datatable_name}s.assembler_version|
+|``concat_seq_results_py``| workspace.covid_concat_results_py|
+|``cov_out``| this.sample{terra_datatable_name}s.cov_out|
+|``nextclade_json_parser_py``| workspace.covid_nextclade_json_parser_py|
+|``out_dir_array``| this.sample{terra_datatable_name}s.out_dir|
 |``percent_cvg_csv``| this.sample{terra_datatable_name}s.percent_cvg_csv|
-|``plate_name``| this.sample{terra_datatable_name}s.plate_name|
-|``plate_sample_well``| this.sample{terra_datatable_name}s.plate_sample_well|
-|``primer_set``| this.sample{terra_datatable_name}s.primer_set|
-|``read_type``|this.sample{terra_datatable_name}s.read_type |
-|``sample_id``| this.sample{terra_datatable_name}s.sample{terra_datatable_name}_id|
-|``seq_run``|this.sample{terra_datatable_name}s.seq_run |
-|``tech_platform``| this.sample{terra_datatable_name}s.tech_platform|
+|``project_name_array``|this.sample{terra_datatable_name}s.project_name |
+|``renamed_consensus``| this.sample{terra_datatable_name}s.renamed_consesnus|
+|``sample_name``| this.sample{terra_datatable_name}s.sample{terra_datatable_name}_id|
+|``workbook_path_array``| this.sample{terra_datatable_name}s.workbook_path|
+
+
 
 ### Outputs
 This workflow generates several output files which are transfered to the user defined user google bucket as defined by this.sample{terra_datatable_name}s.out_dir. The table below details each output. For more detailed regarding the values in each column for the outputs see either the software readmes or the readme for the specific python script as listed in the description.
@@ -554,16 +533,16 @@ This workflow generates several output files which are transfered to the user de
 |output variable name| file_name | description | google bucket path|
 |------------|-----------|--------------------------------|-----|
 |``cat_fastas``|``concatenate_assemblies.fasta``|all consesnus sequences from assembly in a single fasta file|``gs://{user_defined_gcp_bucket}/multifasta/``|
-|``pangolin_version``|N/A|version of panoglin |N/A|
-|``pangolin_lineage``|``pangolin_lineage_report.csv``|lineage report generated from pangolin|``gs://{user_defined_gcp_bucket}/pangolin/``|
-|``nextclade_version``|N/A|version of nextclade|N/A|
-|``nextclade_json``|``nextclade.json``|json file generated from nextclade; this json file is parsed using the ``nextclade_json_parser.py`` script and key info is pulled out and converted into a tablular format in the ``nextclade_clades_csv``, ``nextclade_variants_csv`` and ``sequencing_results.csv`` files (see the readme for the ``nextclade_json_parser.py`` script for more details)|``gs://{user_defined_gcp_bucket}/nextclade_out/``|
-|``nextclade_csv``|``nextclade.csv``|csv file generated from nextclade|``gs://{user_defined_gcp_bucket}/nextclade_out/``|
 |``nextclade_clades_csv``|``{seq_run}_nextclade_results.csv``|csv file generated from the ``nextclade_json_parser.py`` script detailing the clade for each seqeunce  |``gs://{user_defined_gcp_bucket}/nextclade_out/``|
-|``nextclade_variants_csv``|``{seq_run}_nextclade_variant_summary.csv``|csv file generated from the ``nextclade_json_parser.py`` script detailing the nucleotide and amino acid changes for each seqeunce|``gs://{user_defined_gcp_bucket}/summary_results/``|
+|``nextclade_csv``|``nextclade.csv``|csv file generated from nextclade|``gs://{user_defined_gcp_bucket}/nextclade_out/``|
+|``nextclade_json``|``nextclade.json``|json file generated from nextclade; this json file is parsed using the ``nextclade_json_parser.py`` script and key info is pulled out and converted into a tablular format in the ``nextclade_clades_csv``, ``nextclade_variants_csv`` and ``sequencing_results.csv`` files (see the readme for the ``nextclade_json_parser.py`` script for more details)|``gs://{user_defined_gcp_bucket}/nextclade_out/``|
+``nextclade_variants_csv``|``{seq_run}_nextclade_variant_summary.csv``|csv file generated from the ``nextclade_json_parser.py`` script detailing the nucleotide and amino acid changes for each seqeunce|``gs://{user_defined_gcp_bucket}/summary_results/``|
+|``nextclade_version``|N/A|version of nextclade|N/A|
+|``pangolin_lineage``|``pangolin_lineage_report.csv``|lineage report generated from pangolin|``gs://{user_defined_gcp_bucket}/pangolin/``|
+|``pangolin_version``|N/A|version of panoglin |N/A|
 |``sequencing_results_csv``|``{seq_run}_sequencing_results.csv``| summary of the sequencing metrics and lineage/clade assignments for each sequence generated from the ``concat_seq_metrics_and_lineage_results.py`` script. see the ``concat_seq_metrics_and_lineage_results.py`` readme for more details. |``gs://{user_defined_gcp_bucket}/summary_results/``|
-|``seqeunce_assembly_metrics_csv``|``{seq_run}_sequence_assembly_metrics.csv``|abbreviated summary of the sequencing metrics for each sequence generated from the generated from the ``concat_seq_metrics_and_lineage_results.py`` script. see the ``concat_seq_metrics_and_lineage_results.py`` readme for more details. |``gs://{user_defined_gcp_bucket}/``|
 |``wgs_horizon_report_csv``|``{seq_run}_wgs_horizon_report.csv``|results csv used for parsing results into our LIMS. This file is generated from the ``concat_seq_metrics_and_lineage_results.py`` script. see the ``concat_seq_metrics_and_lineage_results.py`` readme for more details.|``gs://{user_defined_gcp_bucket}/summary_results/``|
+
 
 </details>
 
@@ -615,6 +594,8 @@ This workflow generates several output files which are transfered to the user de
 <br/>
 
 ## Wastewater Workflow
+
+**undergoing updates**
 
 For wastewater samples, use one of the assembly workflows above to generate coordinate sorted and primer trimmed bam files. Then see below for how we use freyja (https://github.com/andersen-lab/Freyja) for performing variant calling, lineage demixing to generate summary files for wastewater whole genome sequencing of SARS-CoV-2, as well as custom code to summarize VOC-associated constellations of mutations.
 
