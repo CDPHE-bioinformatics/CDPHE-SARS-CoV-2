@@ -278,6 +278,20 @@ def concat_results(sample_name_list, workbook_path, project_name,
 # #     j.pangolin_designation_version = j.pangolin_designation_version.fillna(value = pango_learn_version )
 #     j.assembler_version = j.assembler_version.fillna(value = assembler_version_txt)
 
+
+    # force integers
+    j.N_bases = j.N_bases.astype('Int64')
+    j.aligned_bases = j.aligned_bases.astype('Int64')
+    j.index_set = j.index_set.astype('Int64')
+    j.mapped_reads = j.mapped_reads.astype('Int64')
+    j.non_ambiguous_bases = j.non_ambiguous_bases.astype('Int64')
+    j.read_length = j.read_length.astype('Int64')
+    j.total_AA_deletions = j.total_AA_deletions.astype('Int64')
+    j.total_AA_substitutions = j.total_AA_substitutions.astype('Int64')
+    j.total_nucleotide_deletions = j.total_nucleotide_deletions.astype('Int64')
+    j.total_nucleotide_insertions = j.total_nucleotide_insertions.astype('Int64')
+    j.total_nucleotide_mutations = j.total_nucleotide_mutations.astype('Int64')
+
     outfile = '%s_sequencing_results.csv' % project_name
     j.to_csv(outfile, index = False)
 
