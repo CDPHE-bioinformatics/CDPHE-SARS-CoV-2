@@ -303,7 +303,7 @@ def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
 
     aggregated_lineage_df['aggregated_lineage'] = aggregated_lineage_df.apply(lambda x: get_cdc_grouping(x['expanded_lineage'],
                                                                                                          cdc_lineage_groups_df), axis=1)
-    aggregated_lineage_df.drop('expanded_lineage')
+    aggregated_lineage_df.drop('expanded_lineage', axis=1)
     
     return aggregated_lineage_df
 
