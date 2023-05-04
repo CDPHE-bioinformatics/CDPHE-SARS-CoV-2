@@ -276,7 +276,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     return j
 
 def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
-    aggregated_lineage_df = pangolin_df[['expanded_lineage']]
+    aggregated_lineage_df = pangolin_df[['expanded_lineage']].copy()
 
     def get_cdc_grouping(expanded_lineage, cdc_lineage_groups_df):
         potential_matches = []
@@ -302,7 +302,7 @@ def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
 
     aggregated_lineage_df['aggregated_lineage'] = aggregated_lineage_df.apply(lambda x: get_cdc_grouping(x['expanded_lineage'],
                                                                                                          cdc_lineage_groups_df), axis=1)
-    aggregated_lineage_df.drop('expanded_lineage', axis=1)
+    aggregated_lineage_df.drop('expanded_lineage', axis=1, inplace=True)
     
     return aggregated_lineage_df
 
