@@ -16,6 +16,10 @@
 ## major update; refactoring to match universal naming conventions of the workbook generator;
 ## also reads in the workbook path to pull various values
 
+# update 2023-05-04
+## add CDC lineage groupings from https://covid.cdc.gov/covid-data-tracker/#variant-proportions
+## new aggregated_lineage column will contain CDC lineage grouping
+
 import argparse
 import sys
 import pandas as pd
@@ -31,6 +35,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument('--percent_cvg_files', help = 'txt file with list of percent cvg file paths')
     parser.add_argument('--assembler_version')
     parser.add_argument('--pangolin_lineage_csv', help = 'csv output from pangolin')
+    parser.add_argument('--cdc_lineage_groups_json', help = 'text file containing lineage groups for aggregating lineages')
     parser.add_argument('--nextclade_clades_csv', help = 'csv output from nextclade parser')
     parser.add_argument('--nextclade_variants_csv')
     parser.add_argument('--nextclade_version')
@@ -161,7 +166,7 @@ def get_df_spike_mutations(variants_csv):
     return df
 
 def concat_results(sample_name_list, workbook_path, project_name, 
-                   assembler_version, pangolin_lineage_csv,
+                   assembler_version, pangolin_lineage_csv, cdc_lineage_groups_json,
                     nextclade_clades_csv, nextclade_version,
                    cov_out_df, percent_cvg_df, spike_variants_df):
 
@@ -206,6 +211,10 @@ def concat_results(sample_name_list, workbook_path, project_name,
     pangolin.insert(value = sample_name, column = 'sample_name', loc = 0)
     pangolin = pangolin.drop(columns = 'fasta_header')
     pangolin = pangolin.set_index('sample_name')
+
+    # read in list of CDC lineage groups
+    cdc_lineage_groups = (line.rstrip() for line in open(cdc_lineage_groups_json))
+    print(f'aggregating using these lineages: {cdc_lineage_groups}')
 
 
     # read in nextclade csv
@@ -295,6 +304,7 @@ if __name__ == '__main__':
     project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
+    cdc_lineage_groups_json = options.cdc_lineage_groups_json
 
     nextclade_clades_csv = options.nextclade_clades_csv
     nextclade_variants_csv = options.nextclade_variants_csv
@@ -318,6 +328,7 @@ if __name__ == '__main__':
                                 project_name = project_name,
                                 assembler_version = assembler_version,
                                 pangolin_lineage_csv=pangolin_lineage_csv,
+                                cdc_lineage_groups_json=cdc_lineage_groups_json,
                                 nextclade_clades_csv=nextclade_clades_csv,
                                 nextclade_version=nextclade_version,
                                 cov_out_df=cov_out_df,

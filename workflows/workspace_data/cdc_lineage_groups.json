@@ -1,0 +1,107 @@
+[
+    {
+        "pangolin_lineage": "XBB.1.5",
+        "expanded_lineage": "XBB.1.5",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "XBB.1.16",
+        "expanded_lineage": "XBB.1.16",
+        "date_added": "2023-04-18"
+    },
+    {
+        "pangolin_lineage": "XBB.1.9.1",
+        "expanded_lineage": "XBB.1.9.1",
+        "date_added": "2023-04-18"
+    },
+    {
+        "pangolin_lineage": "XBB.1.9.2",
+        "expanded_lineage": "XBB.1.9.2",
+        "date_added": "2023-04-19"
+    },
+    {
+        "pangolin_lineage": "XBB",
+        "expanded_lineage": "XBB",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "XBB.1.5.1",
+        "expanded_lineage": "XBB.1.5.1",
+        "date_added": "2023-03-10"
+    },
+    {
+        "pangolin_lineage": "FD.2",
+        "expanded_lineage": "XBB.1.5.15.2",
+        "date_added": "2023-04-18"
+    },
+    {
+        "pangolin_lineage": "BQ.1.1",
+        "expanded_lineage": "B.1.1.529.5.3.1.1.1.1.1.1",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "CH.1.1",
+        "expanded_lineage": "B.1.1.529.2.75.3.4.1.1.1.1",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BQ.1",
+        "expanded_lineage": "B.1.1.529.5.3.1.1.1.1.1",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BN.1",
+        "expanded_lineage": "B.1.1.529.2.75.5.1",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.5",
+        "expanded_lineage": "B.1.1.529.5",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.1.1",
+        "expanded_lineage": "B.1.1.529.1.1",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.2",
+        "expanded_lineage": "B.1.1.529.2",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.2.75",
+        "expanded_lineage": "B.1.1.529.2.75",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.2.12.1",
+        "expanded_lineage": "B.1.1.529.2.12.1",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.2.75.2",
+        "expanded_lineage": "B.1.1.529.2.75.2",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BF.7",
+        "expanded_lineage": "B.1.1.529.5.2.1.7",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.5.2.6",
+        "expanded_lineage": "B.1.1.529.5.2.6",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BF.11",
+        "expanded_lineage": "B.1.1.529.5.2.1.11",
+        "date_added": ""
+    },
+    {
+        "pangolin_lineage": "BA.4.6",
+        "expanded_lineage": "B.1.1.529.4.6",
+        "date_added": ""
+    }
+]
