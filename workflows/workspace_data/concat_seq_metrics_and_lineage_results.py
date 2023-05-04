@@ -213,8 +213,8 @@ def concat_results(sample_name_list, workbook_path, project_name,
     pangolin = pangolin.set_index('sample_name')
 
     # read in list of CDC lineage groups
-    cdc_lineage_groups = (line.rstrip() for line in open(cdc_lineage_groups_json))
-    print(f'aggregating using these lineages: {cdc_lineage_groups}')
+    cdc_lineage_groups_df = pd.read_json(cdc_lineage_groups_json)
+    aggregated_lineage_df = aggregate_lineage(pangolin, cdc_lineage_groups_df)
 
 
     # read in nextclade csv
@@ -227,10 +227,11 @@ def concat_results(sample_name_list, workbook_path, project_name,
     nextclade = nextclade.set_index('sample_name')
 
 
-    # set index on the samtools_df and percent_cvg_df and variants_df to prepare for joining
+    # set index on sample_names to prepare for joining
     cov_out_df = cov_out_df.set_index('sample_name')
     percent_cvg_df = percent_cvg_df.set_index('sample_name')
     spike_variants_df = spike_variants_df.set_index('sample_name')
+    aggregated_lineage_df = aggregated_lineage_df.set_index('sample_name')
     # print(spike_variants_df)
 
     # join
@@ -239,6 +240,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     j = j.join(cov_out_df, how = 'left')
     j = j.join(nextclade, how = 'left')
     j = j.join(pangolin, how = 'left')
+    j = j.join(aggregated_lineage_df, how = 'left')
     j = j.join(spike_variants_df, how = 'left')
     j = j.reset_index()
     # print(j)
@@ -260,8 +262,8 @@ def concat_results(sample_name_list, workbook_path, project_name,
     columns.sort()
     primary_columns = ['hsn', 'sample_name', 'project_name', 'plate_name', 
                        'run_name', 'analysis_date', 'run_date', 'assembly_pass', 
-                 'percent_coverage', 'nextclade', 'pangolin_lineage', 
-                 'expanded_lineage', 'spike_mutations']
+                       'percent_coverage', 'nextclade', 'pangolin_lineage', 
+                       'expanded_lineage', 'aggregated_lineage', 'spike_mutations']
     for column in columns:
          if column not in primary_columns:
               primary_columns.append(column)
@@ -274,6 +276,36 @@ def concat_results(sample_name_list, workbook_path, project_name,
 
     return j
 
+def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
+    aggregated_lineage_df = pangolin_df[['sample_name', 'expanded_lineage']]
+
+    def get_cdc_grouping(expanded_lineage, cdc_lineage_groups_df):
+        potential_matches = []
+        for cdc_expanded_lineage in cdc_lineage_groups_df['expanded_lineage']:
+            if (expanded_lineage == cdc_expanded_lineage 
+                or expanded_lineage.startswith(cdc_expanded_lineage + '.')
+            ):
+                potential_matches.append(cdc_expanded_lineage)
+
+        # get most specific CDC grouping 
+        # example: if XBB.1.5.2, aggregate to XBB.1.5, not XBB
+        try:
+            match = max(potential_matches, key=len)
+            aggregated_lineage = cdc_lineage_groups_df.loc[cdc_lineage_groups_df['expanded_lineage'] == match, 'pangolin_lineage'].item()
+        except ValueError:
+            if expanded_lineage == 'Unassigned':
+                aggregated_lineage = 'Unassigned'
+            else:
+                aggregated_lineage = 'Other'
+        
+        return aggregated_lineage
+
+
+    aggregated_lineage_df['aggregated_lineage'] = aggregated_lineage_df.apply(lambda x: get_cdc_grouping(x['expanded_lineage'],
+                                                                                                         cdc_lineage_groups_df), axis=1)
+    aggregated_lineage_df.drop('expanded_lineage')
+    
+    return aggregated_lineage_df
 
 def make_wgs_horizon_output (results_df, project_name):
 
