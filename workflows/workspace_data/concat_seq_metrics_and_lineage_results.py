@@ -260,34 +260,10 @@ def concat_results(sample_name_list, workbook_path, project_name,
     j = j[primary_columns]
 
 
-#     # add in 'failed assembly" in missing columns
-#     j.spike_mutations = j.spike_mutations.fillna(value = '')
-#     j.nextclade = j.nextclade.fillna(value = '')
-#     j.nextclade_version = j.nextclade_version.fillna(value = next_version)
-    # j.pangolin_lineage = j.pangolin_lineage.fillna(value = 'not assembled')
-    # j.expanded_lineage = j.expanded_lineage.fillna(value = 'not assembled')
-    # j.percent_non_ambigous_bases = j.percent_non_ambigous_bases.fillna(value = 0)
-#     j.mean_depth = j.mean_depth.fillna(value = 0)
-#     j.number_aligned_bases = j.number_aligned_bases.fillna(value = 0)
-#     j.number_seqs_in_fasta = j.number_seqs_in_fasta.fillna(value = 0)
-#     j.num_reads = j.num_reads.fillna(value = 0)
-#     j.mean_base_quality = j.mean_base_quality.fillna(value = 0)
-#     j.mean_map_quality = j.mean_map_quality.fillna(value = 0)
-#     j.number_N_bases = j.number_N_bases.fillna(value = 29903)
-#     j.pangolin_version = j.pangolin_version.fillna(value = pangolin_version )
-# #     j.pangolin_designation_version = j.pangolin_designation_version.fillna(value = pango_learn_version )
-#     j.assembler_version = j.assembler_version.fillna(value = assembler_version_txt)
-
     outfile = '%s_sequencing_results.csv' % project_name
     j.to_csv(outfile, index = False)
 
     return j
-
-# def get_project_name(workbook_path):
-#     df = pd.read_csv(workbook_path, sep = '\t')
-#     project_name = df.project_name[0]
-
-#     return project_name
 
 
 def make_wgs_horizon_output (results_df, project_name):
@@ -297,14 +273,6 @@ def make_wgs_horizon_output (results_df, project_name):
 
     # rename columns 
     results_df = results_df.rename(columns = {'hsn' : 'accession_id', 'pango_designation_version' : 'pangoLEARN_version'})
-
-    # # add pangolin to the as prefix to version
-    # # pull out panglin version 
-    
-    # for row in range(results_df.shape[0]):
-    #     version = results_df.pangolin_version[row]
-    #     new_version_txt = f'pangolin {version}'
-    #     results_df.at[row, 'pangolin_version'] = new_version_txt
 
     col_order = ['accession_id', 'percent_coverage', 'pangolin_lineage', 'pangolin_version',
                  'report_to_epi', 'Run_Date', 'pangoLEARN_version']
@@ -327,7 +295,6 @@ if __name__ == '__main__':
     project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
-    # pangolin_version = options.pangolin_version
 
     nextclade_clades_csv = options.nextclade_clades_csv
     nextclade_variants_csv = options.nextclade_variants_csv
@@ -363,153 +330,3 @@ if __name__ == '__main__':
     
 
     print('DONE!')
-
-
-#def get_df_spike_mutations(variants_csv):
-
-#     def get_accession_id(fasta_header):
-#         accession_id = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
-#         return accession_id
-
-#     variants = pd.read_csv(variants_csv, dtype = {'accession_id' : object})
-#     if variants.shape[0] == 0 :
-#         print('there are no accession_ids in nextclade variants file; likely all your sequences were bad')
-#     variants = variants.rename(columns = {'accession_id' : 'fasta_header'})
-
-#     accession_id = variants.apply(lambda x:get_accession_id(x.fasta_header), axis = 1)
-#     variants.insert(value = accession_id, loc = 0, column = 'accession_id')
-#     variants = variants.drop(columns = 'fasta_header')
-
-#     #### filter variants for spike protein varaints in rbd and pbcs #####
-
-#     crit = variants.gene == 'S'
-#     critRBD = (variants.codon_position >= 461) & (variants.codon_position <= 509)
-#     critPBCS = (variants.codon_position >= 677) & (variants.codon_position <= 694)
-#     crit732 = variants.codon_position == 732
-#     crit452 = variants.codon_position == 452
-#     crit253 = variants.codon_position == 253
-#     crit13 = variants.codon_position == 13
-#     crit145 = variants.codon_position == 145 # delta plus AY.4.2
-#     crit222 = variants.codon_position == 222 # delta plus AY.4.2
-#     critdel = variants.variant_name.str.contains('del')
-
-#     variants_general = variants[crit & (critRBD | critPBCS | crit732 | critdel | crit452 | crit253 | crit13 | crit145 | crit222)]
-
-#     ##### special filter for omicron variants ######
-#     omicron_spike_mutations_list = ['S_G339D', 'S_S371L', 'S_S373LP', 'S_S375F', 'S_N440K', 'S_G446S', 'S_E484K', 'S_Q493K',
-#                                    'S_Q486S', 'S_Q498R', 'S_Y505H', 'S_T547K', 'S_N764K', 'S_N856K', 'S_Q954H', 'S_N969K', 'S_L981F',
-#                                    '_ins22205GAGCCAGAA', 'S_G142del', 'S_V143del', 'S_Y144del', 'S_N211del']
-
-#     crit_omicron = variants.variant_name.isin(omicron_spike_mutations_list)
-#     crit_omicron_insertion_1 = variants.variant_name.str.contains('ins')
-#     crit_omicron_insertion_2 = variants.codon_position == 22205
-
-#     omicron_variants = variants[crit_omicron | (crit_omicron_insertion_1 & crit_omicron_insertion_2) ]
-
-
-#     #### special filter for delta + (AY.4.2) mutations #####
-#     delta_plus_spike_mutations_list = ['S_Y145H', 'S_A222V']
-#     crit_delta_plus = variants.variant_name.isin(delta_plus_spike_mutations_list)
-#     delta_plus_variants = variants[crit_delta_plus]
-
-
-#     ####### get list of spike mutations in the poly cleavage site and the rbd
-#     ## use variants_general
-#     accession_ids = variants_general.accession_id.unique().tolist()
-
-#     df = pd.DataFrame()
-#     accession_id_list = []
-#     variant_name_list = []
-
-#     seperator = '; '
-
-#     for accession_id in accession_ids:
-#         accession_id_list.append(accession_id)
-
-#         crit = variants_general.accession_id == accession_id
-#         f = variants_general[crit]
-#         f = f.reset_index()
-
-#         mutations = []
-#         for row in range(f.shape[0]):
-#             mutations.append(f.variant_name[row])
-#         mutations_string = seperator.join(mutations)
-#         variant_name_list.append(mutations_string)
-
-#     df['accession_id'] = accession_id_list
-#     df['spike_mutations'] = variant_name_list
-
-
-#     #### make special column for omicron varints ######
-#     ## use omicron_variants
-
-#     if omicron_variants.shape[0] != 0:
-#         accession_ids = omicron_variants.accession_id.unique().tolist()
-
-#         df_omicron = pd.DataFrame()
-#         accession_id_list = []
-#         omicron_variant_list = []
-
-#         seperator = '; '
-
-#         for accession_id in accession_ids:
-#             accession_id_list.append(accession_id)
-
-#             crit = omicron_variants.accession_id == accession_id
-#             f = omicron_variants[crit]
-#             f = f.reset_index()
-
-#             mutations = []
-#             for row in range(f.shape[0]):
-#                 mutations.append(f.variant_name[row])
-#             mutations_string = seperator.join(mutations)
-#             omicron_variant_list.append(mutations_string)
-
-#         df_omicron['accession_id'] = accession_id_list
-#         df_omicron['omicron_spike_mutations'] = omicron_variant_list
-
-#         df_omicron = df_omicron.set_index('accession_id')
-#         df = df.set_index('accession_id')
-#         df = df.join(df_omicron, how = 'left')
-#         df = df.reset_index()
-
-#     else:
-#         df['omicron_spike_mutations'] = ''
-
-#     #### make special column for delta plus varints ######
-#     ### use delta_plus_variants
-#     if delta_plus_variants.shape[0] != 0:
-#         accession_ids = delta_plus_variants.accession_id.unique().tolist()
-
-#         df_delta_plus = pd.DataFrame()
-#         accession_id_list = []
-#         delta_plus_variants_list = []
-
-#         seperator = '; '
-
-#         for accession_id in accession_ids:
-#             accession_id_list.append(accession_id)
-
-#             crit = delta_plus_variants.accession_id == accession_id
-#             f = delta_plus_variants[crit]
-#             f = f.reset_index()
-
-#             mutations = []
-#             for row in range(f.shape[0]):
-#                 mutations.append(f.variant_name[row])
-#             mutations_string = seperator.join(mutations)
-#             delta_plus_variants_list.append(mutations_string)
-
-#         df_delta_plus['accession_id'] = accession_id_list
-#         df_delta_plus['delta_plus_spike_mutations'] = delta_plus_variants_list
-
-#         df_delta_plus = df_delta_plus.set_index('accession_id')
-#         df = df.set_index('accession_id')
-#         df = df.join(df_delta_plus, how = 'left')
-#         df = df.reset_index()
-
-#     else:
-#         df['delta_plus_spike_mutations'] = ''
-
-
-#     return df
