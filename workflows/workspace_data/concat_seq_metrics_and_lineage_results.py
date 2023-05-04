@@ -231,7 +231,6 @@ def concat_results(sample_name_list, workbook_path, project_name,
     cov_out_df = cov_out_df.set_index('sample_name')
     percent_cvg_df = percent_cvg_df.set_index('sample_name')
     spike_variants_df = spike_variants_df.set_index('sample_name')
-    aggregated_lineage_df = aggregated_lineage_df.set_index('sample_name')
     # print(spike_variants_df)
 
     # join
