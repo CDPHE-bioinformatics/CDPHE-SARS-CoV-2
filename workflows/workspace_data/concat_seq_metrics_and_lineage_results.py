@@ -35,7 +35,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument('--percent_cvg_files', help = 'txt file with list of percent cvg file paths')
     parser.add_argument('--assembler_version')
     parser.add_argument('--pangolin_lineage_csv', help = 'csv output from pangolin')
-    parser.add_argument('--cdc_lineage_groups_json', help = 'text file containing lineage groups for aggregating lineages')
+    parser.add_argument('--cdc_lineage_groups_json', help = 'json file containing lineage groups for aggregating lineages')
     parser.add_argument('--nextclade_clades_csv', help = 'csv output from nextclade parser')
     parser.add_argument('--nextclade_variants_csv')
     parser.add_argument('--nextclade_version')
@@ -277,7 +277,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     return j
 
 def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
-    aggregated_lineage_df = pangolin_df[['sample_name', 'expanded_lineage']]
+    aggregated_lineage_df = pangolin_df[['expanded_lineage']]
 
     def get_cdc_grouping(expanded_lineage, cdc_lineage_groups_df):
         potential_matches = []
