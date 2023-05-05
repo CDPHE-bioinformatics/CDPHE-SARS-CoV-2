@@ -142,8 +142,8 @@ task seqyclean {
 
     runtime {
         cpu:    2
-        memory:    "6 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "12 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -178,8 +178,8 @@ task fastqc {
 
     runtime {
         cpu:    1
-        memory:    "2 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "4 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -219,8 +219,8 @@ task align_reads {
 
     runtime {
         cpu:    2
-        memory:    "12 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "20 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -255,8 +255,8 @@ task ivar_trim {
 
     runtime {
         cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "20 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -290,8 +290,8 @@ task ivar_var {
 
     runtime {
         cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "20 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -324,8 +324,8 @@ task ivar_consensus {
 
     runtime {
         cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "20 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -392,8 +392,8 @@ task bam_stats {
 
     runtime {
         cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 1 HDD"
+        memory:    "20 GiB"
+        disks:    "local-disk 100 SSD"
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
@@ -425,7 +425,7 @@ task rename_fasta {
         docker: "theiagen/utility:1.0"
         memory: "1 GB"
         cpu: 1
-        disks: "local-disk 10 SSD"
+        disks: "local-disk 100 SSD"
     }
 }
 
@@ -455,7 +455,7 @@ task calc_percent_cvg {
       docker: "mchether/py3-bio:v1"
       memory: "1 GB"
       cpu: 4
-      disks: "local-disk 10 SSD"
+      disks: "local-disk 100 SSD"
 
     }
 
