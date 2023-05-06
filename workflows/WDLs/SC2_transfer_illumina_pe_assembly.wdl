@@ -124,8 +124,8 @@ task transfer_outputs {
 
     runtime {
         docker: "theiagen/utility:1.0"
-        memory: "2 GB"
-        cpu: 4
-        disks: "local-disk 100 SSD"
+        memory: "8 GB"
+        cpu: 16
+        disks: "local-disk 500 SSD"
     }
 }
