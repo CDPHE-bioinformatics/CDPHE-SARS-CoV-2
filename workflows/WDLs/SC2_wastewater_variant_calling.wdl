@@ -134,9 +134,9 @@ task add_RG {
 
     runtime {
         docker: "staphb/samtools:1.10"
-        memory: "8 GB"
-        cpu: 2
-        disks: "local-disk 100 SSD"
+        memory: "16 GB"
+        cpu: 4
+        disks: "local-disk 250 SSD"
     }
 }
 
@@ -163,7 +163,7 @@ task variant_calling {
         docker: "staphb/freyja"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 200 SSD"
+        disks: "local-disk 500 SSD"
     }
 }
 
