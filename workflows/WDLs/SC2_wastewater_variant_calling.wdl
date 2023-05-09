@@ -8,7 +8,6 @@ workflow SC2_wastewater_variant_calling {
         File voc_bed
         File voc_annotations
         Array[String] sample_id
-        String out_dir
         Array[String] seq_run_array
         File dashboard_formatting_py
     }
@@ -78,21 +77,6 @@ workflow SC2_wastewater_variant_calling {
         input:
             tsv = combine_tsv.voc_summary_temp
     }
-    call transfer_outputs {
-        input:
-            variants = variant_calling.variants,
-            depth = variant_calling.depth,
-            demix = freyja_demix.demix,
-            sample_voc_tsv_summary = summary_prep.sample_voc_tsv_summary,
-            sample_voc_tsv_counts = summary_prep.sample_voc_tsv_counts,
-            voc_counts = combine_tsv.voc_counts,
-            voc_summary = summary_tsv.voc_summary,
-            demix_aggregated = freyja_aggregate.demix_aggregated,
-            demix_summary = combine_tsv.demix_summary,
-            wwt_variant_abundances_long_format = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format,
-            wwt_variant_abundances_long_format_mean = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format_mean,
-            out_dir = out_dir
-    }
 
     output {
         Array[File] addrg_bam = add_RG.rgbam
@@ -109,7 +93,6 @@ workflow SC2_wastewater_variant_calling {
         File voc_counts = combine_tsv.voc_counts
         File voc_summary = summary_tsv.voc_summary
         File demix_summary = combine_tsv.demix_summary
-        String transfer_date = transfer_outputs.transfer_date
         File wwt_variant_abundances_long_format = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format
         File wwt_variant_abundances_long_format_mean = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format_mean
 
@@ -461,54 +444,5 @@ task summary_tsv {
         memory: "16 GB"
         cpu: 4
         disks: "local-disk 200 SSD"
-    }
-}
-
-task transfer_outputs {
-    input {
-        Array[File] variants
-        Array[File] depth
-        Array[File] demix
-        Array[File] sample_voc_tsv_summary
-        Array[File] sample_voc_tsv_counts
-        File voc_summary
-        File voc_counts
-        File demix_aggregated
-        File demix_summary
-        File wwt_variant_abundances_long_format
-        File wwt_variant_abundances_long_format_mean
-        String out_dir
-
-    }
-
-    String outdirpath = sub(out_dir, "/$", "")
-
-    command <<<
-
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' sample_voc_tsv_summary} ~{outdirpath}/waste_water_variant_calling/sample_variants/
-        gsutil -m cp ~{sep=' ' sample_voc_tsv_counts} ~{outdirpath}/waste_water_variant_calling/sample_variants/
-        gsutil -m cp ~{voc_summary} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{voc_counts} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{demix_summary} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{wwt_variant_abundances_long_format} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{wwt_variant_abundances_long_format_mean} ~{outdirpath}/waste_water_variant_calling/
-
-        transferdate=`date`
-        echo $transferdate | tee TRANSFERDATE
-    >>>
-
-    output {
-        String transfer_date = read_string("TRANSFERDATE")
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "1 GB"
-        cpu: 1
-        disks: "local-disk 50 SSD"
     }
 }
