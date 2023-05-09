@@ -30,6 +30,11 @@
         "date_added": "2023-03-10"
     },
     {
+        "pangolin_lineage": "XBB.2.3",
+        "expanded_lineage": "XBB.2.3",
+        "date_added": "2023-05-09"
+    },
+    {
         "pangolin_lineage": "FD.2",
         "expanded_lineage": "XBB.1.5.15.2",
         "date_added": "2023-04-18"
