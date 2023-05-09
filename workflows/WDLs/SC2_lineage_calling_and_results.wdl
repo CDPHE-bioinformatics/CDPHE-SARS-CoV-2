@@ -7,7 +7,6 @@ workflow SC2_lineage_calling_and_results {
         Array[File?] renamed_consensus
         Array[File?] cov_out
         Array[File?] percent_cvg_csv
-        Array[String] out_dir_array
         # Array[String] plate_name
         # Array[String] plate_sample_well
         # Array[String] primer_set
@@ -268,41 +267,5 @@ task results_table {
         cpu:    4
         disks: "local-disk 100 SSD"
         dx_instance_type: "mem1_ssd1_v2_x2"
-    }
-}
-
-task transfer {
-    input {
-        String out_dir
-        File cat_fastas
-        File pangolin_lineage
-        File nextclade_json
-        File nextclade_csv
-        File nextclade_clades_csv
-        File nextclade_variants_csv
-        File sequencing_results_csv
-        File wgs_horizon_report_csv
-    }
-
-    # String outdir = '${out_dir[0]}'
-    String outdirpath = sub(out_dir, "/$", "")
-
-    command <<<
-
-        gsutil -m cp ~{cat_fastas} ~{outdirpath}/multifasta/
-        gsutil -m cp ~{pangolin_lineage} ~{outdirpath}/pangolin_out/
-        gsutil -m cp ~{nextclade_json} ~{outdirpath}/nextclade_out/
-        gsutil -m cp ~{nextclade_csv} ~{outdirpath}/nextclade_out/
-        gsutil -m cp ~{nextclade_clades_csv} ~{outdirpath}/nextclade_out/
-        gsutil -m cp ~{nextclade_variants_csv} ~{outdirpath}/summary_results/
-        gsutil -m cp ~{sequencing_results_csv} ~{outdirpath}/summary_results/
-        gsutil -m cp ~{wgs_horizon_report_csv} ~{outdirpath}/summary_results/
-    >>>
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "16 GB"
-        cpu: 4
-        disks: "local-disk 100 SSD"
     }
 }
