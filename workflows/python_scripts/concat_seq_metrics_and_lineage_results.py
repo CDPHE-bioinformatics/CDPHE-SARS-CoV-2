@@ -16,6 +16,11 @@
 ## major update; refactoring to match universal naming conventions of the workbook generator;
 ## also reads in the workbook path to pull various values
 
+# update 2023-05-16
+## minor update; 
+## reads in terra data table instead of workbook
+## reads in assembly_software_file instead of assembler version
+
 import argparse
 import sys
 import pandas as pd
@@ -26,15 +31,17 @@ import re
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument('--sample_name_array')
-    parser.add_argument('--workbook_path')
+    # parser.add_argument('--workbook_path')
     parser.add_argument("--cov_out_files",  help= "txt file with list of bam file paths")
     parser.add_argument('--percent_cvg_files', help = 'txt file with list of percent cvg file paths')
-    parser.add_argument('--assembler_version')
+    # parser.add_argument('--assembler_version')
     parser.add_argument('--pangolin_lineage_csv', help = 'csv output from pangolin')
     parser.add_argument('--nextclade_clades_csv', help = 'csv output from nextclade parser')
     parser.add_argument('--nextclade_variants_csv')
     parser.add_argument('--nextclade_version')
     parser.add_argument('--project_name')
+    parser.add_argument('--terra_data_table_path')
+    parser.add_argument('--assembly_software_file')
 
     options = parser.parse_args(args)
     return options
@@ -160,8 +167,8 @@ def get_df_spike_mutations(variants_csv):
 
     return df
 
-def concat_results(sample_name_list, workbook_path, project_name, 
-                   assembler_version, pangolin_lineage_csv,
+def concat_results(sample_name_list, terra_data_table_path, project_name, 
+                   assembly_software_file, pangolin_lineage_csv,
                     nextclade_clades_csv, nextclade_version,
                    cov_out_df, percent_cvg_df, spike_variants_df):
 
@@ -173,15 +180,26 @@ def concat_results(sample_name_list, workbook_path, project_name,
     def create_fasta_header(sample_name):
         return 'CO-CDPHE-%s' % sample_name
     
+    # read in assembly software file
+    assembly_software_df = pd.read_csv(assembly_software_file, sep = '\t')
+    assembly_software_df = assembly_software_df.drop (columns = 'project_name')
+
+    
     # create dataframe and fill with constant strings
     df = pd.DataFrame()
     df['sample_name'] = sample_name_list
     df = df.set_index('sample_name')
     df['analysis_date'] = str(date.today())
-    df['assembler_version'] = assembler_version
+    for col in assembly_software_df.columns:
+        df[col] = assembly_software_df.loc(0, col)
+    # df['assembler_version'] = assembler_version
     print(df)
+
     # read in workbook
-    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'sample_name' : object, 'hsn' : object})
+    workbook = pd.read_csv(terra_data_table_path, sep = '\t', dtype = {'sample_name' : object, 'hsn' : object})
+    # drop entity column
+    drop_col = workbook.columns.tolist()[0]
+    workbook = workbook.drop(columns = drop_col)
     workbook = workbook.set_index('sample_name')
 
     # read in panlogin results
@@ -260,6 +278,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     j = j[primary_columns]
 
 
+
 #     # add in 'failed assembly" in missing columns
 #     j.spike_mutations = j.spike_mutations.fillna(value = '')
 #     j.nextclade = j.nextclade.fillna(value = '')
@@ -334,10 +353,10 @@ if __name__ == '__main__':
     options = getOptions()
 
     sample_name_array = options.sample_name_array
-    workbook_path = options.workbook_path
+    terra_data_table_path = options.terra_data_table_path
     cov_out_files = options.cov_out_files
     percent_cvg_files = options.percent_cvg_files
-    assembler_version = options.assembler_version
+    assembly_software_file = options.assembly_software_file
     project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
@@ -361,9 +380,9 @@ if __name__ == '__main__':
 
     # create results file
     results_df = concat_results(sample_name_list = sample_name_list,
-                                workbook_path = workbook_path,
+                                terra_data_table_path = terra_data_table_path,
                                 project_name = project_name,
-                                assembler_version = assembler_version,
+                                assembly_software_file= assembly_software_file,
                                 pangolin_lineage_csv=pangolin_lineage_csv,
                                 nextclade_clades_csv=nextclade_clades_csv,
                                 nextclade_version=nextclade_version,

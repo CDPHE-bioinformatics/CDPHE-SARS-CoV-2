@@ -10,9 +10,11 @@ workflow SC2_lineage_calling_and_results {
         Array[String] out_dir_array
         Array[String] project_name_array
         Array[String?] assembler_version_array
-        Array[File] workbook_path_array
+        # Array[File] workbook_path_array
+        Array[File] terra_data_table_path_array
 
         File cdc_lineage_groups_json
+        Array[File] software_assembly_file_array
 
         # python scripts
         File nextclade_json_parser_py
@@ -24,9 +26,11 @@ workflow SC2_lineage_calling_and_results {
 
     # secret variables - for static values convert from array to single entity
     String project_name = project_name_array[0]
-    File workbook_path = select_all(workbook_path_array)[0]
+    # File workbook_path = select_all(workbook_path_array)[0]
+    File terra_data_table_path = select_all(terra_data_table_path_array)[0]
     String assembler_version = select_all(assembler_version_array)[0]
     String out_dir = out_dir_array[0]
+    File software_assembly_file = select_all(software_assembly_file_array)[0]
 
     call concatenate {
         input:
@@ -63,7 +67,9 @@ workflow SC2_lineage_calling_and_results {
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
         assembler_version= assembler_version,
-        workbook_path = workbook_path
+        # workbook_path = workbook_path
+        terra_data_table_path = terra_data_table_path,
+        assembly_software_file = assembly_software_file
     }
 
     call transfer {
@@ -76,7 +82,8 @@ workflow SC2_lineage_calling_and_results {
           nextclade_clades_csv = parse_nextclade.nextclade_clades_csv,
           nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
           sequencing_results_csv = results_table.sequencing_results_csv,
-          wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
+          wgs_horizon_report_csv = results_table.wgs_horizon_report_csv,
+          assembly_software_file = assembly_software_file
     }
 
     output {
@@ -223,24 +230,28 @@ task results_table {
       File nextclade_variants_csv
       String nextclade_version
       String project_name
-      String assembler_version
-      File workbook_path
+    #   String assembler_version
+    #   File workbook_path
+
+      File assembly_software_file
+      File terra_data_table_path
+      
 
     }
 
     command <<<
     python ~{concat_seq_results_py} \
         --sample_name_array "~{write_lines(sample_name)}" \
-        --workbook_path "~{workbook_path}" \
         --cov_out_files "~{write_lines(cov_out)}" \
         --percent_cvg_files "~{write_lines(percent_cvg_csv)}" \
-        --assembler_version "~{assembler_version}" \
         --pangolin_lineage_csv "~{pangolin_lineage_csv}" \
         --cdc_lineage_groups_json "~{cdc_lineage_groups_json}" \
         --nextclade_variants_csv "~{nextclade_variants_csv}" \
         --nextclade_clades_csv "~{nextclade_clades_csv}" \
         --nextclade_version "~{nextclade_version}" \
-        --project_name "~{project_name}" 
+        --project_name "~{project_name}" \
+        --assembly_software_file "~{assembly_software_file}" \
+        --terra_data_table_path "~{terra_data_table_path}" \
 
     >>>
 
@@ -269,6 +280,7 @@ task transfer {
         File nextclade_variants_csv
         File sequencing_results_csv
         File wgs_horizon_report_csv
+        File assembly_software_file
     }
 
     String outdirpath = sub(out_dir, "/$", "")
@@ -283,6 +295,7 @@ task transfer {
         gsutil -m cp ~{nextclade_variants_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{sequencing_results_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{wgs_horizon_report_csv} ~{outdirpath}/summary_results/
+        gsutil -m cp ~{assembly_software_file} ~{outdirpath}/summary_results/
     >>>
 
     runtime {
