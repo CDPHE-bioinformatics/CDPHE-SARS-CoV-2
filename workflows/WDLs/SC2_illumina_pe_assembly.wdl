@@ -501,4 +501,13 @@ task create_software_assembly_file {
     output {
         File assemlby_software_file = '~{project_name}_assembly_software.tsv'
     }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v4"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
+    }
 }
