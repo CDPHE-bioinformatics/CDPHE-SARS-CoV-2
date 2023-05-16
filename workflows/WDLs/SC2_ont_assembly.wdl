@@ -453,8 +453,8 @@ task create_software_assembly_file {
 
         python ~{concat_assembly_software_ont_py} \
         --project_name "~{project_name}" \
-        --bwa_version "~{guppy_version}" \
-        --ivar_version "~{medaka_version}"
+        --guppy_version "~{guppy_version}" \
+        --medaka_version "~{medaka_version}"
 
     >>>
 
