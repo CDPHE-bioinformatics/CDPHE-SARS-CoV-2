@@ -320,16 +320,16 @@ task ivar_consensus {
         File bam
     }
 
-    command {
+    command <<<
 
 
         ivar version | awk '/version/ {print $3}' | tee VERSION
 
-        samtools faidx ${ref}
-        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ${ref} ${bam} | \
-        ivar consensus -p ${sample_name}_consensus -q 20 -t 0.6 -m 10
+        samtools faidx ~{ref}
+        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        ivar consensus -p ~{sample_name}_consensus -q 20 -t 0.6 -m 10
 
-    }
+    >>>
 
     output {
 
