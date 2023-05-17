@@ -9,7 +9,7 @@ workflow SC2_lineage_calling_and_results {
         Array[File?] percent_cvg_csv
         Array[String] out_dir_array
         Array[String] project_name_array
-        Array[String?] assembler_version_array
+        # Array[String?] assembler_version_array
         # Array[File] workbook_path_array
         Array[File] terra_data_table_path_array
 
@@ -28,7 +28,7 @@ workflow SC2_lineage_calling_and_results {
     String project_name = project_name_array[0]
     # File workbook_path = select_all(workbook_path_array)[0]
     File terra_data_table_path = select_all(terra_data_table_path_array)[0]
-    String assembler_version = select_all(assembler_version_array)[0]
+    # String assembler_version = select_all(assembler_version_array)[0]
     String out_dir = out_dir_array[0]
     File assembly_software_file = select_all(assembly_software_file_array)[0]
 
@@ -66,7 +66,7 @@ workflow SC2_lineage_calling_and_results {
         nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
-        assembler_version= assembler_version,
+        # assembler_version= assembler_version,
         # workbook_path = workbook_path
         terra_data_table_path = terra_data_table_path,
         assembly_software_file = assembly_software_file
