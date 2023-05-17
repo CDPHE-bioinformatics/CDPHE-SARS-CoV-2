@@ -97,6 +97,7 @@ workflow SC2_lineage_calling_and_results {
         File nextclade_variants_csv = parse_nextclade.nextclade_variants_csv
         File sequencing_results_csv = results_table.sequencing_results_csv
         File wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
+        File assembly_software_file = assembly_software_file
     }
 }
 
