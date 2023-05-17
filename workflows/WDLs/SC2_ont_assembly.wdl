@@ -83,7 +83,7 @@ workflow SC2_ont_assembly {
         input:
             concat_assembly_software_ont_py = concat_assembly_software_ont_py,
             guppy_version = Demultiplex.guppy_version,
-            medaka_version = Medaka.assembler_version,
+            medaka_version = Medaka.medaka_version,
             project_name = project_name
     }
 
