@@ -499,7 +499,7 @@ task create_software_assembly_file {
     >>>
 
     output {
-        File assemlby_software_file = '~{project_name}_assembly_software.tsv'
+        File assembly_software_file = '~{project_name}_assembly_software.tsv'
     }
 
     runtime {
