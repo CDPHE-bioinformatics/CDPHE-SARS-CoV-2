@@ -14,7 +14,7 @@ workflow SC2_lineage_calling_and_results {
         Array[File] terra_data_table_path_array
 
         File cdc_lineage_groups_json
-        Array[File] software_assembly_file_array
+        Array[File] assembly_software_file_array
 
         # python scripts
         File nextclade_json_parser_py
@@ -30,7 +30,7 @@ workflow SC2_lineage_calling_and_results {
     File terra_data_table_path = select_all(terra_data_table_path_array)[0]
     String assembler_version = select_all(assembler_version_array)[0]
     String out_dir = out_dir_array[0]
-    File software_assembly_file = select_all(software_assembly_file_array)[0]
+    File assembly_software_file = select_all(assembly_software_file_array)[0]
 
     call concatenate {
         input:
