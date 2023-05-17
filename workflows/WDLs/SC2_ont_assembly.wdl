@@ -106,8 +106,9 @@ workflow SC2_ont_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
-        String assembler_version = Medaka.assembler_version
         File assembly_software_file = create_software_assembly_file.assembly_software_file
+        String guppy_version = Demultiplex.guppy_version
+        String medaka_version = Medaka.medaka_version
     }
 }
 
@@ -158,7 +159,7 @@ task Demultiplex {
     output {
         Array[File] guppy_demux_fastq = glob("demux_fastq/${index_1_id}/*.fastq")
         File index_1_id_summary = "demux_fastq/barcoding_summary.txt"
-        String guppy_version = read_string('VERSION')
+        String guppy_version = read_string("VERSION")
     }
 
     runtime {

@@ -125,8 +125,9 @@ workflow SC2_illumina_pe_assembly {
         File cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
-        String assembler_version = align_reads.assembler_version
         File assembly_software_file = create_software_assembly_file.assembly_software_file
+        String bwa_version = align_reads.assembler_version
+        String ivar_version = ivar_consensus.ivar_version
     }
 }
 
@@ -334,7 +335,7 @@ task ivar_consensus {
     output {
 
         File consensus_out = "${sample_name}_consensus.fa"
-        String ivar_version = read_string('VERSION')
+        String ivar_version = read_string("VERSION")
 
     }
 
