@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     df = pd.DataFrame()
 
-    df['project_name'] = project_name
-    df['bwa_version'] = bwa_version
-    df['ivar_version'] = ivar_version
+    df['project_name'] = [project_name]
+    df['bwa_version'] = [bwa_version]
+    df['ivar_version'] = [ivar_version]
     
     outfile = f'{project_name}_assembly_software.tsv'
     df.to_csv(outfile, sep = '\t', index = False)
