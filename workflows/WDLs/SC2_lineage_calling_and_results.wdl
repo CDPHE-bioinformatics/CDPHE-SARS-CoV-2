@@ -12,10 +12,11 @@ workflow SC2_lineage_calling_and_results {
         # Array[String?] assembler_version_array
         # Array[File] workbook_path_array
         Array[File] terra_data_table_path_array
-
-        File cdc_lineage_groups_json
         Array[File] assembly_software_file_array
 
+        # workspace data
+        File cdc_lineage_groups_json
+        
         # python scripts
         File nextclade_json_parser_py
         File concat_seq_results_py
@@ -25,12 +26,12 @@ workflow SC2_lineage_calling_and_results {
     }
 
     # secret variables - for static values convert from array to single entity
-    String project_name = project_name_array[0]
-    # File workbook_path = select_all(workbook_path_array)[0]
+    String project_name = select_all(project_name_array)[0]
     File terra_data_table_path = select_all(terra_data_table_path_array)[0]
-    # String assembler_version = select_all(assembler_version_array)[0]
-    String out_dir = out_dir_array[0]
+    String out_dir = select_all(out_dir_array)[0]
     File assembly_software_file = select_all(assembly_software_file_array)[0]
+    # String assembler_version = select_all(assembler_version_array)[0]
+    # File workbook_path = select_all(workbook_path_array)[0]
 
     call concatenate {
         input:
@@ -66,8 +67,6 @@ workflow SC2_lineage_calling_and_results {
         nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
-        # assembler_version= assembler_version,
-        # workbook_path = workbook_path
         terra_data_table_path = terra_data_table_path,
         assembly_software_file = assembly_software_file
     }
@@ -97,7 +96,7 @@ workflow SC2_lineage_calling_and_results {
         File nextclade_variants_csv = parse_nextclade.nextclade_variants_csv
         File sequencing_results_csv = results_table.sequencing_results_csv
         File wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
-        File assembly_software_file = assembly_software_file
+        File assembly_software_tsv = assembly_software_file
     }
 }
 
@@ -231,9 +230,6 @@ task results_table {
       File nextclade_variants_csv
       String nextclade_version
       String project_name
-    #   String assembler_version
-    #   File workbook_path
-
       File assembly_software_file
       File terra_data_table_path
       
