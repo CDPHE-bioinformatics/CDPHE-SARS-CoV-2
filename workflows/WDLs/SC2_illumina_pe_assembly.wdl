@@ -126,7 +126,7 @@ workflow SC2_illumina_pe_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         String assembler_version = align_reads.assembler_version
-        File assembly_software_file = create_software_assembly_file.assemly_software_file
+        File assembly_software_file = create_software_assembly_file.assembly_software_file
     }
 }
 
