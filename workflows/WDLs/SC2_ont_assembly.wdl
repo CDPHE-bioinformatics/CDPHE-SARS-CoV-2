@@ -231,7 +231,7 @@ task Medaka {
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
-        String assembler_version = read_string("VERSION")
+        String medaka_version = read_string("VERSION")
     }
 
     runtime {
