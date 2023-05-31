@@ -165,7 +165,7 @@ def get_df_spike_mutations(variants_csv):
 
     return df
 
-def concat_results(sample_name_list, workbook_path, project_name, 
+def concat_results(sample_name_list, terra_data_table_path, project_name, 
                    assembly_software_file, pangolin_lineage_csv, cdc_lineage_groups_json,
                     nextclade_clades_csv, nextclade_version,
                    cov_out_df, percent_cvg_df, spike_variants_df):
@@ -190,12 +190,14 @@ def concat_results(sample_name_list, workbook_path, project_name,
     df = df.set_index('sample_name')
     df['analysis_date'] = str(date.today())
     for col in assembly_software_df.columns:
-        df[col] = assembly_software_df.loc(0, col)
+        df[col] = assembly_software_df.loc[0, col]
 
 
-    # read in workbook
-    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'sample_name' : object, 'hsn' : object})
-    workbook = workbook.set_index('sample_name')
+    # read in terra_data_table
+    terra_data_table = pd.read_csv(terra_data_table_path, sep = '\t', dtype = {'sample_name' : object, 'hsn' : object})
+    drop_col = terra_data_table.columns.tolist()[0]
+    terra_data_table = terra_data_table.drop(columns = drop_col)
+    terra_data_table = terra_data_table.set_index('sample_name')
 
     # read in panlogin results
     pangolin = pd.read_csv(pangolin_lineage_csv, dtype = {'taxon' : object})
@@ -242,7 +244,7 @@ def concat_results(sample_name_list, workbook_path, project_name,
     # print(spike_variants_df)
 
     # join
-    j = df.join(workbook, how = 'left')
+    j = df.join(terra_data_table, how = 'left')
     j = j.join(percent_cvg_df, how = 'left')
     j = j.join(cov_out_df, how = 'left')
     j = j.join(nextclade, how = 'left')
@@ -336,10 +338,10 @@ if __name__ == '__main__':
     options = getOptions()
 
     sample_name_array = options.sample_name_array
-    workbook_path = options.workbook_path
+    terra_data_table_path = options.terra_data_table_path
     cov_out_files = options.cov_out_files
     percent_cvg_files = options.percent_cvg_files
-    assembler_version = options.assembler_version
+    assembly_software_file = options.assembly_software_file
     project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
@@ -363,9 +365,9 @@ if __name__ == '__main__':
 
     # create results file
     results_df = concat_results(sample_name_list = sample_name_list,
-                                workbook_path = workbook_path,
+                                terra_data_table_path = terra_data_table_path,
                                 project_name = project_name,
-                                assembler_version = assembler_version,
+                                assembly_software_file=assembly_software_file,
                                 pangolin_lineage_csv=pangolin_lineage_csv,
                                 cdc_lineage_groups_json=cdc_lineage_groups_json,
                                 nextclade_clades_csv=nextclade_clades_csv,

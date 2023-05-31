@@ -28,6 +28,9 @@ workflow SC2_transfer_illumina_pe_assembly {
         String out_dir
     }
 
+    # secret variables
+    String outdirpath = sub(out_dir, "/$", "")
+
     call transfer_outputs {
         input:
             fastqc_raw1_html = fastqc_raw1_html,
@@ -52,7 +55,7 @@ workflow SC2_transfer_illumina_pe_assembly {
             flagstat_out = flagstat_out,
             stats_out = stats_out,
             renamed_consensus = renamed_consensus,
-            out_dir = out_dir
+            out_dir = outdirpath
     }
     
     output {

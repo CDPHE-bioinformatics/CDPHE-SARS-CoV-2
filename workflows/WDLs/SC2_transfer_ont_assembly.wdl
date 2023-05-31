@@ -18,6 +18,9 @@ workflow SC2_transfer_ont_assembly {
         String out_dir
     }
 
+    # secret variables
+    String outdirpath = sub(out_dir, "/$", "")
+
     call transfer_outputs {
         input:
             filtered_fastq = filtered_fastq,
@@ -32,7 +35,7 @@ workflow SC2_transfer_ont_assembly {
             scaffold_consensus = scaffold_consensus,
             renamed_consensus = renamed_consensus,
             primer_site_variants = primer_site_variants,
-            out_dir = out_dir
+            out_dir = outdirpath
     }
     
     output {
