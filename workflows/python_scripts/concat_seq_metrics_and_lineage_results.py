@@ -26,6 +26,104 @@ import pandas as pd
 from datetime import date
 import re
 
+# data type dictionaries
+cov_out_data_types = {'#rname': object,
+'startpos' : 'Int64',
+'endpos' : 'Int64',
+'numreads' : 'Int64',
+'covbases' : 'Int64',
+'coverage' : 'float64',
+'meandepth' : 'float64',
+'meanbaseseq' : 'float64',
+'meanmapq' : 'float64'}
+
+
+percent_cov_data_type = {'sample_name': object,
+ 'aligned_bases': 'Int64',
+ 'N_bases': 'Int64',
+ 'non_ambiguous_bases': 'Int64',
+ 'percent_coverage': 'float64'}
+
+
+pangolin_data_types = {'taxon': object,
+ 'lineage': object,
+ 'conflict': 'float64',
+ 'ambiguity_score': 'float64',
+ 'scorpio_call': 'float64',
+ 'scorpio_support': 'float64',
+ 'scorpio_conflict': 'float64',
+ 'scorpio_notes': 'object',
+ 'version': object,
+ 'pangolin_version': 'float64',
+ 'scorpio_version': object,
+ 'constellation_version': object,
+ 'is_designated': 'bool',
+ 'qc_status': object,
+ 'qc_notes': object,
+ 'note': object,
+ 'expanded_lineage': object}
+
+nextclade_clades_data_types = {'fasta_header': object,
+ 'sample_name': object,
+ 'hsn' : object,
+ 'nextclade': object,
+ 'total_nucleotide_mutations': 'Int64',
+ 'total_nucleotide_deletions': 'Int64',
+ 'total_nucleotide_insertions': 'Int64',
+ 'total_AA_substitutions': 'Int64',
+ 'total_AA_deletions': 'Int64'}
+
+nextclade_variants_data_types = {'fasta_header': object,
+ 'sample_name': object,
+ 'hsn' : object,
+ 'variant_name': object,
+ 'gene': object,
+ 'codon_position': 'Int64',
+ 'refAA': object,
+ 'altAA': object,
+ 'start_nuc_pos': 'Int64',
+ 'end_nuc_pos': 'Int64'}
+
+terra_data_table_data_types = {'index_position': 'Int64',
+ 'hsn': object,
+ 'sample_name': object,
+ 'sample_well': object,
+ 'sample_type': object,
+ 'index_well': object,
+ 'index_1': object,
+ 'index_2': object,
+ 'index_1_id': object,
+ 'index_2_id': object,
+ 'index_kit': object,
+ 'index_set': 'Int64',
+ 'plate_name': object,
+ 'project_name': object,
+ 'run_name': object,
+ 'library_prep': object,
+ 'project_type': object,
+ 'organism': object,
+ 'run_date': object,
+ 'read_length': 'Int64',
+ 'read_type': object,
+ 'primer_set': object,
+ 'platform': object,
+ 'instrument_id': object,
+ 'tag': object,
+ 'note': object,
+ 'verification_set_name': object,
+ 'fastq_dir': object,
+ 'workbook_path': object,
+ 'terra_data_table_path': object,
+ 'out_dir': object,
+ 'download_date': object}
+
+assembly_software_data_types = {'project_name' : object,
+                               'bwa_version' : object,
+                               'ivar_version' : object,
+                               'guppy_veresion' : object,
+                               'medaka_version' : object}
+
+
 #### FUNCTIONS #####
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
@@ -65,7 +163,7 @@ def concat_cov_out(cov_out_file_list):
 
     #loop through bam file stats files and pull data
     for file in cov_out_file_list:
-        d = pd.read_csv(file, sep = '\t')
+        d = pd.read_csv(file, sep = '\t', dtype = cov_out_data_types)
         if re.search('barcode', file):
             # for nanopore runs
             sample_name = re.findall('/([0-9a-zA-Z_\-\.]+)_barcode', file)[0]
@@ -97,7 +195,7 @@ def concat_percent_cvg(percent_cvg_file_list):
 
     df_list = []
     for file in percent_cvg_file_list:
-        d = pd.read_csv(file, dtype = {'sample_name' : object})
+        d = pd.read_csv(file, dtype = percent_cov_data_type)
         # d = d.rename(columns = {'accession_id' : 'sample_name'})
         df_list.append(d)
 
@@ -112,7 +210,7 @@ def get_df_spike_mutations(variants_csv):
         return sample_name 
     
     # read in variants file
-    variants = pd.read_csv(variants_csv, dtype = {'sample_name' : object})
+    variants = pd.read_csv(variants_csv, dtype = nextclade_variants_data_types)
     # variants = variants.rename(columns = {'sample_name' : 'fasta_header'})
 
     # variants['sample_name'] = variants.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
@@ -120,18 +218,20 @@ def get_df_spike_mutations(variants_csv):
     # print(variants)
 
     #### filter variants for spike protein varaints in rbd and pbcs #####
+    # filter to only s gene
     crit = variants.gene == 'S'
-    critRBD = (variants.codon_position >= 461) & (variants.codon_position <= 509)
-    critPBCS = (variants.codon_position >= 677) & (variants.codon_position <= 694)
-    crit732 = variants.codon_position == 732
-    crit452 = variants.codon_position == 452
-    crit253 = variants.codon_position == 253
-    crit13 = variants.codon_position == 13
-    crit145 = variants.codon_position == 145 # delta plus AY.4.2
-    crit222 = variants.codon_position == 222 # delta plus AY.4.2
-    critdel = variants.variant_name.str.contains('del') # mainly for 69/70 del
+    # critRBD = (variants.codon_position >= 461) & (variants.codon_position <= 509)
+    # critPBCS = (variants.codon_position >= 677) & (variants.codon_position <= 694)
+    # crit732 = variants.codon_position == 732
+    # crit452 = variants.codon_position == 452
+    # crit253 = variants.codon_position == 253
+    # crit13 = variants.codon_position == 13
+    # crit145 = variants.codon_position == 145 # delta plus AY.4.2
+    # crit222 = variants.codon_position == 222 # delta plus AY.4.2
+    # critdel = variants.variant_name.str.contains('del') # mainly for 69/70 del
 
-    spike_variants_df = variants[crit & (critRBD | critPBCS | crit732 | critdel | crit452 | crit253 | crit13 | crit145 | crit222)]
+    spike_variants_df = variants[crit]
+    # spike_variants_df = variants[crit & (critRBD | critPBCS | crit732 | critdel | crit452 | crit253 | crit13 | crit145 | crit222)]
     spike_variants_df = spike_variants_df.reset_index(drop = True)
     # print(spike_variants_df)
 
@@ -180,7 +280,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     
 
     # read in assembly software file
-    assembly_software_df = pd.read_csv(assembly_software_file, sep = '\t')
+    assembly_software_df = pd.read_csv(assembly_software_file, sep = '\t', dtype = assembly_software_data_types )
     assembly_software_df = assembly_software_df.drop (columns = 'project_name')
 
 
@@ -194,13 +294,13 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
 
     # read in terra_data_table
-    terra_data_table = pd.read_csv(terra_data_table_path, sep = '\t', dtype = {'sample_name' : object, 'hsn' : object})
+    terra_data_table = pd.read_csv(terra_data_table_path, sep = '\t', dtype = terra_data_table_data_types)
     drop_col = terra_data_table.columns.tolist()[0]
     terra_data_table = terra_data_table.drop(columns = drop_col)
     terra_data_table = terra_data_table.set_index('sample_name')
 
     # read in panlogin results
-    pangolin = pd.read_csv(pangolin_lineage_csv, dtype = {'taxon' : object})
+    pangolin = pd.read_csv(pangolin_lineage_csv, dtype = pangolin_data_types)
     pangolin = pangolin.rename(columns = {'lineage': 'pangolin_lineage',
                                           'conflict' : 'pangoLEARN_conflict',
                                           'taxon' : 'fasta_header',
@@ -228,11 +328,11 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
 
     # read in nextclade csv
-    nextclade = pd.read_csv(nextclade_clades_csv, dtype = {'sample_name' : object})
+    nextclade = pd.read_csv(nextclade_clades_csv, dtype = nextclade_clades_data_types)
     # nextclade = nextclade.rename(columns = {'sample_name' : 'fasta_header'})
     # sample_name = nextclade.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     # nextclade.insert(value = sample_name, column = 'sample_name', loc = 0)
-    nextclade = nextclade.drop(columns = 'fasta_header')
+    nextclade = nextclade.drop(columns = ['fasta_header', 'hsn'])
     nextclade['nextclade_version'] = nextclade_version
     nextclade = nextclade.set_index('sample_name')
 
