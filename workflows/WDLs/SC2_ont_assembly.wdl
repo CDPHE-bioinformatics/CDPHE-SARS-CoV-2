@@ -11,9 +11,11 @@ workflow SC2_ont_assembly {
         File    primer_bed
         File    s_gene_primer_bed
         File    s_gene_amplicons
+        String project_name
 
         # python scripts
-        File calc_percent_coverage_py
+        File    calc_percent_coverage_py
+        File    concat_assembly_software_ont_py
     }
     
     call ListFastqFiles {
@@ -77,6 +79,14 @@ workflow SC2_ont_assembly {
             s_gene_primer_bed = s_gene_primer_bed
     }
 
+    call create_software_assembly_file {
+        input:
+            concat_assembly_software_ont_py = concat_assembly_software_ont_py,
+            guppy_version = Demultiplex.guppy_version,
+            medaka_version = Medaka.medaka_version,
+            project_name = project_name
+    }
+
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
@@ -96,7 +106,9 @@ workflow SC2_ont_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
-        String assembler_version = Medaka.assembler_version
+        File assembly_software_file = create_software_assembly_file.assembly_software_file
+        String guppy_version = Demultiplex.guppy_version
+        String medaka_version = Medaka.medaka_version
     }
 }
 
@@ -135,6 +147,7 @@ task Demultiplex {
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
 
     command <<<
+        guppy_barcoder -v | awk '/Version/ {print $13}' | tee VERSION
         set -e
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
@@ -146,6 +159,7 @@ task Demultiplex {
     output {
         Array[File] guppy_demux_fastq = glob("demux_fastq/${index_1_id}/*.fastq")
         File index_1_id_summary = "demux_fastq/barcoding_summary.txt"
+        String guppy_version = read_string("VERSION")
     }
 
     runtime {
@@ -154,7 +168,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:6.0.1"
+        docker:    "genomicpariscentre/guppy:6.4.6"
     }
 }
 
@@ -217,7 +231,7 @@ task Medaka {
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
-        String assembler_version = read_string("VERSION")
+        String medaka_version = read_string("VERSION")
     }
 
     runtime {
@@ -421,5 +435,40 @@ task get_primer_site_variants {
         memory: "1 GB"
         cpu: 1
         disks: "local-disk 10 SSD"
+    }
+}
+
+task create_software_assembly_file {
+    meta {
+        description: "pull assembly software into a sinlge tsv file"
+    }
+
+    input {
+        File concat_assembly_software_ont_py
+        String guppy_version
+        String medaka_version
+        String project_name
+    }
+
+    command <<<
+
+        python ~{concat_assembly_software_ont_py} \
+        --project_name "~{project_name}" \
+        --guppy_version "~{guppy_version}" \
+        --medaka_version "~{medaka_version}"
+
+    >>>
+
+    output {
+        File assembly_software_file = '~{project_name}_assembly_software.tsv'
+    }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v4"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
     }
 }

@@ -10,10 +10,12 @@ workflow SC2_illumina_pe_assembly {
         File    adapters_and_contaminants
         File    covid_genome
         File    covid_gff
+        String  project_name
 
         # python scripts
         File    calc_percent_coverage_py
         File    s_gene_amplicons
+        File    concat_assembly_software_illumina_py  
     }
 
     call seqyclean {
@@ -87,6 +89,15 @@ workflow SC2_illumina_pe_assembly {
             calc_percent_coverage_py = calc_percent_coverage_py
     }
 
+    call create_software_assembly_file {
+        input:
+            concat_assembly_software_illumina_py = concat_assembly_software_illumina_py,
+            project_name = project_name,
+            bwa_version = align_reads.assembler_version,
+            ivar_version = ivar_consensus.ivar_version
+            
+    }
+
     output {
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
@@ -114,7 +125,9 @@ workflow SC2_illumina_pe_assembly {
         File cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
-        String assembler_version = align_reads.assembler_version
+        File assembly_software_file = create_software_assembly_file.assembly_software_file
+        String bwa_version = align_reads.assembler_version
+        String ivar_version = ivar_consensus.ivar_version
     }
 }
 
@@ -308,17 +321,21 @@ task ivar_consensus {
         File bam
     }
 
-    command {
+    command <<<
 
-        samtools faidx ${ref}
-        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ${ref} ${bam} | \
-        ivar consensus -p ${sample_name}_consensus -q 20 -t 0.6 -m 10
 
-    }
+        ivar version | awk '/version/ {print $3}' | tee VERSION
+
+        samtools faidx ~{ref}
+        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        ivar consensus -p ~{sample_name}_consensus -q 20 -t 0.6 -m 10
+
+    >>>
 
     output {
 
         File consensus_out = "${sample_name}_consensus.fa"
+        String ivar_version = read_string("VERSION")
 
     }
 
@@ -459,4 +476,39 @@ task calc_percent_cvg {
 
     }
 
+}
+
+task create_software_assembly_file {
+    meta {
+        description: "pull assembly software into a sinlge tsv file"
+    }
+
+    input {
+        File concat_assembly_software_illumina_py
+        String bwa_version
+        String ivar_version
+        String project_name
+    }
+
+    command <<<
+
+        python ~{concat_assembly_software_illumina_py} \
+        --project_name "~{project_name}" \
+        --bwa_version "~{bwa_version}" \
+        --ivar_version "~{ivar_version}"
+
+    >>>
+
+    output {
+        File assembly_software_file = '~{project_name}_assembly_software.tsv'
+    }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v4"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
+    }
 }
