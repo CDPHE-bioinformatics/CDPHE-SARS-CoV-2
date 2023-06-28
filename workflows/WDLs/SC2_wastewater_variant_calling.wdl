@@ -3,55 +3,78 @@ version 1.0
 workflow SC2_wastewater_variant_calling {
 
     input {
+
         Array[File] trimsort_bam
+        Array[String] sample_name
+        Arrray[String] out_dir_array
+        Array[String] project_name_array
+
+        # reference files/workspace data
         File covid_genome
+        File covid_gff
         File voc_bed
         File voc_annotations
-        Array[String] sample_id
-        String out_dir
-        Array[String] seq_run_array
-        File dashboard_formatting_py
-    }
 
-    scatter (id_bam in zip(sample_id, trimsort_bam)) {
+    }
+    # secret variables
+    String project_name = project_name_array[0]
+    String out_dir = out_dir_array[0]
+
+
+    scatter (id_bam in zip(sample_name, trimsort_bam)) {
         call add_RG {
             input:
-                sample_id = id_bam.left,
+                sample_name = id_bam.left,
                 bam = id_bam.right
         }
+        call ivar_variant_calling {
+
+
+        }
+
+        call variant_calling_freyja {
+            input:
+                bam = add_RG.rgbam,
+                ref = covid_genome,
+                sample_name = id_bam.left
+        }
+
         call variant_calling {
             input:
                 bam = add_RG.rgbam,
                 ref = covid_genome,
-                sample_id = id_bam.left
+                ref_gff = covid_gff
+                sample_name = id_bam.left
+
         }
+
         call freyja_demix {
             input:
-                variants = variant_calling.variants,
-                depth = variant_calling.depth,
-                sample_id = id_bam.left
+                variants = variant_calling_freyja.variant_freyja,
+                depth = variant_calling.depth_freyja,
+                sample_name = id_bam.left
         }
         call fill_NA {
             input:
-                variants = variant_calling.variants,
-                sample_id = id_bam.left,
+                variants = variant_calling_freyja.variants_freyja,
+                sample_name = id_bam.left,
                 voc_bed = voc_bed
         }
         call reformat_tsv {
             input:
                 tsv = fill_NA.fill_NA_tsv,
-                sample_id = id_bam.left
+                sample_name = id_bam.left
         }
         call summary_prep {
             input:
                 tsv = reformat_tsv.reformatted_tsv,
-                sample_id = id_bam.left,
+                sample_name = id_bam.left,
                 voc_annotations = voc_annotations
         }
         call demix_reformat {
             input:
                 tsv = freyja_demix.demix,
-                sample_id = id_bam.left
+                sample_name = id_bam.left
         }
     }
 
@@ -60,12 +83,6 @@ workflow SC2_wastewater_variant_calling {
             demix = freyja_demix.demix
     }
 
-    call format_freyja_aggregate_for_dashboard{
-        input:
-            dashboard_formatting_py = dashboard_formatting_py,
-            freyja_aggregate_file = freyja_aggregate.demix_aggregated,
-            seq_run_array = seq_run_array
-    }
 
     call combine_tsv {
         input:
@@ -80,6 +97,8 @@ workflow SC2_wastewater_variant_calling {
     }
     call transfer_outputs {
         input:
+            variants_freyja = variant_calling_freyja.variants_freyja,
+            depth_freyja = variant_calling_freyja.depth_freyja,
             variants = variant_calling.variants,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
@@ -89,8 +108,6 @@ workflow SC2_wastewater_variant_calling {
             voc_summary = summary_tsv.voc_summary,
             demix_aggregated = freyja_aggregate.demix_aggregated,
             demix_summary = combine_tsv.demix_summary,
-            wwt_variant_abundances_long_format = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format,
-            wwt_variant_abundances_long_format_mean = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format_mean,
             out_dir = out_dir
     }
 
@@ -110,26 +127,25 @@ workflow SC2_wastewater_variant_calling {
         File voc_summary = summary_tsv.voc_summary
         File demix_summary = combine_tsv.demix_summary
         String transfer_date = transfer_outputs.transfer_date
-        File wwt_variant_abundances_long_format = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format
-        File wwt_variant_abundances_long_format_mean = format_freyja_aggregate_for_dashboard.wwt_variant_abundances_long_format_mean
+       
 
     }
 }
 
 task add_RG {
     input {
-        String sample_id
+        String sample_name
         File bam
     }
 
     command <<<
 
-        samtools addreplacerg -r ID:~{sample_id} -r LB:L1 -r SM:~{sample_id} -o ~{sample_id}_addRG.bam ~{bam}
+        samtools addreplacerg -r ID:~{sample_name} -r LB:L1 -r SM:~{sample_name} -o ~{sample_name}_addRG.bam ~{bam}
 
     >>>
 
     output {
-        File rgbam = "${sample_id}_addRG.bam"
+        File rgbam = "${sample_name}_addRG.bam"
     }
 
     runtime {
@@ -140,9 +156,9 @@ task add_RG {
     }
 }
 
-task variant_calling {
+task variant_calling_freyja {
     input {
-        String sample_id
+        String sample_name
         File bam
         File ref
 
@@ -150,13 +166,13 @@ task variant_calling {
 
     command <<<
 
-        freyja variants ~{bam} --variants ~{sample_id}_variants.tsv --depths ~{sample_id}_depth.tsv --ref ~{ref}
+        freyja variants ~{bam} --variants ~{sample_name}_variants_freyja.tsv --depths ~{sample_name}_depth_freyja.tsv --ref ~{ref}
 
     >>>
 
     output {
-        File variants = "${sample_id}_variants.tsv"
-        File depth = "${sample_id}_depth.tsv"
+        File variants_freyja = "${sample_name}_variants_freyja.tsv"
+        File depth_freyja = "${sample_name}_depth_freyja.tsv"
     }
 
     runtime {
@@ -165,11 +181,48 @@ task variant_calling {
         cpu: 8
         disks: "local-disk 200 SSD"
     }
+
+}
+
+task variant_calling {
+    input {
+        File bam
+        File ref
+        File ref_gff
+        String sample_name
+    }
+
+
+    command <<<
+
+    samtools mpileup -A -aa -d 600000 -B -Q 20 -q 0 -f ~{ref} ~{bam} | tee >(cut -f1-4 > ~{sample_name}_depth.tsv) | \
+    ivar variants -p ~{sample_name}_variants.tsv -q 20 -t 0.0 -r ~{ref} -g ~{gff}
+    
+    >>>
+
+    output {
+        File variants_AA_changes = "~{sample_name}_variants.tsv"
+        File depth = "~{sample_name}_depth.tsv"
+
+    }
+
+     runtime {
+        cpu:    2
+        memory:    "8 GiB"
+        disks:    "local-disk 1 HDD"
+        bootDiskSizeGb:    10
+        preemptible:    0
+        maxRetries:    0
+        docker:    "andersenlabapps/ivar:1.3.1"
+    }
+
+
+    
 }
 
 task freyja_demix {
     input {
-        String sample_id
+        String sample_name
         File variants
         File depth
 
@@ -182,14 +235,14 @@ task freyja_demix {
         freyja update --outdir ./freyja_db
         
         #creates a temp file with the same name as the intended output file that will get output in case of failure or overwritten in case of sucess
-        echo -e "\t~{sample_id}\nsummarized\tLowCov\nlineages\tLowCov\nabundances\tLowCov\nresid\tLowCov\ncoverage\tLowCov" > ~{sample_id}_demixed.tsv
+        echo -e "\t~{sample_name}\nsummarized\tLowCov\nlineages\tLowCov\nabundances\tLowCov\nresid\tLowCov\ncoverage\tLowCov" > ~{sample_name}_demixed.tsv
         
-        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_id}_demixed.tsv
+        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
 
     >>>
 
     output {
-        File demix = "${sample_id}_demixed.tsv"
+        File demix = "${sample_name}_demixed.tsv"
     }
 
     runtime {
@@ -226,62 +279,36 @@ task freyja_aggregate {
     }
 }
 
-task format_freyja_aggregate_for_dashboard {
-    input {
-        File dashboard_formatting_py
-        File freyja_aggregate_file
-        Array[String] seq_run_array
 
-    }
-
-    command <<<
-    python ~{dashboard_formatting_py} \
-        --freyja_aggregate_path ~{freyja_aggregate_file} \
-        --seq_run ~{write_lines(seq_run_array)}
-    >>>
-
-    output{
-        File wwt_variant_abundances_long_format = "wwt_variant_abundances_long_format_${seq_run_array[0]}.csv"
-        File wwt_variant_abundances_long_format_mean = "wwt_variant_abundances_long_format_mean_${seq_run_array[0]}.csv"
-    }
-
-    runtime {
-        docker: "mchether/py3-bio:v2"
-        memory: "16 GB"
-        cpu:    4
-        disks: "local-disk 100 SSD"
-        dx_instance_type: "mem1_ssd1_v2_x2"
-    }
-}
 
 task fill_NA {
     input {
         File variants
-        String sample_id
+        String sample_name
         File voc_bed
     }
 
     command <<<
 
     #input is the freyja variants tsv, we first need to cut and order the columns we want
-    awk '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $12 "\t" $5 "\t" $8 "\t" $11}' ~{variants} | awk 'NR==1; NR > 1 {print $0 | "sort -n -k 2,2"}' > ~{sample_id}_voc_mutations_temp1.tsv
+    awk '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $12 "\t" $5 "\t" $8 "\t" $11}' ~{variants} | awk 'NR==1; NR > 1 {print $0 | "sort -n -k 2,2"}' > ~{sample_name}_voc_mutations_temp1.tsv
 
     #filter tsv with mutations bed file to get the voc associated sites
-    grep -f ~{voc_bed} ~{sample_id}_voc_mutations_temp1.tsv > ~{sample_id}_voc_mutations_temp2.tsv
+    grep -f ~{voc_bed} ~{sample_name}_voc_mutations_temp1.tsv > ~{sample_name}_voc_mutations_temp2.tsv
 
     #fix the header names
-    echo -e "CHROM\tPOS\tREF\t~{sample_id}_ALT\t~{sample_id}_DP\t~{sample_id}_RefDP\t~{sample_id}_AltDP\t~{sample_id}_AltFREQ" | cat - ~{sample_id}_voc_mutations_temp2.tsv | sed 's/\t/_/' | sort -t $'\t' -k1,1 > ~{sample_id}_voc_mutations_temp3.tsv
+    echo -e "CHROM\tPOS\tREF\t~{sample_name}_ALT\t~{sample_name}_DP\t~{sample_name}_RefDP\t~{sample_name}_AltDP\t~{sample_name}_AltFREQ" | cat - ~{sample_name}_voc_mutations_temp2.tsv | sed 's/\t/_/' | sort -t $'\t' -k1,1 > ~{sample_name}_voc_mutations_temp3.tsv
 
     #generate key file from the voc mutations bed file
     cat ~{voc_bed} | cut -f 1,2 | tr "\t" "_" | sort | uniq > keys.txt
 
     #get the NA-filled columns we want
-    join -t $'\t' -e NA -a 1 -1 1 -2 1 -o "1.1,2.2,2.3,2.4,2.5,2.6,2.7" keys.txt "~{sample_id}_voc_mutations_temp3.tsv" > ~{sample_id}_voc_fill_NA.tsv
+    join -t $'\t' -e NA -a 1 -1 1 -2 1 -o "1.1,2.2,2.3,2.4,2.5,2.6,2.7" keys.txt "~{sample_name}_voc_mutations_temp3.tsv" > ~{sample_name}_voc_fill_NA.tsv
 
     >>>
 
     output {
-         File fill_NA_tsv = "${sample_id}_voc_fill_NA.tsv"
+         File fill_NA_tsv = "${sample_name}_voc_fill_NA.tsv"
     }
 
     runtime {
@@ -295,7 +322,7 @@ task fill_NA {
 task reformat_tsv {
     input {
         File tsv
-        String sample_id
+        String sample_name
     }
 
     command <<<
@@ -309,19 +336,19 @@ task reformat_tsv {
                 f6[$1]=f6[$1] sep[$1] $6;
                 f7[$1]=f7[$1] sep[$1] $7;
                 sep[$1]="|"}
-        END {for(k in f2) print k,f2[k],f3[k],f4[k],f5[k],f6[k],f7[k]}' ~{tsv} > ~{sample_id}_voc_mutations_temp4.tsv
+        END {for(k in f2) print k,f2[k],f3[k],f4[k],f5[k],f6[k],f7[k]}' ~{tsv} > ~{sample_name}_voc_mutations_temp4.tsv
 
         #fix delimiters and add a column containing the sample id
 
-        sed 's/ /\t/g' ~{sample_id}_voc_mutations_temp4.tsv | awk 'NF=NF+1{$NF="~{sample_id}"}1' > ~{sample_id}_voc_mutations_temp5.tsv
+        sed 's/ /\t/g' ~{sample_name}_voc_mutations_temp4.tsv | awk 'NF=NF+1{$NF="~{sample_name}"}1' > ~{sample_name}_voc_mutations_temp5.tsv
 
         # fix the column headers, convert from space to tab delimited and then sort by col1
-        echo -e "CHROMPOS ~{sample_id}_REF ~{sample_id}_ALT ~{sample_id}_DP ~{sample_id}_RefDP ~{sample_id}_AltDP ~{sample_id}_AltFEQ sample_id" | cat - ~{sample_id}_voc_mutations_temp5.tsv | sed 's/ /\t/g' | sort -t $'\t' -k 1,1 -V > ~{sample_id}_voc_reformat.tsv
+        echo -e "CHROMPOS ~{sample_name}_REF ~{sample_name}_ALT ~{sample_name}_DP ~{sample_name}_RefDP ~{sample_name}_AltDP ~{sample_name}_AltFEQ sample_name" | cat - ~{sample_name}_voc_mutations_temp5.tsv | sed 's/ /\t/g' | sort -t $'\t' -k 1,1 -V > ~{sample_name}_voc_reformat.tsv
 
     >>>
 
     output {
-         File reformatted_tsv = "${sample_id}_voc_reformat.tsv"
+         File reformatted_tsv = "${sample_name}_voc_reformat.tsv"
     }
 
     runtime {
@@ -335,26 +362,26 @@ task reformat_tsv {
 task summary_prep {
     input {
         File tsv
-        String sample_id
+        String sample_name
         File voc_annotations
     }
 
     command <<<
 
       # cut the columns we want for the results summary (Alt allele and frequency) and make output file
-      cut -f3,7 ~{tsv} > ~{sample_id}_voc_mutations_forsummary.tsv
+      cut -f3,7 ~{tsv} > ~{sample_name}_voc_mutations_forsummary.tsv
 
       # cut the columns we want for the counts summary
-      awk '{print $8 "\t" $3 "\t" $4 "\t" $6}' ~{tsv} > ~{sample_id}_voc_mutations_temp6.tsv
+      awk '{print $8 "\t" $3 "\t" $4 "\t" $6}' ~{tsv} > ~{sample_name}_voc_mutations_temp6.tsv
 
       # add annotations to the counts summary, reorder the columns, fix the column headers and make output file
-      paste ~{voc_annotations} ~{sample_id}_voc_mutations_temp6.tsv | awk '{print $4 "\t" $1 "\t" $2 "\t" $3 "\t" $5 "\t" $6 "\t" $7}' | awk 'BEGIN{FS=OFS="\t"; print "sample_id", "AA_change", "Nucl_change", "Lineages", "ALT", "Total_count", "ALT_count"} NR>1{print $1, $2, $3, $4, $5, $6, $7}' > ~{sample_id}_voc_mutations_counts.tsv
+      paste ~{voc_annotations} ~{sample_name}_voc_mutations_temp6.tsv | awk '{print $4 "\t" $1 "\t" $2 "\t" $3 "\t" $5 "\t" $6 "\t" $7}' | awk 'BEGIN{FS=OFS="\t"; print "sample_name", "AA_change", "Nucl_change", "Lineages", "ALT", "Total_count", "ALT_count"} NR>1{print $1, $2, $3, $4, $5, $6, $7}' > ~{sample_name}_voc_mutations_counts.tsv
 
    >>>
 
     output {
-         File sample_voc_tsv_summary = "${sample_id}_voc_mutations_forsummary.tsv"
-         File sample_voc_tsv_counts = "${sample_id}_voc_mutations_counts.tsv"
+         File sample_voc_tsv_summary = "${sample_name}_voc_mutations_forsummary.tsv"
+         File sample_voc_tsv_counts = "${sample_name}_voc_mutations_counts.tsv"
     }
 
     runtime {
@@ -368,30 +395,30 @@ task summary_prep {
 task demix_reformat {
     input {
         File tsv
-        String sample_id
+        String sample_name
     }
 
     command <<<
 
         #datamash to transpose the tsv
-        datamash -H transpose < ~{tsv} > ~{sample_id}_demixed_temp1.tsv
+        datamash -H transpose < ~{tsv} > ~{sample_name}_demixed_temp1.tsv
 
         #remove unnecessary characters, change spaces to commas
-        tr -d \[ < ~{sample_id}_demixed_temp1.tsv | tr -d \] | tr -d \( | tr -d \) | tr -d \, | tr -d \' | tr ' ' ',' > ~{sample_id}_demixed_temp2.tsv
+        tr -d \[ < ~{sample_name}_demixed_temp1.tsv | tr -d \] | tr -d \( | tr -d \) | tr -d \, | tr -d \' | tr ' ' ',' > ~{sample_name}_demixed_temp2.tsv
 
         # cut and keep the lineage and abundance columns (col3 and col4), fix column headers and delimiters
-        awk '{print $3 "\t" $4}' ~{sample_id}_demixed_temp2.tsv | sed -e '1s/abundances/~{sample_id}_lineages/' -e '1s/resid/~{sample_id}_abundances/' | sed 's/ /\t/g' > ~{sample_id}_demixed_temp3.tsv
+        awk '{print $3 "\t" $4}' ~{sample_name}_demixed_temp2.tsv | sed -e '1s/abundances/~{sample_name}_lineages/' -e '1s/resid/~{sample_name}_abundances/' | sed 's/ /\t/g' > ~{sample_name}_demixed_temp3.tsv
 
         # transpose
-        datamash -H transpose < ~{sample_id}_demixed_temp3.tsv > ~{sample_id}_demixed_temp4.tsv
+        datamash -H transpose < ~{sample_name}_demixed_temp3.tsv > ~{sample_name}_demixed_temp4.tsv
 
         #convert commas to tabs
-        tr ',' '\t' < ~{sample_id}_demixed_temp4.tsv > ~{sample_id}_demixed_reformatted.tsv
+        tr ',' '\t' < ~{sample_name}_demixed_temp4.tsv > ~{sample_name}_demixed_reformatted.tsv
 
    >>>
 
     output {
-         File demix_reformatted = "${sample_id}_demixed_reformatted.tsv"
+         File demix_reformatted = "${sample_name}_demixed_reformatted.tsv"
     }
 
     runtime {
@@ -466,6 +493,8 @@ task summary_tsv {
 
 task transfer_outputs {
     input {
+        Array[File] variants_freyja
+        Array[File] depth_freyja
         Array[File] variants
         Array[File] depth
         Array[File] demix
@@ -475,8 +504,6 @@ task transfer_outputs {
         File voc_counts
         File demix_aggregated
         File demix_summary
-        File wwt_variant_abundances_long_format
-        File wwt_variant_abundances_long_format_mean
         String out_dir
 
     }
@@ -485,8 +512,10 @@ task transfer_outputs {
 
     command <<<
 
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' variants_freyja} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' depth_freyja} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/ivar/
+        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/ivar/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' sample_voc_tsv_summary} ~{outdirpath}/waste_water_variant_calling/sample_variants/
         gsutil -m cp ~{sep=' ' sample_voc_tsv_counts} ~{outdirpath}/waste_water_variant_calling/sample_variants/
@@ -494,8 +523,7 @@ task transfer_outputs {
         gsutil -m cp ~{voc_counts} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{demix_summary} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{wwt_variant_abundances_long_format} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{wwt_variant_abundances_long_format_mean} ~{outdirpath}/waste_water_variant_calling/
+    
 
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
