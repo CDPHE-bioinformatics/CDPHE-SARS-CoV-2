@@ -40,7 +40,7 @@ workflow SC2_wastewater_variant_calling {
 
         call freyja_demix {
             input:
-                variants = variant_calling.variant,
+                variants = variant_calling.variants,
                 depth = variant_calling.depth,
                 sample_name = id_bam.left
         }
@@ -163,7 +163,7 @@ task variant_calling {
     >>>
 
     output {
-        File variants_AA_changes = "~{sample_name}_variants.tsv"
+        File variants = "~{sample_name}_variants.tsv"
         File depth = "~{sample_name}_depth.tsv"
 
     }
@@ -455,8 +455,6 @@ task summary_tsv {
 
 task transfer_outputs {
     input {
-        Array[File] variants_freyja
-        Array[File] depth_freyja
         Array[File] variants
         Array[File] depth
         Array[File] demix
@@ -474,8 +472,6 @@ task transfer_outputs {
 
     command <<<
 
-        gsutil -m cp ~{sep=' ' variants_freyja} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' depth_freyja} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/ivar/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/ivar/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
