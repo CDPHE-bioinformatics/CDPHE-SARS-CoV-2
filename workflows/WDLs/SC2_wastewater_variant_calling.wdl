@@ -33,7 +33,7 @@ workflow SC2_wastewater_variant_calling {
             input:
                 bam = add_RG.rgbam,
                 ref = covid_genome,
-                ref_gff = covid_gff
+                ref_gff = covid_gff,
                 sample_name = id_bam.left
 
         }
