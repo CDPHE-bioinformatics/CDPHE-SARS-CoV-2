@@ -27,10 +27,6 @@ workflow SC2_wastewater_variant_calling {
                 sample_name = id_bam.left,
                 bam = id_bam.right
         }
-        call ivar_variant_calling {
-
-
-        }
 
 
         call variant_calling {
