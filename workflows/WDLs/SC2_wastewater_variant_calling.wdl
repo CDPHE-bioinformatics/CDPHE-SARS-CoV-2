@@ -6,7 +6,7 @@ workflow SC2_wastewater_variant_calling {
 
         Array[File] trimsort_bam
         Array[String] sample_name
-        Arrray[String] out_dir_array
+        Array[String] out_dir_array
         # Array[String] project_name_array
 
         # reference files/workspace data
