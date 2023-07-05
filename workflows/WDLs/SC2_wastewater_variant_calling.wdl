@@ -472,8 +472,8 @@ task transfer_outputs {
 
     command <<<
 
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/ivar/
-        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/ivar/
+        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' sample_voc_tsv_summary} ~{outdirpath}/waste_water_variant_calling/sample_variants/
         gsutil -m cp ~{sep=' ' sample_voc_tsv_counts} ~{outdirpath}/waste_water_variant_calling/sample_variants/
