@@ -7,7 +7,7 @@ workflow SC2_wastewater_variant_calling {
         Array[File] trimsort_bam
         Array[String] sample_name
         Arrray[String] out_dir_array
-        Array[String] project_name_array
+        # Array[String] project_name_array
 
         # reference files/workspace data
         File covid_genome
@@ -17,7 +17,7 @@ workflow SC2_wastewater_variant_calling {
 
     }
     # secret variables
-    String project_name = project_name_array[0]
+    # String project_name = project_name_array[0]
     String out_dir = out_dir_array[0]
 
 
@@ -32,12 +32,6 @@ workflow SC2_wastewater_variant_calling {
 
         }
 
-        call variant_calling_freyja {
-            input:
-                bam = add_RG.rgbam,
-                ref = covid_genome,
-                sample_name = id_bam.left
-        }
 
         call variant_calling {
             input:
@@ -50,13 +44,13 @@ workflow SC2_wastewater_variant_calling {
 
         call freyja_demix {
             input:
-                variants = variant_calling_freyja.variant_freyja,
-                depth = variant_calling.depth_freyja,
+                variants = variant_calling.variant,
+                depth = variant_calling.depth,
                 sample_name = id_bam.left
         }
         call fill_NA {
             input:
-                variants = variant_calling_freyja.variants_freyja,
+                variants = variant_calling.variants,
                 sample_name = id_bam.left,
                 voc_bed = voc_bed
         }
@@ -97,8 +91,6 @@ workflow SC2_wastewater_variant_calling {
     }
     call transfer_outputs {
         input:
-            variants_freyja = variant_calling_freyja.variants_freyja,
-            depth_freyja = variant_calling_freyja.depth_freyja,
             variants = variant_calling.variants,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
@@ -156,33 +148,7 @@ task add_RG {
     }
 }
 
-task variant_calling_freyja {
-    input {
-        String sample_name
-        File bam
-        File ref
 
-    }
-
-    command <<<
-
-        freyja variants ~{bam} --variants ~{sample_name}_variants_freyja.tsv --depths ~{sample_name}_depth_freyja.tsv --ref ~{ref}
-
-    >>>
-
-    output {
-        File variants_freyja = "${sample_name}_variants_freyja.tsv"
-        File depth_freyja = "${sample_name}_depth_freyja.tsv"
-    }
-
-    runtime {
-        docker: "staphb/freyja"
-        memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 200 SSD"
-    }
-
-}
 
 task variant_calling {
     input {
