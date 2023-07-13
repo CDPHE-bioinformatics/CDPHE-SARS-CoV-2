@@ -12,8 +12,6 @@ workflow SC2_wastewater_variant_calling {
         # reference files/workspace data
         File covid_genome
         File covid_gff
-        File voc_bed
-        File voc_annotations
 
     }
     # secret variables
@@ -44,26 +42,10 @@ workflow SC2_wastewater_variant_calling {
                 depth = variant_calling.depth,
                 sample_name = id_bam.left
         }
-        call fill_NA {
+        
+        call mutations_tsv {
             input:
                 variants = variant_calling.variants,
-                sample_name = id_bam.left,
-                voc_bed = voc_bed
-        }
-        call reformat_tsv {
-            input:
-                tsv = fill_NA.fill_NA_tsv,
-                sample_name = id_bam.left
-        }
-        call summary_prep {
-            input:
-                tsv = reformat_tsv.reformatted_tsv,
-                sample_name = id_bam.left,
-                voc_annotations = voc_annotations
-        }
-        call demix_reformat {
-            input:
-                tsv = freyja_demix.demix,
                 sample_name = id_bam.left
         }
     }
@@ -73,29 +55,18 @@ workflow SC2_wastewater_variant_calling {
             demix = freyja_demix.demix
     }
 
-
-    call combine_tsv {
+    call combine_mutations_tsv {
         input:
-            tsv = summary_prep.sample_voc_tsv_summary,
-            tsv_counts = summary_prep.sample_voc_tsv_counts,
-            voc_annotations = voc_annotations,
-            demix_tsv = demix_reformat.demix_reformatted
+            mutations_tsv = mutations_tsv.mutations_tsv
     }
-    call summary_tsv {
-        input:
-            tsv = combine_tsv.voc_summary_temp
-    }
+    
     call transfer_outputs {
         input:
             variants = variant_calling.variants,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
-            sample_voc_tsv_summary = summary_prep.sample_voc_tsv_summary,
-            sample_voc_tsv_counts = summary_prep.sample_voc_tsv_counts,
-            voc_counts = combine_tsv.voc_counts,
-            voc_summary = summary_tsv.voc_summary,
+            combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
             demix_aggregated = freyja_aggregate.demix_aggregated,
-            demix_summary = combine_tsv.demix_summary,
             out_dir = out_dir
     }
 
@@ -104,19 +75,9 @@ workflow SC2_wastewater_variant_calling {
         Array[File] variants = variant_calling.variants
         Array[File] depth = variant_calling.depth
         Array[File] demix = freyja_demix.demix
-        Array[File] fill_NA_tsv = fill_NA.fill_NA_tsv
-        Array[File] reformatted_tsv = reformat_tsv.reformatted_tsv
-        Array[File] sample_voc_tsv_summary = summary_prep.sample_voc_tsv_summary
-        Array[File] sample_voc_tsv_counts = summary_prep.sample_voc_tsv_counts
-        Array[File] demix_reformatted = demix_reformat.demix_reformatted
         File demix_aggregated = freyja_aggregate.demix_aggregated
-        File voc_summary_temp = combine_tsv.voc_summary_temp
-        File voc_counts = combine_tsv.voc_counts
-        File voc_summary = summary_tsv.voc_summary
-        File demix_summary = combine_tsv.demix_summary
+        File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
         String transfer_date = transfer_outputs.transfer_date
-       
-
     }
 }
 
@@ -144,8 +105,6 @@ task add_RG {
     }
 }
 
-
-
 task variant_calling {
     input {
         File bam
@@ -153,7 +112,6 @@ task variant_calling {
         File ref_gff
         String sample_name
     }
-
 
     command <<<
 
@@ -176,10 +134,7 @@ task variant_calling {
         preemptible:    0
         maxRetries:    0
         docker:    "andersenlabapps/ivar:1.3.1"
-    }
-
-
-    
+    } 
 }
 
 task freyja_demix {
@@ -187,7 +142,6 @@ task freyja_demix {
         String sample_name
         File variants
         File depth
-
     }
 
     command <<<
@@ -216,6 +170,34 @@ task freyja_demix {
     }
 }
 
+task mutations_tsv {
+    input {
+        String sample_name
+        File variants
+    }
+
+    command <<<
+        
+        #add a column that is filled in with the sample name
+        sed 's/$/\t~{sample_name}/' ~{variants} > ~{sample_name}_variants_temp.tsv
+
+        #cut columns needed for allele counts and frequency output and then rename the column headers
+        awk '{print($20,"\t",$1,"\t",$2,"\t",$3,"\t",$4,"\t",$17,"\t",$19,"\t",$5,"\t",$8,"\t",$11)}' ~{sample_name}_variants_temp.tsv | sed -e '1s/~{sample_name}/sample_name/' -e '1s/REGION/ref_genome/' -e '1s/POS/position/' -e '1s/REF/ref_nucl/' -e '1s/ALT/alt_nucl/' -e '1s/REF_AA/ref_aa/' -e '1s/ALT_AA/alt_aa/' -e '1s/REF_DP/ref_depth/' -e '1s/ALT_DP/alt_depth/' -e '1s/ALT_FREQ/alt_freq/' > ~{sample_name}_mutations.tsv
+
+    >>>
+
+    output {
+        File mutations_tsv = "${sample_name}_mutations.tsv"
+    }
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "32 GB"
+        cpu: 8
+        disks: "local-disk 500 HDD"
+    }
+}
+
 task freyja_aggregate {
     input {
         Array[File] demix
@@ -241,215 +223,27 @@ task freyja_aggregate {
     }
 }
 
-
-
-task fill_NA {
+task combine_mutations_tsv {
     input {
-        File variants
-        String sample_name
-        File voc_bed
+        Array[File] mutations_tsv
     }
 
     command <<<
-
-    #input is the freyja variants tsv, we first need to cut and order the columns we want
-    awk '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $12 "\t" $5 "\t" $8 "\t" $11}' ~{variants} | awk 'NR==1; NR > 1 {print $0 | "sort -n -k 2,2"}' > ~{sample_name}_voc_mutations_temp1.tsv
-
-    #filter tsv with mutations bed file to get the voc associated sites
-    grep -f ~{voc_bed} ~{sample_name}_voc_mutations_temp1.tsv > ~{sample_name}_voc_mutations_temp2.tsv
-
-    #fix the header names
-    echo -e "CHROM\tPOS\tREF\t~{sample_name}_ALT\t~{sample_name}_DP\t~{sample_name}_RefDP\t~{sample_name}_AltDP\t~{sample_name}_AltFREQ" | cat - ~{sample_name}_voc_mutations_temp2.tsv | sed 's/\t/_/' | sort -t $'\t' -k1,1 > ~{sample_name}_voc_mutations_temp3.tsv
-
-    #generate key file from the voc mutations bed file
-    cat ~{voc_bed} | cut -f 1,2 | tr "\t" "_" | sort | uniq > keys.txt
-
-    #get the NA-filled columns we want
-    join -t $'\t' -e NA -a 1 -1 1 -2 1 -o "1.1,2.2,2.3,2.4,2.5,2.6,2.7" keys.txt "~{sample_name}_voc_mutations_temp3.tsv" > ~{sample_name}_voc_fill_NA.tsv
-
+        
+        # combine the coutns and frequency files for all samples into one
+        awk 'FNR==1 && NR!=1{next;}{print}' ~{sep=' ' mutations_tsv} >> combined_mutations.tsv
+    
     >>>
 
     output {
-         File fill_NA_tsv = "${sample_name}_voc_fill_NA.tsv"
+        File combined_mutations_tsv = "combined_mutations.tsv"
     }
 
     runtime {
         docker: "theiagen/utility:1.0"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 2500 HDD"
-    }
-}
-
-task reformat_tsv {
-    input {
-        File tsv
-        String sample_name
-    }
-
-    command <<<
-
-        # combine the rows based on matching nucl location
-
-        awk '{f2[$1]=f2[$1] sep[$1] $2;
-                f3[$1]=f3[$1] sep[$1] $3;
-                f4[$1]=f4[$1] sep[$1] $4;
-                f5[$1]=f5[$1] sep[$1] $5;
-                f6[$1]=f6[$1] sep[$1] $6;
-                f7[$1]=f7[$1] sep[$1] $7;
-                sep[$1]="|"}
-        END {for(k in f2) print k,f2[k],f3[k],f4[k],f5[k],f6[k],f7[k]}' ~{tsv} > ~{sample_name}_voc_mutations_temp4.tsv
-
-        #fix delimiters and add a column containing the sample id
-
-        sed 's/ /\t/g' ~{sample_name}_voc_mutations_temp4.tsv | awk 'NF=NF+1{$NF="~{sample_name}"}1' > ~{sample_name}_voc_mutations_temp5.tsv
-
-        # fix the column headers, convert from space to tab delimited and then sort by col1
-        echo -e "CHROMPOS ~{sample_name}_REF ~{sample_name}_ALT ~{sample_name}_DP ~{sample_name}_RefDP ~{sample_name}_AltDP ~{sample_name}_AltFEQ sample_name" | cat - ~{sample_name}_voc_mutations_temp5.tsv | sed 's/ /\t/g' | sort -t $'\t' -k 1,1 -V > ~{sample_name}_voc_reformat.tsv
-
-    >>>
-
-    output {
-         File reformatted_tsv = "${sample_name}_voc_reformat.tsv"
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 2500 HDD"
-    }
-}
-
-task summary_prep {
-    input {
-        File tsv
-        String sample_name
-        File voc_annotations
-    }
-
-    command <<<
-
-      # cut the columns we want for the results summary (Alt allele and frequency) and make output file
-      cut -f3,7 ~{tsv} > ~{sample_name}_voc_mutations_forsummary.tsv
-
-      # cut the columns we want for the counts summary
-      awk '{print $8 "\t" $3 "\t" $4 "\t" $6}' ~{tsv} > ~{sample_name}_voc_mutations_temp6.tsv
-
-      # add annotations to the counts summary, reorder the columns, fix the column headers and make output file
-      paste ~{voc_annotations} ~{sample_name}_voc_mutations_temp6.tsv | awk '{print $4 "\t" $1 "\t" $2 "\t" $3 "\t" $5 "\t" $6 "\t" $7}' | awk 'BEGIN{FS=OFS="\t"; print "sample_name", "AA_change", "Nucl_change", "Lineages", "ALT", "Total_count", "ALT_count"} NR>1{print $1, $2, $3, $4, $5, $6, $7}' > ~{sample_name}_voc_mutations_counts.tsv
-
-   >>>
-
-    output {
-         File sample_voc_tsv_summary = "${sample_name}_voc_mutations_forsummary.tsv"
-         File sample_voc_tsv_counts = "${sample_name}_voc_mutations_counts.tsv"
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 2500 HDD"
-    }
-}
-
-task demix_reformat {
-    input {
-        File tsv
-        String sample_name
-    }
-
-    command <<<
-
-        #datamash to transpose the tsv
-        datamash -H transpose < ~{tsv} > ~{sample_name}_demixed_temp1.tsv
-
-        #remove unnecessary characters, change spaces to commas
-        tr -d \[ < ~{sample_name}_demixed_temp1.tsv | tr -d \] | tr -d \( | tr -d \) | tr -d \, | tr -d \' | tr ' ' ',' > ~{sample_name}_demixed_temp2.tsv
-
-        # cut and keep the lineage and abundance columns (col3 and col4), fix column headers and delimiters
-        awk '{print $3 "\t" $4}' ~{sample_name}_demixed_temp2.tsv | sed -e '1s/abundances/~{sample_name}_lineages/' -e '1s/resid/~{sample_name}_abundances/' | sed 's/ /\t/g' > ~{sample_name}_demixed_temp3.tsv
-
-        # transpose
-        datamash -H transpose < ~{sample_name}_demixed_temp3.tsv > ~{sample_name}_demixed_temp4.tsv
-
-        #convert commas to tabs
-        tr ',' '\t' < ~{sample_name}_demixed_temp4.tsv > ~{sample_name}_demixed_reformatted.tsv
-
-   >>>
-
-    output {
-         File demix_reformatted = "${sample_name}_demixed_reformatted.tsv"
-    }
-
-    runtime {
-        docker: "rapatsky/debian"
-        memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 2500 HDD"
-    }
-}
-
-task combine_tsv {
-    input {
-        Array[File] tsv
-        Array[File] tsv_counts
-        Array[File] demix_tsv
-        File voc_annotations
-    }
-
-    command <<<
-
-      # concatenate the tsvs and make the counts tsv summary output
-      awk 'FNR==1 && NR!=1{next;}{print}' ~{sep=' ' tsv_counts} >> voc_mutations_counts.tsv
-
-      # fix delimiters in annotations file
-      sed 's/ /\t/g' ~{voc_annotations} > voc_annotations.tsv
-
-      # concatentate tsvs for allele frequency summary file and make output
-      paste voc_annotations.tsv ~{sep=' ' tsv} > voc_mutations_summary_temp.tsv
-      
-      #concatenate reformatted demix tsv files into lineages and abundances summary
-      cat ~{sep=' ' demix_tsv} > lineage_abundances.tsv
-
-    >>>
-
-    output {
-        File voc_summary_temp = "voc_mutations_summary_temp.tsv"
-        File voc_counts = "voc_mutations_counts.tsv"
-        File demix_summary = "lineage_abundances.tsv"
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "16 GB"
-        cpu: 4
-        disks: "local-disk 200 SSD"
-    }
-}
-
-task summary_tsv {
-    input {
-        File tsv
-    }
-
-    command <<<
-
-        # datamash to tranpose results summary
-        datamash -H transpose < ~{tsv} > voc_mutations_summary.tsv
-
-    >>>
-
-    output {
-        File voc_summary = "voc_mutations_summary.tsv"
-    }
-
-    runtime {
-        docker: "rapatsky/debian"
-        memory: "16 GB"
-        cpu: 4
-        disks: "local-disk 200 SSD"
+        disks: "local-disk 500 HDD"
     }
 }
 
@@ -458,12 +252,8 @@ task transfer_outputs {
         Array[File] variants
         Array[File] depth
         Array[File] demix
-        Array[File] sample_voc_tsv_summary
-        Array[File] sample_voc_tsv_counts
-        File voc_summary
-        File voc_counts
         File demix_aggregated
-        File demix_summary
+        File combined_mutations_tsv
         String out_dir
 
     }
@@ -475,12 +265,8 @@ task transfer_outputs {
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' sample_voc_tsv_summary} ~{outdirpath}/waste_water_variant_calling/sample_variants/
-        gsutil -m cp ~{sep=' ' sample_voc_tsv_counts} ~{outdirpath}/waste_water_variant_calling/sample_variants/
-        gsutil -m cp ~{voc_summary} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{voc_counts} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{demix_summary} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}/waste_water_variant_calling/
     
 
         transferdate=`date`
