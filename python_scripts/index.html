@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/python_scripts/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Python Scripts - CDPHE-SARS-CoV-2</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Python Scripts";
+        var mkdocs_page_input_path = "python_scripts.md";
+        var mkdocs_page_url = "/CDPHE-SARS-CoV-2/python_scripts/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> CDPHE-SARS-CoV-2
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../indel_finder/">Indel Finder</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Python Scripts</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#table-of-contents">Table of Contents</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#calc-percent-coverage-py">calc-percent-coverage-py</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#nextclade-json-parser-py">nextclade-json-parser-py</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#overview_1">Overview</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inputs_1">Inputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#outputs_1">Outputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#concat-seq-metrics-and-lineage-results-py">concat-seq-metrics-and-lineage-results-py</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#overview_2">Overview</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inputs_2">Inputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#outputs_2">Outputs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#details-about-working-with-sample-sets">Details About Working with Sample Sets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#changelog">Changelog</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../assembly_workflow/">Assembly Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../transfer_workflow/">Transfer Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../results_workflow/">Results Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../wastewater_workflow/">Wastewater Workflow</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nextstrain_workflow/">Nextstrain Workflow</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">CDPHE-SARS-CoV-2</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+      <li>Python Scripts</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="sars-cov-2-python-scripts">SARS-CoV-2 Python Scripts</h1>
+<p>This repo contains three custom python scripts called in our SC2 wdl workflows. These scripts should be stored in a google bucket and linked to your workspace data within your Terra.bio workspace, so they can be used as inputs within each respective workflow. Below lists the three scripts and their associated workflows and further below provides greater detail about each script.  </p>
+<ul>
+<li><code>calc_percent_coverage.py</code> is called in the <code>SC2_ont_assembly.wdl</code>, <code>SC2_illumina_pe_assembly.wdl</code>, and <code>SC2_illumina_se_assembly.wdl</code>.</li>
+<li><code>nextclade_json_parser.py</code> is called in the <code>SC2_lineage_calling_and_results.wdl</code>.</li>
+<li><code>concat_seq_metrics_and_lineage_results.py</code> is called in the <code>Sc2_lineage_calling_and_results.wdl</code>.  </li>
+</ul>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#calc-percent-coverage-py">calc_percent_coverage-py</a></li>
+<li><a href="#nextclade-json-parser-py">nextclade_json_parser.py</a></li>
+<li><a href="#concat-seq-metrics-and-lineage-results-py">concat-seq-metrics-and-lineage-results-py</a></li>
+<li><a href="#details-about-working-with-sample-sets">details about working with sample sets</a></li>
+</ol>
+<h2 id="calc-percent-coverage-py">calc-percent-coverage-py</h2>
+<h3 id="overview">Overview</h3>
+<p>This script is called in the <code>SC2_illumina_pe_assembly.wdl</code>, <code>SC2_ilumina_se_assembly.wdl</code>, and <code>SC2_nanopore_assembly.wdl</code> WDL workflows. These workflows act on individual samples (as opposed to sample sets), therefore this script also works on individual samples. The script reads in a consensus genome as a fasta file and calculates the percent coverage of the sample consensus genome. Specifically, the percent coverage is calculated as:</p>
+<pre><code class="language-text">percent_coverage = frac{number_non_ambigous_bases}{29903}, * 100
+</code></pre>
+<p>where the number_non_ambigous_bases is the number of basepair calls not including Ns in the sample consensus sequence and 29903 is the number of basepairs in the reference genome (NC_045512).</p>
+<h3 id="inputs">Inputs</h3>
+<table>
+<thead>
+<tr>
+<th>flag</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--sample_name</code></td>
+<td>sample name as recorded in the <code>entity:sample_ID</code> column in the terra data table</td>
+</tr>
+<tr>
+<td><code>--fasta_file</code></td>
+<td>renamed consensus sequence fasta file; generated during the ivar_consnesus (illumina data) or mekdata (ont data) and rename fasta tasks of the assembly workflows</td>
+</tr>
+</tbody>
+</table>
+<h3 id="outputs">Outputs</h3>
+<p>The script also records the number of aligned bases, the number of ambiguous bases (Ns), and the number of nonambiguous bases (A,G,C,T). The output is a csv file called <code>{sample_name}_consensus_cvg_stats.csv</code> and has the following column headers:</p>
+<table>
+<thead>
+<tr>
+<th>column header</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_name</code></td>
+<td>sample name as recorded in the <code>entity:sample_ID</code> column in the terra data table</td>
+</tr>
+<tr>
+<td><code>number_aligned_bases</code></td>
+<td>the total length of the consensus genome (including Ns)</td>
+</tr>
+<tr>
+<td><code>number_N_bases</code></td>
+<td>the number of ambiguous (N) bases in the consensus genome</td>
+</tr>
+<tr>
+<td><code>number_non_ambiguous_bases</code></td>
+<td>the number of non-ambiguous (A, C, G, T) bases in the consensus genome</td>
+</tr>
+<tr>
+<td><code>percent_coverage</code></td>
+<td>percent coverage of the reference genome represented in the consensus sequence as calculated above</td>
+</tr>
+</tbody>
+</table>
+<p>There is an example output in the example data directory within this repo.</p>
+<h2 id="nextclade-json-parser-py">nextclade-json-parser-py</h2>
+<h3 id="overview_1">Overview</h3>
+<p>This script is called in the <code>SC2_lineage_calling_and_results</code> WDL workflow. This workflow acts on sample sets and so therefore this script also works on a sample set. This script is called in the <code>parse_nextclade</code> task within the workflow which can be seen in the <code>SC2_lineage_calling_and_results.wdl</code> workflow diagram in the README.md one directory out. Briefly, the workflow concatentates all consesnus sequences of the samples in the sample set into a single fasta file (<code>concatenate</code> task). The concatentated fasta file is run through nextclade which generates a <code>nextclade.json</code> file (<code>nextclade</code> task). Within the <code>nextclade.json</code> file is data for each sample consensus sequence inlcuding the nextclade clade designation, AA substitutions, deletions, insertions, etc. Generally, this script reads in the <code>nextclade.json</code> file, parses the json file to extract the data of interest, formats the data into a table and saves it as a csv file.</p>
+<h3 id="inputs_1">Inputs</h3>
+<table>
+<thead>
+<tr>
+<th>flag</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--nextclade_json</code></td>
+<td>the nextclade.json file generated in the <code>nextclade</code> task of the workflow.</td>
+</tr>
+<tr>
+<td><code>--project_name</code></td>
+<td>the project name of the sequencing run</td>
+</tr>
+</tbody>
+</table>
+<h3 id="outputs_1">Outputs</h3>
+<p>There are two outputs from this script, each accomplished from a seperate function within the script. Example outputs can be found in the example data directory within this repo. These functions are:</p>
+<ol>
+<li>
+<p><code>extract_variant_list()</code> function : This function generates a summmary of the AA substitions, insertions, and deletions for each sample within the <code>nextclade.json</code> file. The output is a csv file called <code>{project_name}_nextclade_variant_summary.csv</code> which is one of the files that is transfered to the google bucket as outputs of the workflow. The data is formatted such that each row corresponds to a either an AA substition, insertion, or deletion, such that each consensus seuqence can have more than one row of data. The csv file has the following column headers:</p>
+<table>
+<thead>
+<tr>
+<th>column header</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_name</code></td>
+<td>the sample name as listed in the fasta header (therefore there will be a "CO-CDPHE-" prefix added to the sample_name as listed in the entity column in the terra datatable)</td>
+</tr>
+<tr>
+<td><code>variant_name</code></td>
+<td>the full name of the variant formatted as {gene}_{refAA}{AApos}{altAA} (e.g. S_L452Q or S_L24del); For insertions the gene is not listed, the refAA is defined as "ins", the AA position is the nucleotide position in the genome and the altAA is listed as the string of nucleotides. So the variant is formated to look something like this: "_ins1027T" which would be interpreted as an insertion of a T nucleotide occured at genome position 1027</td>
+</tr>
+<tr>
+<td><code>gene</code></td>
+<td>the gene where the AA substition, deletion or insertion occurs (e.g. N, S, ORF1a, M etc.). No gene is listed for insertions</td>
+</tr>
+<tr>
+<td><code>codon_position</code></td>
+<td>the codon position (or protien position) within the gene where the AA substition, deletion or insertion occured. For insertions it is the nucleotide genome position</td>
+</tr>
+<tr>
+<td><code>refAA</code></td>
+<td>the reference AA at the position where the AA substition, deletion, or insertion occured. For insertions the refAA is listed as "ins".</td>
+</tr>
+<tr>
+<td><code>altAA</code></td>
+<td>he AA in the consensus sequence at the position where the AA substition, deletion, or insertion occured. For insertions the altAA is the string of nucleotide base pairs that were inserted</td>
+</tr>
+<tr>
+<td><code>start_nuc_pos</code></td>
+<td>the starting nucleotide position within the genome where the AA substition, deletion, or insertion occured</td>
+</tr>
+<tr>
+<td><code>end_nuc_pos</code></td>
+<td>the ending nucleotide position within the genome where the AA substition, deletion, or insertion occured (for a single AA substition the start_ncu_pos and end_nuc_pos will be a difference of 3)</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><code>get_nextclade()</code> function: This function generates a summary of the nextclade designation, total nucleotide and AA substitions, total nucleotide and AA deletions, and total nucleotide insertions. The output file is called <code>{seq_run}_nextclade_results.csv</code> and is used as input for the <code>concat_seq_metrics_and_lineage_results.py</code> called in the <code>results_table</code> task in the workflow. The output file has the following column headers:</p>
+<table>
+<thead>
+<tr>
+<th>column header</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_name</code></td>
+<td>the sample name as listed in the fasta header (therefore there will be a "CO-CDPHE-" prefix added to the sample_name as listed in the entity column in the terra datatable)</td>
+</tr>
+<tr>
+<td><code>nextclade</code></td>
+<td>nextclade clade designation (e.g. 22C (Omicron))</td>
+</tr>
+<tr>
+<td><code>total_nucleotide_mutations</code></td>
+<td>number of SNPs in consensus sequence</td>
+</tr>
+<tr>
+<td><code>total_nucleotide_deletions</code></td>
+<td>number of deletions in the consensus sequence</td>
+</tr>
+<tr>
+<td><code>total_nucleotide_insertions</code></td>
+<td>number of insertions in the consensus sequence</td>
+</tr>
+<tr>
+<td><code>total_AA_substitutions</code></td>
+<td>number of AA substitions in the consensus sequence</td>
+</tr>
+<tr>
+<td><code>total_AA_deletions</code></td>
+<td>number of AA deletions in the consensus sequence</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+<h2 id="concat-seq-metrics-and-lineage-results-py">concat-seq-metrics-and-lineage-results-py</h2>
+<h3 id="overview_2">Overview</h3>
+<p>This script is called in the <code>SC2_lineage_calling_and_results</code> WDL workflow. This workflow acts on sample sets and so therefore this script also works on a sample set. This script is called in the <code>results_table</code> task within the workflow which can be seen in the <code>SC2_lineage_calling_and_results.wdl</code> workflow diagram in the README.md one directory out. Generally, this script pulls together a bunch of metadata and data regarding the consensus sequence and outputs the data in csv file.  </p>
+<h3 id="inputs_2">Inputs</h3>
+<p>The script takes the following inputs:</p>
+<table>
+<thead>
+<tr>
+<th>flag</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--sample_name</code></td>
+<td>the sample_name variables for the set of samples as an array and written to a txt file using the wdl function <code>write_lines</code></td>
+</tr>
+<tr>
+<td><code>--workbook_path</code></td>
+<td>the gcp file path to the workbook. The workbook can inlcude any column you'd like but must include at minimum the following columns: <code>hsn</code>, <code>sample_id</code>, <code>--project_name</code>, <code>plate_name</code>,   <code>run_name</code>. These columns can be left blank if needed.</td>
+</tr>
+<tr>
+<td><code>--cov_out_filles</code></td>
+<td>the list of the <code>cov_out</code> variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the <code>SC2_ont_assembly.wdl</code>, <code>SC2_ilumina_se_assembly.wdl</code> or <code>SC2_illumina_pe_assembly.wdl</code> from the bam stats task.</td>
+</tr>
+<tr>
+<td><code>--percent_cvg_files</code></td>
+<td>the list of the <code>percent_cvg_csv</code> variable (column in the terra data table) for the worfklow written to a text file. This variable is a file path to a file with the bam stats generated in the <code>SC2_ont_assembly.wdl</code>, <code>SC2_ilumina_se_assembly.wdl</code> or <code>SC2_illumina_pe_assembly.wdl</code> workflows from the <code>calc_percent_coverage.py</code> script called during the <code>calc_percent_cvg</code> task.</td>
+</tr>
+<tr>
+<td><code>--assembler_version</code></td>
+<td>the assembler_version variable (column in the terra data table) for the worfklow . This is written to the terra data table during the <code>SC2_ont_assembly.wdl</code>, <code>SC2_ilumina_se_assembly.wdl</code> or <code>SC2_illumina_pe_assembly.wdl</code> workflows.</td>
+</tr>
+<tr>
+<td><code>--pangolin_lineage_csv</code></td>
+<td>this is the lineage report csv file generated from pangolin during the <code>pangolin</code> task</td>
+</tr>
+<tr>
+<td><code>--nextclade_clades_csv</code></td>
+<td>this is the <code>{seq_run}_nextclade_results.csv</code> file generated from the <code>nextclade_json_parser.py</code> script during the <code>parse_nextclade</code> task.</td>
+</tr>
+<tr>
+<td><code>--nextclade_variants_csv</code></td>
+<td>this is the <code>{seq_run}_nextclade_variant_summary.csv</code> file generated from the <code>nextclade_json_parser.py</code> script during the <code>parse_nextclade</code> task.</td>
+</tr>
+<tr>
+<td><code>--nextclade_version</code></td>
+<td>this is the nextclade version which is defined as output during the <code>nextclade</code> task.</td>
+</tr>
+<tr>
+<td><code>--project_name</code></td>
+<td>project_name from column in terra data table</td>
+</tr>
+</tbody>
+</table>
+<h3 id="outputs_2">Outputs</h3>
+<p>There are three outputs from this script. Example outputs can be found in the example data directory within this repo.</p>
+<ol>
+<li>
+<p><code>{project_name}_sequencing_results.csv</code>: summary of sequencing metrics for all samples within the sample set. Below is a table of the column headers and their description. Currently all headers from the sequencing workbook which get carried over to the terra datatable are inlcuded in this output file. The list below includes some but not all of the columns in the file.</p>
+<table>
+<thead>
+<tr>
+<th>column header name</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_name</code></td>
+<td>sample name</td>
+</tr>
+<tr>
+<td><code>hsn</code></td>
+<td>hsn (horizon serial number)</td>
+</tr>
+<tr>
+<td><code>primer_set</code></td>
+<td>name of primer set used for tiled amplicon squenicng (Artic V3, Artic V4, Artic V4.1, Midnight or COVIDSeqV3)</td>
+</tr>
+<tr>
+<td><code>percent_coverage</code></td>
+<td>percent coverage; the total proportion of the genome that is covered not including regions where an N is called for a basecall</td>
+</tr>
+<tr>
+<td><code>nextclade</code></td>
+<td>the nextclade clade assignment</td>
+</tr>
+<tr>
+<td><code>panoglin_lineage</code></td>
+<td>the pangolin lineage assignment</td>
+</tr>
+<tr>
+<td><code>pangolin_expanded_lineage</code></td>
+<td>the expanded panglin lineage</td>
+</tr>
+<tr>
+<td><code>assembler_version</code></td>
+<td>assembler software version (either bwa or minimpa depending on assembly workflow used)</td>
+</tr>
+<tr>
+<td><code>spike_mutations</code></td>
+<td>list of spike muations in the spike gene squence that correspond to key spike mutations identified in the sample consensus sequence (this column was created prior to VOCs and inlcudes spike mutatuations we were watching and has not been updated since)</td>
+</tr>
+<tr>
+<td><code>total_nucleotide_mutations</code></td>
+<td>number of SNPs in the consensus sequence genome</td>
+</tr>
+<tr>
+<td><code>total_AA substitutions</code></td>
+<td>number of amino acid substitions in the consensus sequence genome</td>
+</tr>
+<tr>
+<td><code>total_AA_deletions</code></td>
+<td>number of deletions in the consensus sequence genome</td>
+</tr>
+<tr>
+<td><code>mean_depth</code></td>
+<td>average number of reads per nucleotide site in the the conesnus sequnce genome</td>
+</tr>
+<tr>
+<td><code>number_aligned_bases</code></td>
+<td>total number of bases aligned to the refernece genome (including Ns; so pretty much tells you how much was cut of the ends of the genome)</td>
+</tr>
+<tr>
+<td><code>number_non_ambious_bases</code></td>
+<td>total number of non-N bases in the conesnus genome sequence</td>
+</tr>
+<tr>
+<td><code>number_seqs_in_fasta</code></td>
+<td>total number of sequences in the concensus fasta - should always be 1</td>
+</tr>
+<tr>
+<td><code>total_nucleotide_deletions</code></td>
+<td>number of deletions in the consensus genome sequence</td>
+</tr>
+<tr>
+<td><code>total_nucleotide_insertions</code></td>
+<td>number of insertions in the consensus genome seqeunce</td>
+</tr>
+<tr>
+<td><code>num_reads</code></td>
+<td>total sequencing reads</td>
+</tr>
+<tr>
+<td><code>mean_base_quality</code></td>
+<td>mean quality score across all reads</td>
+</tr>
+<tr>
+<td><code>mean_map_quality</code></td>
+<td>mean mapping quality score for reads mapping to reference genome sequence</td>
+</tr>
+<tr>
+<td><code>number_N_bases</code></td>
+<td>number of bases called as N in the consensus genome sequence</td>
+</tr>
+<tr>
+<td><code>nextclade_version</code></td>
+<td>nextclade version</td>
+</tr>
+<tr>
+<td><code>panolgin_version</code></td>
+<td>pangolin version</td>
+</tr>
+<tr>
+<td><code>pangoLEARN_conflict</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_ambiguity_score</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_scorpio_call</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_scropio_support</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_scropio_conflict</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>panoglin_scorpio_notes</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_designation_Version</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_scorpio_version</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_constellation_version</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pngolin_is_designated</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_qc_status</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>pangolin_qc_notes</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>panoglin_note</code></td>
+<td>from pangolin lineage report file</td>
+</tr>
+<tr>
+<td><code>seq_run</code></td>
+<td>sequencing run name</td>
+</tr>
+<tr>
+<td><code>tech_platform</code></td>
+<td>seuqencing platform (e.g. Illumina MiSeq, Illumina NextSeq, Oxford Nanopore GridION)</td>
+</tr>
+<tr>
+<td><code>read_type</code></td>
+<td>single or paired end</td>
+</tr>
+<tr>
+<td><code>fasta_header</code></td>
+<td>name of the fasta header for gisaid submission (e.g. CO-CDPHE-{accession_id})</td>
+</tr>
+<tr>
+<td><code>analysis_date</code></td>
+<td>date assembly workflow ran</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><code>{seq_run}_wgs_horizon_report.csv</code>: for internal use, parsing sequencing results into LIMS.Below is a table of the column headers and their description.</p>
+<table>
+<thead>
+<tr>
+<th>column header name</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accession_id</code></td>
+<td>sample name</td>
+</tr>
+<tr>
+<td><code>percent_coverage</code></td>
+<td>percent coverage</td>
+</tr>
+<tr>
+<td><code>pangolin_lineage</code></td>
+<td>pangolin lineage</td>
+</tr>
+<tr>
+<td><code>pangolin_version</code></td>
+<td>pangolin version</td>
+</tr>
+<tr>
+<td><code>report_to_epi</code></td>
+<td>this column is meaningless now but have to keep</td>
+</tr>
+<tr>
+<td><code>Run_Date</code></td>
+<td>date assembly workflow ran</td>
+</tr>
+<tr>
+<td><code>pangoLEARN_version</code></td>
+<td>this column is also not used but we have to keep it</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+<h2 id="details-about-working-with-sample-sets">Details About Working with Sample Sets</h2>
+<p>Here I describe a way to create a single summary data table output for sample sets using a wwdl workflow in terra. (It's a bit clunkly but seems to work). Essentially this method enables one to create python lists from the columns in the terra data table when workflows are run as a sample set. The easiest way to explain this is with an example.</p>
+<p>So for example, in the <code>concat_seq_metrics_and_lineage_results.py</code>, there is the input flag <code>--plate_name_file_list</code>. As input for this flag I use <code>${write_lines(plate_name)}</code>. The plate_name corresponds to the plate_name column in the terra data table. Each element in column is a string. The <code>write_lines()</code> wdl function will write each element it's own line to a text file. Thus, the input into the python script is really a text file with a list of plate names. I then wrote some code that reads in the text file and generates a python list, with each line being a new element in the list. So it looks something like this:</p>
+<pre><code class="language-python">plate_name_list = []
+with open(plate_name_file_list) as f:
+  for line in f:
+    plate_name_list.append(line.strip())
+</code></pre>
+<p>Similiarly in some cases, instead of string variables being stored in a column wihtin the terra data table, file paths are stored (ie. the data type is a <code>File</code> or <code>Array[File]</code> in the case of sample sets). For example, in the <code>concat_seq_metrics_and_lineage_results.py</code>, there is the input flag <code>--percent_cvg_file_list</code>. As input for this flag I use <code>${write_lines(percent_cvg_csv_non_empty)}</code>, where the percent_cvg_csv_non_empty variable corresponds to the column percent_cvg_csv. (note the non-empty part just means that the variable may be empty for some samples in the terra data table. To set the variable as input at the begining of the wdl I use: <code>Array[File?] percent_cvg_csv</code>). Similiarly as above, the script will create a list of file paths from the text file. The script can then loop through the list of file paths, open each file, extract the data from that file, and store it in a list or other dataframe to be written out.</p>
+<h2 id="changelog">Changelog</h2>
+<ul>
+<li>updated 2023-03-09 to sync with universal naming switch over</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../indel_finder/" class="btn btn-neutral float-left" title="Indel Finder"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../assembly_workflow/" class="btn btn-neutral float-right" title="Assembly Workflows">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../indel_finder/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../assembly_workflow/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

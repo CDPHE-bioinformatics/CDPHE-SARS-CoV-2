@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/indel_finder/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Indel Finder - CDPHE-SARS-CoV-2</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Indel Finder";
+        var mkdocs_page_input_path = "indel_finder.md";
+        var mkdocs_page_url = "/CDPHE-SARS-CoV-2/indel_finder/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> CDPHE-SARS-CoV-2
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Indel Finder</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#preparing-your-environment">Preparing your environment</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-the-script">Running the script</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#changelog">Changelog</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#update-2021-12-05">Update (2021-12-05)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#update-2021-11-29">Update (2021-11-29)</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../python_scripts/">Python Scripts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../assembly_workflow/">Assembly Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../transfer_workflow/">Transfer Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../results_workflow/">Results Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../wastewater_workflow/">Wastewater Workflow</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nextstrain_workflow/">Nextstrain Workflow</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">CDPHE-SARS-CoV-2</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+      <li>Indel Finder</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="sars-cov-2-indel-finder">SARS-CoV-2 Indel Finder</h1>
+<p>This python script accomplishes the following:</p>
+<ul>
+<li>takes a set of sars-cov-2 sequences (either as a multi sequence fasta or a directory of single sequence fasta files) and aligns each to the reference genome (pairwise alignment)</li>
+<li>identifies all insertions and deletions within each sample sequence and generates an output table</li>
+<li>removes nucleotide insertions from sample sequences</li>
+<li>using the pair-wise alignments generates a MSA (multi sequence alignment) output alignment fasta which can be used for tree building.</li>
+</ul>
+<p><img alt="indel_finder.py workflow diagram" src="../img/SC2_indel_finder_workflow.PNG" /></p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>The python modules neccessary to run this script are contained in a conda environment; therefore you must have Anaconda or miniconda installed.</li>
+<li>MAFFT seqeunce aligner (we used v7.471)</li>
+</ul>
+<h2 id="preparing-your-environment">Preparing your environment</h2>
+<p>This only needs to be performed the first time you run the script.</p>
+<ol>
+<li>
+<p>Clone the repository to your machine and change directories to the repository on your machine:</p>
+<pre><code>git clone https://github.com/CDPHE/sars-cov-2_indel_finder
+cd sars-cov-2_indel_finder
+</code></pre>
+</li>
+<li>
+<p>Create the conda environment using the <code>environment.yml</code> file. The environment's name should be <code>indel_finder_env</code>:</p>
+<pre><code>conda env create -f environment.yml
+</code></pre>
+</li>
+<li>
+<p>If the environment already exists then to update the environment:</p>
+<pre><code>conda env update -f environment.yml
+</code></pre>
+</li>
+<li>
+<p>Check that the environment exists. The name of the enivornment should be <code>indel_finder_env</code>:</p>
+<pre><code>conda env list
+</code></pre>
+</li>
+<li>
+<p>Activate the conda environment:</p>
+<pre><code>conda activate indel_finder_env
+</code></pre>
+</li>
+</ol>
+<h2 id="inputs">Inputs</h2>
+<ol>
+<li>Sample sequences either as:<ul>
+<li>a multi sequence fasta file</li>
+<li>directory with single sequence fasta files</li>
+</ul>
+</li>
+<li>Reference genome saved as a fasta file</li>
+</ol>
+<h2 id="running-the-script">Running the script</h2>
+<ol>
+<li>
+<p>Activate the conda environment:</p>
+<pre><code>conda activate indel_finder_env
+</code></pre>
+</li>
+<li>
+<p>Run the script usinig the following flags:</p>
+<ul>
+<li><code>-i</code>: either the path to the multi sequence fasta or the path to the directory wtih single sequence fasta files</li>
+<li><code>-o</code> : path to where you would like the outputs to go</li>
+<li><code>ref_path</code>: path to the reference genome</li>
+<li><code>--prefix</code>: (optional) prefix used to save outputs, if not specified will default to today's date</li>
+<li>note use complete paths!!</li>
+</ul>
+</li>
+<li>Putting it all together:<pre><code>indel_finder.py -i &lt;multi_sequence.fasta&gt; -o . --ref_path &lt;path_to_ref_genome&gt; --prefix &lt;prefix&gt;
+</code></pre>
+</li>
+</ol>
+<h2 id="outputs">Outputs</h2>
+<ol>
+<li><code>&lt;prefix&gt;_indels.csv</code> : table providing the sequence name, the nucleotide bps of the indel (either (+) for insertions or (-) for deletions), the start position of the indel, the length of the indel, and the 7 upstream and 7 downstream nucleotides surrounding the indel.</li>
+<li><code>&lt;prefix&gt;.aligment.fasta</code> : MSA</li>
+</ol>
+<h2 id="changelog">Changelog</h2>
+<h3 id="update-2021-12-05">Update (2021-12-05)</h3>
+<ul>
+<li><code>indel_finder_pairwise_aligner.py</code> only identifies insertionss and does not remove them, therefore the final sequence length will not be 29903 if there is an insertion present.</li>
+<li>for the output- there are two columns for the start position. "ref_start_pos" refers to the location on the reference genome where the insertion is and "seq_start_pos" refers to the position on the sample sequence where the insertion begins. These columns are also included for deletions; however only the "seq_start_pos" will be filled in because I haven't thought of a good way to get the ref_start_pos yet. It gets a bit sticky when there are insertions and deletions in the same sample sequence.</li>
+</ul>
+<h3 id="update-2021-11-29">Update (2021-11-29)</h3>
+<ul>
+<li>the omicron variant has an known 9 bp insertion right after bp 22204 in the reference genome</li>
+<li><code>indel_finder_omicron.py</code> accounts for this insertion and does not remove it; however this means that the final output is no longer a multisequence alignment (MSA). If the 9 bp insertion at 22204 is found then the script does not remove it (a note 'ins not removed' is included in the indel.csv output) and the final length of the genome will be 29912 (not 29903). This means that sequences in the ".aligment.fasta" output could be 29912 or 29903 in length. Thus this is not a true MSA and cannot be used for tree building.</li>
+<li>all inputs and outputs are the same for <code>indel_finder_omicron.py</code> as for <code>indel_finder.py</code>.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../setup/" class="btn btn-neutral float-left" title="Setup"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../python_scripts/" class="btn btn-neutral float-right" title="Python Scripts">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../setup/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../python_scripts/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

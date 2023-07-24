@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/transfer_workflow/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Transfer Workflows - CDPHE-SARS-CoV-2</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Transfer Workflows";
+        var mkdocs_page_input_path = "transfer_workflow.md";
+        var mkdocs_page_url = "/CDPHE-SARS-CoV-2/transfer_workflow/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> CDPHE-SARS-CoV-2
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../indel_finder/">Indel Finder</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../python_scripts/">Python Scripts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../assembly_workflow/">Assembly Workflows</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Transfer Workflows</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#illumina-pe">Illumina PE</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#illumina-se">Illumina SE</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#oxford-nanopore-technologies-ont">Oxford Nanopore Technologies (ONT)</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../results_workflow/">Results Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../wastewater_workflow/">Wastewater Workflow</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nextstrain_workflow/">Nextstrain Workflow</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">CDPHE-SARS-CoV-2</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+      <li>Transfer Workflows</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="transfer-workflows">Transfer Workflows</h1>
+<p>After assembly, the assembly workflow outputs are then transferred from Terra back to a user specified google bucket for additional analysis and storage. Each workflow accepts "sample" as the root entity type and uses the data table from the corresponding assembly workflow data table that has been filled in with file paths to the outputs. </p>
+<h2 id="illumina-pe">Illumina PE</h2>
+<p>File: SC2_transfer_illumina_pe_assembly.wdl</p>
+<p>This workflow transfers the output file generated from SC2_illumina_pe_assemby to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  </p>
+<table>
+<thead>
+<tr>
+<th>workflow variable</th>
+<th>attribute (input syntax into workflow)</th>
+<th>google bucket path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>consensus</code></td>
+<td>this.consensus</td>
+<td><code>gs://{user_defined_gcp_bucket}/assemblies/</code></td>
+</tr>
+<tr>
+<td><code>covhist_out</code></td>
+<td>this.coverage_hist</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>cov_out</code></td>
+<td>this.coverage_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>fastqc_clean1_html</code></td>
+<td>this.fastq_clean1_html</td>
+<td><code>gs://{user_defined_gcp_bucket}/fastqc/</code></td>
+</tr>
+<tr>
+<td><code>fastqc_clean1_zip</code></td>
+<td>this.fastqc_clean1_zip</td>
+<td><code>gs://{user_defined_gcp_bucket}/fastqc/</code></td>
+</tr>
+<tr>
+<td><code>fastqc_clean2_html</code></td>
+<td>this.fastqc_clean2_html</td>
+<td><code>gs://{user_defined_gcp_bucket}/fastqc/</code></td>
+</tr>
+<tr>
+<td><code>fastqc_clean2_zip</code></td>
+<td>this.fastqc_clean2_zip</td>
+<td><code>gs://{user_defined_gcp_bucket}/fastqc/</code></td>
+</tr>
+<tr>
+<td><code>filtered_reads_1</code></td>
+<td>this.filtered_reads_1</td>
+<td><code>gs://{user_defined_gcp_bucket}/seqyclean/</code></td>
+</tr>
+<tr>
+<td><code>filtered_reads_2</code></td>
+<td>this.filtered_reads_2</td>
+<td><code>gs://{user_defined_gcp_bucket}/seqclean/</code></td>
+</tr>
+<tr>
+<td><code>flagstat_out</code></td>
+<td>this.flagstat_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bamstats/</code></td>
+</tr>
+<tr>
+<td><code>out_dir</code></td>
+<td>this.out_dir</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><code>renamed_consensus</code></td>
+<td>this.renamed_consensus</td>
+<td><code>gs://{user_defined_gcp_bucket}/assemblies/</code></td>
+</tr>
+<tr>
+<td><code>trimsort_bam</code></td>
+<td>this.trimsort_bam</td>
+<td><code>gs://{user_defined_gcp_bucket}/alignments/</code></td>
+</tr>
+<tr>
+<td><code>trimsort_bamindex</code></td>
+<td>this.trimsort_bamindex</td>
+<td><code>gs://{user_defined_gcp_bucket}/alignments/</code></td>
+</tr>
+<tr>
+<td><code>variants</code></td>
+<td>this.variants</td>
+<td><code>gs://{user_defined_gcp_bucket}/variants/</code></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="SC2_transfer_illumina_pe_assembly.wdl workflow diagram" src="../img/SC2_transfer_illumina_pe_assembly.png" /></p>
+<h2 id="illumina-se">Illumina SE</h2>
+<p><strong>This workflow is not longer maintained.</strong></p>
+<p>File: SC2_transfer_illumina_se_assembly.wdl</p>
+<p>This workflow transfers the output file generated from SC2_illumina_se_assemby to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  </p>
+<table>
+<thead>
+<tr>
+<th>workflow variable</th>
+<th>attribute (input syntax into workflow)</th>
+<th>google bucket path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adapter_stats</code></td>
+<td>this.sample{terra_datatable_name}s.adapter_stats</td>
+<td><code>gs://{user_defined_gcp_bucket}/filter_reads/</code></td>
+</tr>
+<tr>
+<td><code>consensus</code></td>
+<td>this.sample{terra_datatable_name}s.consensus</td>
+<td><code>gs://{user_defined_gcp_bucket}/assemblies/</code></td>
+</tr>
+<tr>
+<td><code>covhist_out</code></td>
+<td>this.sample{terra_datatable_name}s.coverage_hist</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>cov_out</code></td>
+<td>this.sample{terra_datatable_name}s.coverage_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>fastqc_clean_html</code></td>
+<td>this.sample{terra_datatable_name}s.fastq_clean_html</td>
+<td><code>gs://{user_defined_gcp_bucket}/fastqc/</code></td>
+</tr>
+<tr>
+<td><code>fastqc_clean_zip</code></td>
+<td>this.sample{terra_datatable_name}s.fastqc_clean_zip</td>
+<td><code>gs://{user_defined_gcp_bucket}/fastqc/</code></td>
+</tr>
+<tr>
+<td><code>filtered_reads</code></td>
+<td>this.sample{terra_datatable_name}s.filtered_reads</td>
+<td><code>gs://{user_defined_gcp_bucket}/seqyclean/</code></td>
+</tr>
+<tr>
+<td><code>flagstat_out</code></td>
+<td>this.sample{terra_datatable_name}s.flagstat_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bamstats/</code></td>
+</tr>
+<tr>
+<td><code>out_dir</code></td>
+<td>this.sample{terra_datatable_name}s.out_dir</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><code>PhiX_stats</code></td>
+<td>this.sample{terra_datatable_name}s.PhiX_stats</td>
+<td><code>gs://{user_defined_gcp_bucket}/filtered_reads/</code></td>
+</tr>
+<tr>
+<td><code>renamed_consensus</code></td>
+<td>this.sample{terra_datatable_name}s.renmaed_consensus</td>
+<td><code>gs://{user_defined_gcp_bucket}/assemblies/</code></td>
+</tr>
+<tr>
+<td><code>trimsort_bam</code></td>
+<td>this.sample{terra_datatable_name}s.trimsort_bam</td>
+<td><code>gs://{user_defined_gcp_bucket}/alignments/</code></td>
+</tr>
+<tr>
+<td><code>trimsort_bamindex</code></td>
+<td>this.sample{terra_datatable_name}s.trimsort_bamindex</td>
+<td><code>gs://{user_defined_gcp_bucket}/alignments/</code></td>
+</tr>
+<tr>
+<td><code>variants</code></td>
+<td>this.sample{terra_datatable_name}s.variants</td>
+<td><code>gs://{user_defined_gcp_bucket}/variants/</code></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="SC2_transfer_illumina_se_assembly.wdl workflow diagram" src="../img/SC2_transfer_illumina_se_assembly.png" /></p>
+<h2 id="oxford-nanopore-technologies-ont">Oxford Nanopore Technologies (ONT)</h2>
+<p>File: SC2_transfer_ont_assembly.wdl</p>
+<p>This workflow transfers the output file generated from SC2_ont_assemby to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  </p>
+<table>
+<thead>
+<tr>
+<th>workflow variable</th>
+<th>attribute (input syntax into workflow)</th>
+<th>google bucket path when transfered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>covhist_out</code></td>
+<td>this.coverage_hist</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>cov_out</code></td>
+<td>this.coverage_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>filtered_fastq</code></td>
+<td>this.filtered_fastq</td>
+<td><code>gs://{user_defined_gcp_bucket}/filtered_fastq/</code></td>
+</tr>
+<tr>
+<td><code>flagstat_out</code></td>
+<td>this.flagstat_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bamstats/</code></td>
+</tr>
+<tr>
+<td><code>out_dir</code></td>
+<td>this.out_dir</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><code>renamed_consensus</code></td>
+<td>this.renmaed_consensus</td>
+<td><code>gs://{user_defined_gcp_bucket}/assemblies/</code></td>
+</tr>
+<tr>
+<td><code>samstats_out</code></td>
+<td>this.samstats_out</td>
+<td><code>gs://{user_defined_gcp_bucket}/bam_stats/</code></td>
+</tr>
+<tr>
+<td><code>scaffold_consensus</code></td>
+<td>this.scaffold_consensus</td>
+<td><code>gs://{user_defined_gcp_bucket}/assemblies/</code></td>
+</tr>
+<tr>
+<td><code>trimsort_bam</code></td>
+<td>this.trimsort_bam</td>
+<td><code>gs://{user_defined_gcp_bucket}/alignments/</code></td>
+</tr>
+<tr>
+<td><code>variants</code></td>
+<td>this.variants</td>
+<td><code>gs://{user_defined_gcp_bucket}/variants/</code></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="SC2_transfer_ont_assembly.wdl workflow diagram" src="../img/SC2_transfer_ont_assembly.png" /></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../assembly_workflow/" class="btn btn-neutral float-left" title="Assembly Workflows"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../results_workflow/" class="btn btn-neutral float-right" title="Results Workflows">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../assembly_workflow/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../results_workflow/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

@@ -2,7 +2,47 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/</loc>
-         <lastmod>2023-07-19</lastmod>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/assembly_workflow/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/indel_finder/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/nextstrain_workflow/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/python_scripts/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/results_workflow/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/setup/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/transfer_workflow/</loc>
+         <lastmod>2023-07-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/wastewater_workflow/</loc>
+         <lastmod>2023-07-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

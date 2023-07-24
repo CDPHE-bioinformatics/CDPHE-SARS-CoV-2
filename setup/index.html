@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/setup/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Setup - CDPHE-SARS-CoV-2</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Setup";
+        var mkdocs_page_input_path = "setup.md";
+        var mkdocs_page_url = "/CDPHE-SARS-CoV-2/setup/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> CDPHE-SARS-CoV-2
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Setup</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#workspace-data">Workspace Data</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../indel_finder/">Indel Finder</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../python_scripts/">Python Scripts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../assembly_workflow/">Assembly Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../transfer_workflow/">Transfer Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../results_workflow/">Results Workflows</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../wastewater_workflow/">Wastewater Workflow</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nextstrain_workflow/">Nextstrain Workflow</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">CDPHE-SARS-CoV-2</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+      <li>Setup</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="setup">Setup</h1>
+<p>Prior to running any of the workflows, you must set up the terra table and link reference files and custom python scripts to your workspace data. Below is a table detailing the workspace data you will need to set up.</p>
+<h2 id="workspace-data">Workspace Data</h2>
+<p>The reference files can be found in this repository in the <code>workspace_data</code> directory. Python scripts can be found in the listed repsoitory directory.</p>
+<table>
+<thead>
+<tr>
+<th>workspace variable name</th>
+<th>workflow</th>
+<th>file name</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adapters_and_contaminants_fa</code></td>
+<td><code>SC2_illumina_pe_assembly</code></td>
+<td>Adapters_plus_PhiX_174.fasta</td>
+<td>adapters sequences and contaminant sequences removed during fastq cleaning and filtering using SeqyClean. Thanks to Erin Young at Utah Public Health Laboratory for providing this file!</td>
+</tr>
+<tr>
+<td><code>covid_genome_gff</code></td>
+<td><code>SC2_illumina_pe_assembly</code>, <code>SC2_illumina_se_assembly</code>, <code>SC2_ont_assembly</code></td>
+<td>NC_045512-2_reference.gff</td>
+<td>whole genome reference sequence annotation file in gff format (we use NCBI genbank ID MN908947.3)</td>
+</tr>
+<tr>
+<td><code>covid_genome_fa</code></td>
+<td><code>SC2_illumina_pe_assembly</code>, <code>SC2_illumina_se_assembly</code>, <code>SC2_ont_assembly</code></td>
+<td>MN908947-2_reference.fasta</td>
+<td>SARS-CoV-2 whole genome reference sequence in fasta format (we use NCBI genbank ID MN908947.3)</td>
+</tr>
+<tr>
+<td><code>artic_v3_bed</code></td>
+<td><code>SC2_illumina_pe_assembly</code>, <code>SC2_illumina_se_assembly</code>, <code>SC2_ont_assembly</code></td>
+<td>artic_V3_nCoV-2019.primer.bed</td>
+<td>primer bed file for the Artic V3 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file!</td>
+</tr>
+<tr>
+<td><code>artic_v4_bed</code></td>
+<td><code>SC2_illumina_pe_assembly</code>, <code>SC2_illumina_se_assembly</code>, <code>SC2_ont_assembly</code></td>
+<td>artic_V4_nCoV-2019.primer.bed</td>
+<td>primer bed file for the Artic V4 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file!</td>
+</tr>
+<tr>
+<td><code>artic_v4-1_bed</code></td>
+<td><code>SC2_illumina_pe_assembly</code>, <code>SC2_illumina_se_assembly</code>, <code>SC2_ont_assembly</code></td>
+<td>artic_V4-1_nCoV-2019.primer.bed</td>
+<td>primer bed file for the Artic V4.1 tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file!</td>
+</tr>
+<tr>
+<td><code>artic_v4-1_s_gene_amplicons</code></td>
+<td><code>SC2_illumina_pe_assembly</code>,  <code>SC2_ont_assembly</code></td>
+<td>artic_v4_1_s_gene_amplicons.tsv</td>
+<td></td>
+</tr>
+<tr>
+<td><code>artic_v4-1_s_gene_primer_bed</code></td>
+<td><code>SC2_illumina_pe_assembly</code>,  <code>SC2_ont_assembly</code></td>
+<td>S_gene_V4-1_nCoV-2021.primer.bed</td>
+<td></td>
+</tr>
+<tr>
+<td><code>midnight_bed</code></td>
+<td><code>SC2_ont_assembly</code></td>
+<td>Midnight_Primers_SARS-CoV-2.scheme.bed</td>
+<td>primer bed file for the Midnight tiled amplicon primer set. Thanks to Theiagen Genomics for providing this file!</td>
+</tr>
+<tr>
+<td><code>covid_voc_annotations_tsv</code></td>
+<td><code>SC2_wastewater_variant_calling workflow</code></td>
+<td>SC2_voc_annotations_20220711.tsv</td>
+<td>For wastewater only. List of amino acid (AA) substitutions and lineages containing those AA substitutions; for a lineage to be associated with a given AA substitution, 90% of publicly available sequences must contain the AA substitution (the 90% cutoff was determined using outbreak.info)</td>
+</tr>
+<tr>
+<td><code>covid_voc_bed_tsv</code></td>
+<td><code>SC2_wastewater_variant_calling workflow</code>.</td>
+<td>SC2_voc_mutations_20220711.tsv</td>
+<td>For wastewater only. List of nucleotide genome positions in relation to the MN908947.3 reference genome of know mutations</td>
+</tr>
+<tr>
+<td><code>covid_calc_per_cov_py</code></td>
+<td><code>SC2_illumina_pe_assembly</code>, <code>SC2_illumina_se_assembly</code>, <code>SC2_ont_assembly</code></td>
+<td>calc_percent_coverage.py</td>
+<td>see detailed description in the readme file found in <code>./python_scripts/</code> repo directory</td>
+</tr>
+<tr>
+<td><code>covid_nextclade_json_parser_py</code></td>
+<td><code>SC2_lineage_calling_and_results</code></td>
+<td>nextclade_json_parser.py</td>
+<td>see detailed description in the readme file found in <code>./python_scripts/</code> repo directory</td>
+</tr>
+<tr>
+<td><code>covid_concat_results_py</code></td>
+<td><code>SC2_lineage_calling_and_results</code></td>
+<td>concat_seq_metrics_and_lineages_results.py</td>
+<td>see detailed description in the readme file found in <code>./python_scripts</code> repo directory</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../indel_finder/" class="btn btn-neutral float-right" title="Indel Finder">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../indel_finder/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
