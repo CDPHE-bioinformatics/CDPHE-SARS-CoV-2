@@ -39,7 +39,7 @@ if __name__ == '__main__':
     df = pd.DataFrame()
 
     # begin to fill in table
-    df.at[0, 'software'] = 'workflow'
+    df.at[0, 'software'] = 'SC2_illumina_pe_assembly'
     df.at[0, 'associated_docker_container'] = ''
     df.at[0, 'version'] = workflow_version
 

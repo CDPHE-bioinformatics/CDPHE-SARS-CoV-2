@@ -1,5 +1,9 @@
 version 1.0
 
+# import workflow version capture task
+import "../tasks/version_capture_task" as version_capture
+
+
 workflow SC2_illumina_pe_assembly {
 
     input {
@@ -11,12 +15,16 @@ workflow SC2_illumina_pe_assembly {
         File    covid_genome
         File    covid_gff
         String  project_name
+        String out_dir
 
         # python scripts
         File    calc_percent_coverage_py
         File    s_gene_amplicons
-        File    concat_assembly_software_illumina_py  
+        File    version_capture_illumina_pe_asembly_py
     }
+
+    # secrete variables
+    String outdirpath = sub(out_dir, "/$", "")
 
     call seqyclean {
         input:
@@ -89,13 +97,50 @@ workflow SC2_illumina_pe_assembly {
             calc_percent_coverage_py = calc_percent_coverage_py
     }
 
-    call create_software_assembly_file {
+    call version_capture.workflow_version_capture  as workflow_version_capture{
+        input:
+
+    }
+
+    call create_version_capture_file {
         input:
             concat_assembly_software_illumina_py = concat_assembly_software_illumina_py,
             project_name = project_name,
+            seqyclearn_version = seqyclean.seqyclean_version,
+            fastqc_version = fastqc.fastqc_version,
             bwa_version = align_reads.assembler_version,
-            ivar_version = ivar_consensus.ivar_version
+            samtools_version_broadinstitute = align_reads.samtools_version_broadinstitute,
+            ivar_version = ivar_consensus.ivar_version,
+            samtools_version_andersenlabapps = ivar_consensus.samtools_version_andersenlabapps,
+            samtools_version_staphb = bam_stats.samtools_version_staphb,
+            analysis_date = workflow_version_capture.analysis_date,
+            workflow_version = workflow_version_capture.workflow_version
+
             
+    }
+    call transfer {
+        input:
+            outdirpath = outdirpath,
+            seqyclean_summary = seqyclean.seqyclean_summary,
+            fastqc_raw1_html = fastqc_raw.fastqc1_html,
+            fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
+            fastqc_raw2_html = fastqc_raw.fastqc2_html,
+            fastqc_raw2_zip = fastqc_raw.fastqc2_zip,
+            fastqc_clean1_html = fastqc_cleaned.fastqc1_html,
+            fastqc_clean1_zip = fastqc_cleaned.fastqc1_zip,
+            fastqc_clean2_html = fastqc_cleaned.fastqc2_html,
+            fastqc_clean2_zip = fastqc_cleaned.fastqc2_zip,
+            trimsort_bam = ivar_trim.trimsort_bam,
+            trimsort_bamindex = ivar_trim.trimsort_bamindex,
+            variants = ivar_var.var_out,
+            flagstat_out = bam_stats.flagstat_out,
+            stats_out = bam_stats.stats_out,
+            covhist_out = bam_stats.covhist_out,
+            cov_out = bam_stats.cov_out,
+            cov_s_gene_out = bam_stats.cov_s_gene_out,
+            cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out,
+            renamed_consensus = rename_fasta.renamed_consensus,
+            version_capture_illumina_pe_assembly = create_version_capture_file.assembly_software_file
     }
 
     output {
@@ -125,9 +170,10 @@ workflow SC2_illumina_pe_assembly {
         File cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
-        File assembly_software_file = create_software_assembly_file.assembly_software_file
-        String bwa_version = align_reads.assembler_version
-        String ivar_version = ivar_consensus.ivar_version
+
+        File version_capture_illumina_pe_assembly = create_version_capture.assembly_software_file
+        String assembly_transfer_date = transfer.assembly_transfer_date
+
     }
 }
 
@@ -143,6 +189,8 @@ task seqyclean {
 
         seqyclean -minlen 70 -qual 30 30 -gz -1 ${fastq_1} -2 ${fastq_2} -c ${contam} -o ${sample_name}_clean
 
+        # grab seqyclean version 
+        seqyclean -h | awk '/Version/ {print $2}' | tee VERSION
     }
 
     output {
@@ -150,6 +198,7 @@ task seqyclean {
         File cleaned_1 = "${sample_name}_clean_PE1.fastq.gz"
         File cleaned_2 = "${sample_name}_clean_PE2.fastq.gz"
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
+        String seqyclean_version = read_string("VERSION")
 
     }
 
@@ -178,6 +227,9 @@ task fastqc {
 
         fastqc --outdir $PWD ${fastq_1} ${fastq_2}
 
+        # grab version 
+        fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION
+
     }
 
     output {
@@ -186,6 +238,7 @@ task fastqc {
         File fastqc1_zip = "${fastq1_name}_fastqc.zip"
         File fastqc2_html = "${fastq2_name}_fastqc.html"
         File fastqc2_zip = "${fastq2_name}_fastqc.zip"
+        String fastqc_version = read_string ("VERSION")
 
     }
 
@@ -212,7 +265,10 @@ task align_reads {
 
     command {
 
-        echo bwa 0.7.17-r1188 > VERSION
+        # echo bwa 0.7.17-r1188 > VERSION
+        # grab version bwa and samtools versions
+        bwa 2>&1 | awk '/Version/{print $2}' | tee VERSION_bwa
+        samtools --version | awk '/samtools/ {print $2}' |tee VERSION_samtools
         
         bwa index -p reference.fasta -a is ${ref}
         bwa mem -t 2 reference.fasta ${fastq_1} ${fastq_2} | \
@@ -226,7 +282,8 @@ task align_reads {
 
         File out_bam = "${sample_name}_aln.sorted.bam"
         File out_bamindex = "${sample_name}_aln.sorted.bam.bai"
-        String assembler_version = read_string("VERSION")
+        String bwa_version = read_string("VERSION_bwa")
+        String samtools_version_broadinstitute = read_string("VERSION_samtools")
 
     }
 
@@ -237,7 +294,7 @@ task align_reads {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "broadinstitute/viral-core:latest"
+        docker:    "broadinstitute/viral-core:2.0.21"
     }
 }
 
@@ -323,8 +380,9 @@ task ivar_consensus {
 
     command <<<
 
-
-        ivar version | awk '/version/ {print $3}' | tee VERSION
+        # grab ivar and samtools versions
+        ivar version | awk '/version/ {print $3}' | tee VERSION_ivar
+        samtools --version | awk '/samtools/ {print $2}' | tee VERSION_samtools
 
         samtools faidx ~{ref}
         samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
@@ -335,7 +393,8 @@ task ivar_consensus {
     output {
 
         File consensus_out = "${sample_name}_consensus.fa"
-        String ivar_version = read_string("VERSION")
+        String ivar_version = read_string("VERSION_ivar")
+        String samtools_version_andersenlabapps = read_string("VERSION_samtools")
 
     }
 
@@ -361,6 +420,9 @@ task bam_stats {
     }
 
     command <<<
+
+        # grab version
+        samtools --version | awk '/samtools/ {print $2}' | tee VERSION
 
         samtools flagstat ~{bam} > ~{sample_name}_flagstat.txt
         samtools stats ~{bam} > ~{sample_name}_stats.txt
@@ -404,6 +466,7 @@ task bam_stats {
         File cov_out  = "${sample_name}_coverage.txt"
         File cov_s_gene_out = "${sample_name}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
+        String samtools_version_staphb = read_string("VERSION")
 
     }
 
@@ -478,29 +541,44 @@ task calc_percent_cvg {
 
 }
 
-task create_software_assembly_file {
+task create_version_capture_file {
     meta {
-        description: "pull assembly software into a sinlge tsv file"
+        description: "generate version capture file for workflow"
     }
 
     input {
-        File concat_assembly_software_illumina_py
-        String bwa_version
-        String ivar_version
+        File version_capture_illumina_pe_assembly_py
         String project_name
+        String seqyclearn_version
+        String fastqc_version
+        String bwa_version
+        String samtools_version_broadinstitute
+        String ivar_version
+        String samtools_version_andersenlabapps
+        String samtools_version_staphb
+        String analysis_date
+        String workflow_version
+
     }
 
     command <<<
 
-        python ~{concat_assembly_software_illumina_py} \
+        python ~{version_capture_illumina_pe_asembly_py} \
         --project_name "~{project_name}" \
+        --seqyclean_version "~{seqyclean_version}" \
+        --fastqc_version "~{fastqc_version}" \
         --bwa_version "~{bwa_version}" \
-        --ivar_version "~{ivar_version}"
+        --samtools_version_broadinstitute "~{samtools_version_broadinstitute}" \
+        --ivar_version "~{ivar_version}" \
+        --samtools_version_andersenlabapps "~{samtools_version_andersenlabapps}" \
+        --samtools_version_staphb "~{samtools_version_staphb}" \
+        --analysis_date "~{analysis_date}" \
+        --workflow_version "~{workflow_version}" \
 
     >>>
 
     output {
-        File assembly_software_file = '~{project_name}_assembly_software.tsv'
+        File version_capture_illumina_pe_assembly = "version_capture_illumina_pe_asembly_~{project_name}_v~{workflow_version}.csv"
     }
 
     runtime {
@@ -510,5 +588,72 @@ task create_software_assembly_file {
       cpu: 4
       disks: "local-disk 10 SSD"
 
+    }
+}
+
+task transfer {
+    input {
+        String outdirpath
+        File seqyclean_summary 
+        File fastqc_raw1_html
+        File fastqc_raw1_zip
+        File fastqc_raw2_html
+        File fastqc_raw2_zip
+        File fastqc_clean1_html
+        File fastqc_clean1_zip
+        File fastqc_clean2_html
+        File fastqc_clean2_zip
+        File trimsort_bam
+        File trimsort_bamindex
+        File variants
+        File flagstat_out
+        File stats_out
+        File covhist_out
+        File cov_out
+        File cov_s_gene_out
+        File cov_s_gene_amplicons_out
+        File renamed_consensus
+        File version_capture_illumina_pe_assembly       
+
+    }
+
+    command <<<
+
+        gsutil -m cp ~{seqyclean_summary} ~{outdirpath}/seqyclean/
+        gsutil -m cp ~{fastqc_raw1_html} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_raw1_zip} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_raw2_html} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_raw2_zip} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_clean1_html} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_clean1_zip} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_clean2_html} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{fastqc_clean2_zip} ~{outdirpath}/fastqc/
+        gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
+        gsutil -m cp ~{trimsort_bamindex} ~{outdirpath}/alignments/
+        gsutil -m cp ~{variants} ~{outdirpath}/variants/
+        gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{stats_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{renamed_consensus} ~{outdirpath}/assemblies/
+        gsutil -m cp ~{version_capture_illumina_pe_assembly} ~{outdirpath}/summary_results/
+
+        transferdate=`date`
+        echo $transferdate | tee TRANSFERDATE
+
+    >>>
+
+
+    output {
+        String assembly_transfer_date = read_string("TRANSFERDATE")
+    }
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "2 GB"
+        cpu: 4
+        disks: "local-disk 100 SSD"
     }
 }

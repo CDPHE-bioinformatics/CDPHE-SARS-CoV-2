@@ -1,25 +1,5 @@
 #! /usr/bin/env python
 
-# updated 2022-03-04
-## added assembler version
-
-#updated 2022-04-04
-## adjust columns to account for pangolin v4.0 major update
-
-# updated 2022-07-07
-## gets rid of the report_to_epi stuff in the wgs_horizon_csv (the column will just be blank).
-
-# update 2022-12-29
-## adds in the expanded pangolin lineage into the results output (no big changes)
-
-# update 2023-03-01
-## major update; refactoring to match universal naming conventions of the workbook generator;
-## also reads in the workbook path to pull various values
-
-# update 2023-05-04
-## add CDC lineage groupings from https://covid.cdc.gov/covid-data-tracker/#variant-proportions
-## new aggregated_lineage column will contain CDC lineage grouping
-
 import argparse
 import sys
 import pandas as pd
@@ -117,11 +97,7 @@ terra_data_table_data_types = {'index_position': 'Int64',
  'out_dir': object,
  'download_date': object}
 
-assembly_software_data_types = {'project_name' : object,
-                               'bwa_version' : object,
-                               'ivar_version' : object,
-                               'guppy_veresion' : object,
-                               'medaka_version' : object}
+
 
 
 #### FUNCTIONS #####
@@ -137,7 +113,9 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument('--nextclade_version')
     parser.add_argument('--project_name')
     parser.add_argument('--terra_data_table_path')
-    parser.add_argument('--assembly_software_file')
+    parser.add_argument('--workflow_version')
+    parser.add_argument('--analysis_date')
+
 
     options = parser.parse_args(args)
     return options
@@ -196,7 +174,6 @@ def concat_percent_cvg(percent_cvg_file_list):
     df_list = []
     for file in percent_cvg_file_list:
         d = pd.read_csv(file, dtype = percent_cov_data_type)
-        # d = d.rename(columns = {'accession_id' : 'sample_name'})
         df_list.append(d)
 
     df = pd.concat(df_list)
@@ -211,33 +188,17 @@ def get_df_spike_mutations(variants_csv):
     
     # read in variants file
     variants = pd.read_csv(variants_csv, dtype = nextclade_variants_data_types)
-    # variants = variants.rename(columns = {'sample_name' : 'fasta_header'})
-
-    # variants['sample_name'] = variants.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
     variants = variants.drop(columns = 'fasta_header')
-    # print(variants)
 
-    #### filter variants for spike protein varaints in rbd and pbcs #####
-    # filter to only s gene
+    #### filter AA changes to those in the S gene
     crit = variants.gene == 'S'
-    # critRBD = (variants.codon_position >= 461) & (variants.codon_position <= 509)
-    # critPBCS = (variants.codon_position >= 677) & (variants.codon_position <= 694)
-    # crit732 = variants.codon_position == 732
-    # crit452 = variants.codon_position == 452
-    # crit253 = variants.codon_position == 253
-    # crit13 = variants.codon_position == 13
-    # crit145 = variants.codon_position == 145 # delta plus AY.4.2
-    # crit222 = variants.codon_position == 222 # delta plus AY.4.2
-    # critdel = variants.variant_name.str.contains('del') # mainly for 69/70 del
 
     spike_variants_df = variants[crit]
-    # spike_variants_df = variants[crit & (critRBD | critPBCS | crit732 | critdel | crit452 | crit253 | crit13 | crit145 | crit222)]
     spike_variants_df = spike_variants_df.reset_index(drop = True)
-    # print(spike_variants_df)
 
     # generate a df of the sample and their spike variants
     sample_name_list_variants = spike_variants_df.sample_name.unique().tolist()
-    # print(sample_name_list)
+
 
     df = pd.DataFrame()
     sample_name_list = []
@@ -247,7 +208,6 @@ def get_df_spike_mutations(variants_csv):
 
     for sample_name in sample_name_list_variants:
         sample_name_list.append(sample_name)
-
 
         crit = spike_variants_df.sample_name == sample_name
         f = spike_variants_df[crit]
@@ -261,14 +221,14 @@ def get_df_spike_mutations(variants_csv):
 
     df['sample_name'] = sample_name_list
     df['spike_mutations'] = variant_name_list
-    # print(df)
 
     return df
 
 def concat_results(sample_name_list, terra_data_table_path, project_name, 
-                   assembly_software_file, pangolin_lineage_csv, cdc_lineage_groups_json,
+                    pangolin_lineage_csv, cdc_lineage_groups_json,
                     nextclade_clades_csv, nextclade_version,
-                   cov_out_df, percent_cvg_df, spike_variants_df):
+                   cov_out_df, percent_cvg_df, spike_variants_df, 
+                   workflow_version):
 
     # set some functions for getting data formatted
     def get_sample_name_from_fasta_header(fasta_header):
@@ -279,18 +239,11 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
         return 'CO-CDPHE-%s' % sample_name
     
 
-    # read in assembly software file
-    assembly_software_df = pd.read_csv(assembly_software_file, sep = '\t', dtype = assembly_software_data_types )
-    assembly_software_df = assembly_software_df.drop (columns = 'project_name')
-
-
     # create dataframe and fill with constant strings
     df = pd.DataFrame()
     df['sample_name'] = sample_name_list
     df = df.set_index('sample_name')
     df['analysis_date'] = str(date.today())
-    for col in assembly_software_df.columns:
-        df[col] = assembly_software_df.loc[0, col]
 
 
     # read in terra_data_table
@@ -319,7 +272,9 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
     sample_name = pangolin.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     pangolin.insert(value = sample_name, column = 'sample_name', loc = 0)
-    pangolin = pangolin.drop(columns = 'fasta_header')
+    drop_columns = ['fasta_header', 'pango_designation_version', 'pangolin_scorpio_version'
+                    'pangolin_constellation_version']
+    pangolin = pangolin.drop(columns = drop_columns)
     pangolin = pangolin.set_index('sample_name')
 
     # read in list of CDC lineage groups
@@ -329,19 +284,14 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
     # read in nextclade csv
     nextclade = pd.read_csv(nextclade_clades_csv, dtype = nextclade_clades_data_types)
-    # nextclade = nextclade.rename(columns = {'sample_name' : 'fasta_header'})
-    # sample_name = nextclade.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
-    # nextclade.insert(value = sample_name, column = 'sample_name', loc = 0)
-    nextclade = nextclade.drop(columns = ['fasta_header', 'hsn'])
+    nextclade = nextclade.drop(columns = ['fasta_header', 'hsn', 'nextclade_version'])
     nextclade['nextclade_version'] = nextclade_version
     nextclade = nextclade.set_index('sample_name')
-
 
     # set index on sample_names to prepare for joining
     cov_out_df = cov_out_df.set_index('sample_name')
     percent_cvg_df = percent_cvg_df.set_index('sample_name')
     spike_variants_df = spike_variants_df.set_index('sample_name')
-    # print(spike_variants_df)
 
     # join
     j = df.join(terra_data_table, how = 'left')
@@ -352,7 +302,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     j = j.join(aggregated_lineage_df, how = 'left')
     j = j.join(spike_variants_df, how = 'left')
     j = j.reset_index()
-    # print(j)
+
     # add fasta header
     j['fasta_header'] = j.apply(lambda x:create_fasta_header(x.sample_name), axis=1)
 
@@ -380,7 +330,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     j = j[primary_columns]
 
 
-    outfile = '%s_sequencing_results.csv' % project_name
+    outfile = f'{project_name}_sequencing_results_v{workflow_version}.csv' 
     j.to_csv(outfile, index = False)
 
     return j
@@ -416,21 +366,42 @@ def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
     
     return aggregated_lineage_df
 
-def make_wgs_horizon_output (results_df, project_name):
+def make_wgs_horizon_output (results_df, project_name, pangolin_version, 
+                             analysis_date, workflow_version):
 
     results_df['report_to_epi'] = ''
     results_df['Run_Date'] = str(date.today())
 
     # rename columns 
     results_df = results_df.rename(columns = {'hsn' : 'accession_id', 'pango_designation_version' : 'pangoLEARN_version'})
+    
+    results_df['pangolin_version'] = pangolin_version
+    results_df['workflow_version'] = workflow_version
+    results_df['anlaysis_date'] = analysis_date
 
     col_order = ['accession_id', 'percent_coverage', 'pangolin_lineage', 'pangolin_version',
                  'report_to_epi', 'Run_Date', 'pangoLEARN_version']
     
+   
     results_df = results_df[col_order]
 
     outfile = "%s_wgs_horizon_report.csv" % project_name
     results_df.to_csv(outfile, index = False)
+
+
+    # for new horizon parser when ready...
+    # results_df['pangolin_version'] = pangolin_version
+    # results_df['workflow_version'] = workflow_version
+    # results_df['anlaysis_date'] = analysis_date
+
+    # col_order2 = ['hsn', 'percent_coverage', 'mean_depth', 'pangolin_lineage',
+    #               'aggregated_lineage', 'expanded_lineage', 'pangolin_version',
+    #               'project_name', 'platform', 'workflow_version', 'anlaysis_date', 'run_date']
+
+    # results_df = results_df[col_order2]
+
+    # outfile = "%s_wgs_horizon_report.csv" % project_name
+    # results_df.to_csv(outfile, index = False)
 
 
 if __name__ == '__main__':
@@ -441,7 +412,6 @@ if __name__ == '__main__':
     terra_data_table_path = options.terra_data_table_path
     cov_out_files = options.cov_out_files
     percent_cvg_files = options.percent_cvg_files
-    assembly_software_file = options.assembly_software_file
     project_name = options.project_name
 
     pangolin_lineage_csv = options.pangolin_lineage_csv
@@ -450,6 +420,9 @@ if __name__ == '__main__':
     nextclade_clades_csv = options.nextclade_clades_csv
     nextclade_variants_csv = options.nextclade_variants_csv
     nextclade_version = options.nextclade_version
+
+    workflow_version = options.workflow_version
+    analysis_date = options.analysis_date
 
     # create lists from the column table txt file input
     sample_name_list = create_list_from_write_lines_input(write_lines_input=sample_name_array)
@@ -460,25 +433,26 @@ if __name__ == '__main__':
     cov_out_df = concat_cov_out(cov_out_file_list=cov_out_file_list)
     percent_cvg_df = concat_percent_cvg(percent_cvg_file_list=percent_cvg_file_list)
 
-    # get df of relavant spike mutations (inlcuding 69/70 del) from nextclade file
+    # get df of spike mutations from nextclade file
     spike_variants_df = get_df_spike_mutations(variants_csv = nextclade_variants_csv)
 
     # create results file
     results_df = concat_results(sample_name_list = sample_name_list,
                                 terra_data_table_path = terra_data_table_path,
                                 project_name = project_name,
-                                assembly_software_file=assembly_software_file,
                                 pangolin_lineage_csv=pangolin_lineage_csv,
                                 cdc_lineage_groups_json=cdc_lineage_groups_json,
                                 nextclade_clades_csv=nextclade_clades_csv,
                                 nextclade_version=nextclade_version,
                                 cov_out_df=cov_out_df,
                                 percent_cvg_df=percent_cvg_df, 
-                                spike_variants_df = spike_variants_df)
+                                spike_variants_df = spike_variants_df,
+                                workflow_version = workflow_version)
     
     # create wgs horizon output
     make_wgs_horizon_output(project_name = project_name,
-                            results_df=results_df)
+                            results_df=results_df,
+                            workflow_version = workflow_version,
+                            analysis_date = analysis_date)
     
 
-    print('DONE!')

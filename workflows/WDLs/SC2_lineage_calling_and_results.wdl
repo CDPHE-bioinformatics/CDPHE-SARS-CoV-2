@@ -1,5 +1,8 @@
 version 1.0
 
+# import workflow version capture task
+import "../tasks/version_capture_task" as version_capture
+
 workflow SC2_lineage_calling_and_results {
 
     input {
@@ -9,10 +12,7 @@ workflow SC2_lineage_calling_and_results {
         Array[File?] percent_cvg_csv
         Array[String] out_dir_array
         Array[String] project_name_array
-        # Array[String?] assembler_version_array
-        # Array[File] workbook_path_array
         Array[File] terra_data_table_path_array
-        Array[File] assembly_software_file_array
 
         # workspace data
         File cdc_lineage_groups_json
@@ -20,8 +20,7 @@ workflow SC2_lineage_calling_and_results {
         # python scripts
         File nextclade_json_parser_py
         File concat_seq_results_py
-
-
+        File version_capture_lineage_calling_and_results_py
 
     }
 
@@ -29,9 +28,7 @@ workflow SC2_lineage_calling_and_results {
     String project_name = select_all(project_name_array)[0]
     File terra_data_table_path = select_all(terra_data_table_path_array)[0]
     String out_dir = select_all(out_dir_array)[0]
-    File assembly_software_file = select_all(assembly_software_file_array)[0]
-    # String assembler_version = select_all(assembler_version_array)[0]
-    # File workbook_path = select_all(workbook_path_array)[0]
+    String outdirpath = sub(out_dir, "/$", "")
 
     call concatenate {
         input:
@@ -55,6 +52,10 @@ workflow SC2_lineage_calling_and_results {
         nextclade_json = nextclade.nextclade_json
     }
 
+    call version capture.workflow_version_catpure as workflow_version_capture{
+        input:
+    }
+
     call results_table {
       input:
         sample_name = sample_name,
@@ -68,7 +69,21 @@ workflow SC2_lineage_calling_and_results {
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
         terra_data_table_path = terra_data_table_path,
-        assembly_software_file = assembly_software_file
+        workflow_version = workflow_version_capture.workflow_version
+        analysis_date = workflow_version_capture.analysis_date
+    }
+
+
+
+
+    call create_version_capture_file {
+        input: 
+            pangolin_version = pangolin.pangolin_version,
+            nextclade_version = nextclade.nextclade_version,
+            project_name = project_name,
+            workflow_version = worfklow_verion_capture.workflow_version,
+            analysis_date = workflow_version_capture.analysis_date,
+            pangolin_lineage_csv = pangolin.lineage
     }
 
     call transfer {
@@ -96,7 +111,7 @@ workflow SC2_lineage_calling_and_results {
         File nextclade_variants_csv = parse_nextclade.nextclade_variants_csv
         File sequencing_results_csv = results_table.sequencing_results_csv
         File wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
-        File assembly_software_tsv = assembly_software_file
+        File version_capture_lineage_calling_and_results = create_version_capture.version_capture_lineage_calling_and_results
     }
 }
 
@@ -230,8 +245,9 @@ task results_table {
       File nextclade_variants_csv
       String nextclade_version
       String project_name
-      File assembly_software_file
       File terra_data_table_path
+      String workflow_version
+      String analysis_date
       
 
     }
@@ -247,13 +263,14 @@ task results_table {
         --nextclade_clades_csv "~{nextclade_clades_csv}" \
         --nextclade_version "~{nextclade_version}" \
         --project_name "~{project_name}" \
-        --assembly_software_file "~{assembly_software_file}" \
         --terra_data_table_path "~{terra_data_table_path}" \
+        --workflow_version "~{workflow_version}" \
+        --analysis_date "~{analysis_date}"
 
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results.csv"
+        File sequencing_results_csv = "~{project_name}_sequencing_results_v~{workflow_version}.csv"
         File wgs_horizon_report_csv = "~{project_name}_wgs_horizon_report.csv"
     }
 
@@ -266,9 +283,51 @@ task results_table {
     }
 }
 
+task create_version_capture_file {
+    meta {
+        description: "generate version capture file for workflow"
+    }
+
+    input {
+        File version_capture_lineage_calling_and_results_py
+        String project_name
+        String pangolin_version
+        String nextclade_version
+        String analysis_date
+        String workflow_version
+        File pangolin_lineage_csv
+
+    }
+
+    command <<<
+
+        python ~{version_capture_lineage_calling_and_results_py} \
+        --project_name "~{project_name}" \
+        --pangolin_version "~{pangolin_version}" \
+        --nextclade_version "~{nextclade_version}" \
+        --analysis_date "~{analysis_date}" \
+        --workflow_version "~{workflow_version}" \
+        --pangolin_lineage_csv "~{pangolin_lineage_csv}"
+
+    >>>
+
+    output {
+        File version_capture_lineage_calling_and_results = "version_capture_lineage_calling_and_results_~{project_name}_v~{workflow_version}.csv"
+    }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v4"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
+    }
+}
+
 task transfer {
     input {
-        String out_dir
+        String outdirpath
         File cat_fastas
         File pangolin_lineage
         File nextclade_json
@@ -277,10 +336,9 @@ task transfer {
         File nextclade_variants_csv
         File sequencing_results_csv
         File wgs_horizon_report_csv
-        File assembly_software_file
+        File version_capture_lineage_calling_and_results
     }
 
-    String outdirpath = sub(out_dir, "/$", "")
 
     command <<<
 
@@ -292,7 +350,7 @@ task transfer {
         gsutil -m cp ~{nextclade_variants_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{sequencing_results_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{wgs_horizon_report_csv} ~{outdirpath}/summary_results/
-        gsutil -m cp ~{assembly_software_file} ~{outdirpath}/summary_results/
+        gsutil -m cp ~{version_capture_lineage_calling_and_results} ~{outdirpath}/summary_results/
     >>>
 
     runtime {

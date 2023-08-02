@@ -1,5 +1,8 @@
 version 1.0
 
+# import workflow version capture task
+import "../tasks/version_capture_task" as version_capture
+
 workflow SC2_ont_assembly {
 
     input {
@@ -11,12 +14,16 @@ workflow SC2_ont_assembly {
         File    primer_bed
         File    s_gene_primer_bed
         File    s_gene_amplicons
-        String project_name
+        String  project_name
+        String  out_dir
 
         # python scripts
         File    calc_percent_coverage_py
-        File    concat_assembly_software_ont_py
+        File    version_capture_ont_assembly_py
     }
+
+    # secrete variables
+    String outdirpath = sub(out_dir, "/$", "")
     
     call ListFastqFiles {
         input:
@@ -79,12 +86,38 @@ workflow SC2_ont_assembly {
             s_gene_primer_bed = s_gene_primer_bed
     }
 
-    call create_software_assembly_file {
+    call version_capture.workflow_version_capture as workflow_version_capture{
         input:
-            concat_assembly_software_ont_py = concat_assembly_software_ont_py,
+    }
+
+    call create_version_capture_file {
+        input:
+            project_name = project_name, 
             guppy_version = Demultiplex.guppy_version,
-            medaka_version = Medaka.medaka_version,
-            project_name = project_name
+            artic_version = Medaka.artic_version,
+            samtools_version = Bam_stats.samtools_version,
+            pyScaf_version = Scaffold.pyScaf_version,
+            bcftools_version = get_primer_site_variants.bcftools_version,
+            analysis_date = workflow_version_capture.analysis_date,
+            workflow_version = workflow_version_capture.workflow_version 
+    }
+
+    call transfer {
+        input:
+        outdirpath = outdirpath, 
+        trimsort_bam = Medaka.trimsort_bam,
+        trimsort_bai = Medaka.trimsort_bai,
+        flagstat_out = Bam_stats.flagstat_out,
+        samstats_out = Bam_stats.stats_out,
+        covhist_out = Bam_stats.covhist_out,
+        cov_out = Bam_stats.cov_out,
+        cov_s_gene_out = Bam_stats.cov_s_gene_out,
+        cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
+        variants = Medaka.variants,
+        renamed_consensus = rename_fasta.renamed_consensus,
+        percent_cvg_csv = calc_percent_cvg.percent_cvg_csv,
+        primer_site_variants = get_primer_site_variants.primer_site_variants,
+        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
     }
 
     output {
@@ -106,9 +139,9 @@ workflow SC2_ont_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
-        File assembly_software_file = create_software_assembly_file.assembly_software_file
-        String guppy_version = Demultiplex.guppy_version
-        String medaka_version = Medaka.medaka_version
+
+        File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        String assembly_transfer_date = transfer.assembly_transfer_date
     }
 }
 
@@ -231,7 +264,7 @@ task Medaka {
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
-        String medaka_version = read_string("VERSION")
+        String artic_version = read_string("VERSION")
     }
 
     runtime {
@@ -255,6 +288,9 @@ task Bam_stats {
     Int disk_size = 3 * ceil(size(bam, "GB"))
 
     command <<<
+
+        # grab samtools version
+        samtools --version | awk '/samtools/ {print $2}' | tee VERSION
 
         samtools flagstat ~{bam} > ~{sample_name}_~{index_1_id}_flagstat.txt
 
@@ -303,6 +339,7 @@ task Bam_stats {
         File cov_out  = "${sample_name}_${index_1_id}_coverage.txt"
         File cov_s_gene_out = "${sample_name}_${index_1_id}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
+        String samtools_version = read_string("VERSION")
     }
 
     runtime {
@@ -327,6 +364,9 @@ task Scaffold {
     Int disk_size = 3 * ceil(size(fasta, "GB"))
 
     command {
+        
+        # grab version
+        pyScaf.py --version | tee VERSION
 
         pyScaf.py -f ${fasta} -o ${sample_name}_${index_1_id}_consensus_scaffold.fa -r ${ref}
 
@@ -334,6 +374,7 @@ task Scaffold {
 
     output {
         File scaffold_consensus = "${sample_name}_${index_1_id}_consensus_scaffold.fa"
+        String pyScaf_version = read_string("VERSION")
     }
 
     runtime {
@@ -421,6 +462,9 @@ task get_primer_site_variants {
 
     command <<<
 
+        # grab version
+        bcftools --version | awk '/bcftools/ {print $2}' | tee VERSION
+
         bcftools view --regions-file ~{s_gene_primer_bed} --no-header ~{variants} \
             | tee ~{sample_name}_S_gene_primer_variants.txt
 
@@ -428,6 +472,7 @@ task get_primer_site_variants {
 
     output {
         File primer_site_variants = "${sample_name}_S_gene_primer_variants.txt"
+        String bcftools_version = read_string("VERSION")
     }
 
     runtime {
@@ -438,29 +483,40 @@ task get_primer_site_variants {
     }
 }
 
-task create_software_assembly_file {
+task create_version_catpure_file {
     meta {
         description: "pull assembly software into a sinlge tsv file"
     }
 
     input {
-        File concat_assembly_software_ont_py
-        String guppy_version
-        String medaka_version
+        File version_capture_ont_assembly_py
         String project_name
+        String guppy_version
+        String artic_version
+        String samtools_version
+        String pyScaf_version
+        String bcftools_version
+        String analysis_date
+        String workflow_version
     }
 
     command <<<
 
-        python ~{concat_assembly_software_ont_py} \
+        python ~{version_capture_ont_assembly_py} \
         --project_name "~{project_name}" \
         --guppy_version "~{guppy_version}" \
-        --medaka_version "~{medaka_version}"
+        --artic_version "~{artic_version}" \
+        --samtools_version "~{samtools_version}" \
+        --pyScaf_version "~{pyScaf_version}" \
+        --bcftools_version "~{bcftools_version}" \
+        --analysis_date "~{analysis_date}" \
+        --workflow_verion "~{workflow_version}" 
+
 
     >>>
 
     output {
-        File assembly_software_file = '~{project_name}_assembly_software.tsv'
+        File version_capture_ont_assembly = 'version_capture_ont_asembly_~{project_name}_v~{workflow_version}.csv'
     }
 
     runtime {
@@ -472,3 +528,56 @@ task create_software_assembly_file {
 
     }
 }
+
+task transfer {
+    input {
+        String outdirpath
+        File trimsort_bam
+        File trimsort_bai
+        File flagstat_out
+        File samstats_out
+        File covhist_out
+        File cov_out
+        File cov_s_gene_out
+        File cov_s_gene_amplicons_out
+        File variants
+        File renamed_consensus
+        File primer_site_variants
+        File version_capture_ont_assembly
+
+    }
+
+    command <<<
+
+        gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
+        gsutil -m cp ~{trimstor_bai} ~{outdi_path}/alignments/
+        gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{samstats_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{variants} ~{outdirpath}/variants/
+        gsutil -m cp ~{primer_site_variants} ~{outdirpath}/primer_site_variants/
+        gsutil -m cp ~{renamed_consensus} ~{outdirpath}/assemblies/
+        gsutil -m cp ~{version_capture_ont_assembly} ~{outdirpath}/summary_results/
+
+
+        transferdate=`date`
+        echo $transferdate | tee TRANSFERDATE
+
+    >>>
+
+
+    output {
+        String assembly_transfer_date = read_string("TRANSFERDATE")
+    }
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "2 GB"
+        cpu: 4
+        disks: "local-disk 100 SSD"
+    }
+}
+

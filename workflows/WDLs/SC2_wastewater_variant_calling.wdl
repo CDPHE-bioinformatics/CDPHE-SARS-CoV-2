@@ -1,5 +1,8 @@
 version 1.0
 
+# import workflow version capture task
+import "../tasks/version_capture_task" as version_capture
+
 workflow SC2_wastewater_variant_calling {
 
     input {
@@ -7,7 +10,7 @@ workflow SC2_wastewater_variant_calling {
         Array[File] trimsort_bam
         Array[String] sample_name
         Array[String] out_dir_array
-        # Array[String] project_name_array
+        Array[String] project_name_array
 
         # reference files/workspace data
         File covid_genome
@@ -15,8 +18,9 @@ workflow SC2_wastewater_variant_calling {
 
     }
     # secret variables
-    # String project_name = project_name_array[0]
+    String project_name = project_name_array[0]
     String out_dir = out_dir_array[0]
+    String outdirpath = sub(out_dir, "/$", "")
 
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
@@ -60,6 +64,20 @@ workflow SC2_wastewater_variant_calling {
             mutations_tsv = mutations_tsv.mutations_tsv
     }
     
+    call version_capture.workflow_version_capture as workflow_version_capture {
+        input:
+    }
+    
+    call_create_version_catpure_file {
+        input:
+            project_name = project_name,
+            samtools_version_staphb = add_RG.samtools_version_staphb,
+            samtools_version_andersenlabapps = variant_calling.samtools_version_andersenlabapps,
+            ivar_version = variant_calling.ivar_version,
+            
+
+    }
+
     call transfer_outputs {
         input:
             variants = variant_calling.variants,
@@ -89,12 +107,16 @@ task add_RG {
 
     command <<<
 
+        # grab samtools version
+        samtools --version | awk '/samtools/ {print $2}' | tee VERSION
+
         samtools addreplacerg -r ID:~{sample_name} -r LB:L1 -r SM:~{sample_name} -o ~{sample_name}_addRG.bam ~{bam}
 
     >>>
 
     output {
         File rgbam = "${sample_name}_addRG.bam"
+        String samtools_version_staphb = read_string("VERSION")
     }
 
     runtime {
@@ -115,6 +137,10 @@ task variant_calling {
 
     command <<<
 
+    # grab ivar and samtools versions
+    ivar version | awk '/version/ {print $3}' | tee VERSION_ivar
+    samtools --version | awk '/samtools/ {print $2}' | tee VERSION_samtools
+
     samtools mpileup -A -aa -d 600000 -B -Q 20 -q 0 -f ~{ref} ~{bam} | tee >(cut -f1-4 > ~{sample_name}_depth.tsv) | \
     ivar variants -p ~{sample_name}_variants.tsv -q 20 -t 0.0 -r ~{ref} -g ~{ref_gff}
     
@@ -123,6 +149,8 @@ task variant_calling {
     output {
         File variants = "~{sample_name}_variants.tsv"
         File depth = "~{sample_name}_depth.tsv"
+        String samtools_version_andersenlabapps = read_string("VERSION_samtools")
+        String ivar_version = read_string("VERSION_ivar")
 
     }
 
