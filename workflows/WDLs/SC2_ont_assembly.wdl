@@ -168,7 +168,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:6.4.6"
+        docker:    "genomicpariscentre/guppy:latest"
     }
 }
 
@@ -197,7 +197,7 @@ task Read_Filtering {
     }
 
     runtime {
-        docker: "quay.io/staphb/artic-ncov2019:1.3.0"
+        docker: "quay.io/staphb/artic-ncov2019:latest"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
