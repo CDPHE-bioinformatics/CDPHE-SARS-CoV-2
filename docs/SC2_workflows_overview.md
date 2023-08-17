@@ -11,6 +11,22 @@ The following documentation describes the Colorado Department of Public Health a
 
 Our SARS-CoV-2 whole genome reference-based assembly workflows are highly adaptable and facilitate the assembly and analysis of tiled amplicon based sequencing data of SARS-CoV-2. The workflows can accomodate various amplicon primer schemes including Artic V3, Artic V4, Artic V4.1, Artic V5.3.2 and Midnight, as well as diffent sequencing technology platforms including both Illumina and Oxford Nanopore Technology (ONT). 
 
+<br/>
+
+## Workflows
+
+Below is a list of available workflows and a brief description of the workflow. A full description of each workflow can be found on each workflow's readme page. 
+
+<br/>
+
+|Workflow Name | Description |
+|--------------|-------------|
+|``SC2_illumina_pe_assembly``| SARS-CoV-2 reference based assembly of Illumina pair-end data. |
+|``SC2_ont_assembly``| SARS-CoV-2 reference based assmbly of Oxford Nanopore Techonlogy (ONT) data. |
+|``SC2_lineage_calling_and_results``| Performs lineage calling on SARS-CoV-2 consensus sequences using Pangolin and Nextclade and generates a summary report of assembly metrics. Should be run following an assembly workflow. |
+|``SC2_wastewater_variant_calling``| Uses Freyja to recover relative lineage abundances from wastewater sample which is considered a mixed SARS-CoV-2 samples. |
+|``SC2_multifasta_lineage_calling``| Performs lineage calling on SARS-CoV-2 consensus sequences using Pangolin.|
+
 
 <br/>
 
@@ -19,18 +35,21 @@ Our SARS-CoV-2 whole genome reference-based assembly workflows are highly adapta
 <br/>
 
 ### Clinical SC2 sequence assembly and lineage calling
-Sequence assembly and lineage calling for clincial SC2 samples requries two workflows. We first run either the ``SC2_illumina_pe_assembly`` or ``SC2_ont_assembly`` workflows which perform quality control, trimming, and filtering of raw reads followed by reference-guided whole genome assembly and finally intermediate files and consensus sequences are transferred to a local GCP bucket for storage. Next, we run the ``SC2_lineage_calling_and_results`` which uses Pangolin and Nextclade to peform clade and lineage assignment on the consesnus assemblies and produce a results summary file for the set of sequences analyzed. 
+Sequence assembly and lineage calling for clincial SC2 samples requries two workflows (see figure 1). We first run either the ``SC2_illumina_pe_assembly`` or ``SC2_ont_assembly`` workflows which perform quality control, trimming, and filtering of raw reads followed by reference-guided whole genome assembly and finally intermediate files and consensus sequences are transferred to a local GCP bucket for storage. Next, we run the ``SC2_lineage_calling_and_results`` which uses Pangolin and Nextclade to peform clade and lineage assignment on the consesnus assemblies and produce a results summary file for the set of sequences analyzed. 
 
 If you already have a multifasta, you can use the ``SC2_multifasta_lineage_calling`` workflow for clade and lineage assignment. 
 
 <br/>
 
 ### Wastewater SC2 sequence assembly and variant calling
-Sequence assembly and variant calling for wastewater SC2 samples requires three workflows. Similiar to our process for clinical SC2 samples, we first run either the ``SC2_illumina_pe_assembly`` or ``SC2_ont_assembly`` workflows which perform quality control, trimming, and filtering of raw reads followed by reference-guided whole genome assembly and finally intermediate files and consensus sequences are transferred to a local GCP bucket for storage. Next, we run the ``SC2_lineage_calling_and_results`` which uses Pangolin and Nextclade to peform clade and lineage assignment on the consesnus assemblies and produce a results summary file for the set of sequences analyzed. Finally we run the ``SC2_wastewater_variant_calling workflow`` which uses Freyja to recover relative lineage abundances from wastewater sample which is considered a mixed SC2 sample. 
+Sequence assembly and variant calling for wastewater SC2 samples requires three workflows (See figure 1). Similiar to our process for clinical SC2 samples, we first run either the ``SC2_illumina_pe_assembly`` or ``SC2_ont_assembly`` workflows which perform quality control, trimming, and filtering of raw reads followed by reference-guided whole genome assembly and finally intermediate files and consensus sequences are transferred to a local GCP bucket for storage. Next, we run the ``SC2_lineage_calling_and_results`` which uses Pangolin and Nextclade to peform clade and lineage assignment on the consesnus assemblies and produce a results summary file for the set of sequences analyzed. Finally we run the ``SC2_wastewater_variant_calling workflow`` which uses Freyja to recover relative lineage abundances from wastewater sample which is considered a mixed SC2 sample. 
 
 <br/>
 
-![SC2 high level overview workflow diagram](./workflow_diagrams/SC2_overview_workflow_diagram.png "high level overview of SC2 workflow")
+Figure 1. High level overview of workflow process for clinical and wastewater SC2 samples.
+
+
+![SC2 high level overview workflow diagram](./figures/SC2_readme_diagrams-overview.drawio.png "high level overview of SC2 workflow")
 
 <br/>
 

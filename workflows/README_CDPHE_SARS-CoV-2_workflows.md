@@ -331,7 +331,7 @@ This workflow was developed for the assembly of Oxford Nanopore Technology (ONT)
 
   | column header | description | 
 |-------------------|-----------------|
-| ``entity:sample_id``| column with the list of sample names. (e.g. ``entity:covwwt-0203_id``) |
+| ``entity:sample_id``| column with the list of sample names. (e.g. ``entity:covwwt-0203-miseq_id``) |
 | ``index_1_id``| the ont barcode associated with the sample|
 |``fastq_dir``| the google bucket path with the set of fastq files|
 |``out_dir``| User defined google bucket for where the files will be transfered during the transfer workflows. |

@@ -78,6 +78,7 @@ workflow SC2_lineage_calling_and_results {
 
     call create_version_capture_file {
         input: 
+            version_capture_lineage_calling_and_results_py_ = version_capture_lineage_calling_and_results_py,
             pangolin_version = pangolin.pangolin_version,
             nextclade_version = nextclade.nextclade_version,
             project_name = project_name,
@@ -112,6 +113,7 @@ workflow SC2_lineage_calling_and_results {
         File sequencing_results_csv = results_table.sequencing_results_csv
         File wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
         File version_capture_lineage_calling_and_results = create_version_capture.version_capture_lineage_calling_and_results
+        String transfer_date_lineage_calling = transfer.tranfer_date_lineage_calling
     }
 }
 
@@ -351,7 +353,16 @@ task transfer {
         gsutil -m cp ~{sequencing_results_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{wgs_horizon_report_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{version_capture_lineage_calling_and_results} ~{outdirpath}/summary_results/
+
+        transferdate=`date`
+        echo $transferdate | tee TRANSFERDATE
+    
     >>>
+
+    output {
+
+        transfer_date_lineage_calling = read_string("TRANSFER_DATE")
+    }
 
     runtime {
         docker: "theiagen/utility:1.0"

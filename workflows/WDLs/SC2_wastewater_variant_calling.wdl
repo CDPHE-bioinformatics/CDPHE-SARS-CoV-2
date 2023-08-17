@@ -16,6 +16,9 @@ workflow SC2_wastewater_variant_calling {
         File covid_genome
         File covid_gff
 
+        # python scripts
+        File version_capture_wwt_variant_calling_py
+
     }
     # secret variables
     String project_name = project_name_array[0]
@@ -74,6 +77,10 @@ workflow SC2_wastewater_variant_calling {
             samtools_version_staphb = add_RG.samtools_version_staphb,
             samtools_version_andersenlabapps = variant_calling.samtools_version_andersenlabapps,
             ivar_version = variant_calling.ivar_version,
+            freyja_version = freyja_demix.freyja_version,
+            analysis_date = workflow_version_capture.analysis_date,
+            workflow_version = workflow_version_capture.workflow_version,
+            version_catpure_wwt_variant_calling_py = version_capture_wwt_variant_calling_py 
             
 
     }
@@ -85,7 +92,8 @@ workflow SC2_wastewater_variant_calling {
             demix = freyja_demix.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
             demix_aggregated = freyja_aggregate.demix_aggregated,
-            out_dir = out_dir
+            outdirpath = outdirpath,
+            version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
     }
 
     output {
@@ -96,6 +104,8 @@ workflow SC2_wastewater_variant_calling {
         File demix_aggregated = freyja_aggregate.demix_aggregated
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
         String transfer_date = transfer_outputs.transfer_date
+        File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
+        String transfer_date_wwt_variant_calling = transfer.transfer_date_wwt_variant_calling
     }
 }
 
@@ -174,6 +184,8 @@ task freyja_demix {
 
     command <<<
 
+        freyja --version | tee VERSION
+
         #get updated lineages for demixing
         mkdir ./freyja_db
         freyja update --outdir ./freyja_db
@@ -187,10 +199,11 @@ task freyja_demix {
 
     output {
         File demix = "${sample_name}_demixed.tsv"
+        String freyja_version = read_string("VERSION")
     }
 
     runtime {
-        docker: "staphb/freyja"
+        docker: "staphb/freyja:latest"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -244,7 +257,7 @@ task freyja_aggregate {
     }
 
     runtime {
-        docker: "staphb/freyja"
+        docker: "staphb/freyja:latest"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -275,6 +288,45 @@ task combine_mutations_tsv {
     }
 }
 
+task create_version_capture_file {
+    input {
+        File version_capture_wwt_variant_calling_py
+        String project_name
+        String samtools_version_staphb
+        String samtools_version_andersenlabapps
+        String ivar_version
+        String freyja_version
+        String analysis_date
+        String workflow_version
+    }
+
+    command <<<
+    
+        python ~{version_capture_wwt_variant_calling_py} \
+        --project_name "~{project_name}" \
+        --samtools_version_staphb "~{samtools_version_staphb}" \
+        --samtools_version_andersenlabapps "~{samtools_version_andersenlabapps}" \
+        --ivar_version "~{ivar_version}" \
+        --freyja_version "~{freyja_version}" \
+        --analysis_date "~{analysis_date}" \
+        --workflow_version "~{workflow_version}"
+
+    >>>
+
+    output {
+        File version_capture_wwt_variant_calling = 'version_capture_wwt_variant_calling_~{project_name}_v~{workflow_version}.csv'
+    }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v4"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
+    }
+}
+
 task transfer_outputs {
     input {
         Array[File] variants
@@ -282,11 +334,11 @@ task transfer_outputs {
         Array[File] demix
         File demix_aggregated
         File combined_mutations_tsv
-        String out_dir
+        File version_capture_wwt_variant_calling
+        String outdirpath
 
     }
 
-    String outdirpath = sub(out_dir, "/$", "")
 
     command <<<
 
@@ -295,14 +347,14 @@ task transfer_outputs {
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}/waste_water_variant_calling/
-    
+        gsutil -m cp ~{version_capture_wwt_variant_calling} ~{outdirpath}/summary_results/
 
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
     >>>
 
     output {
-        String transfer_date = read_string("TRANSFERDATE")
+        String transfer_date_wwt_variant_calling = read_string("TRANSFERDATE")
     }
 
     runtime {

@@ -172,7 +172,7 @@ workflow SC2_illumina_pe_assembly {
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
 
         File version_capture_illumina_pe_assembly = create_version_capture.assembly_software_file
-        String assembly_transfer_date = transfer.assembly_transfer_date
+        String transfer_date_assembly = transfer.transfer_date_assembly
 
     }
 }
@@ -647,7 +647,7 @@ task transfer {
 
 
     output {
-        String assembly_transfer_date = read_string("TRANSFERDATE")
+        String transfer_date_assembly = read_string("TRANSFERDATE")
     }
 
     runtime {

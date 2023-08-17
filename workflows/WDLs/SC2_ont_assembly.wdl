@@ -115,7 +115,6 @@ workflow SC2_ont_assembly {
         cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
         variants = Medaka.variants,
         renamed_consensus = rename_fasta.renamed_consensus,
-        percent_cvg_csv = calc_percent_cvg.percent_cvg_csv,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
         version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
     }
@@ -141,7 +140,7 @@ workflow SC2_ont_assembly {
         File primer_site_variants = get_primer_site_variants.primer_site_variants
 
         File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
-        String assembly_transfer_date = transfer.assembly_transfer_date
+        String transfer_date_assembly = transfer.transfer_date_assembly
     }
 }
 
@@ -201,7 +200,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:6.4.6"
+        docker:    "genomicpariscentre/guppy:latest"
     }
 }
 
@@ -230,7 +229,7 @@ task Read_Filtering {
     }
 
     runtime {
-        docker: "quay.io/staphb/artic-ncov2019:1.3.0"
+        docker: "quay.io/staphb/artic-ncov2019:latest"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
@@ -484,9 +483,7 @@ task get_primer_site_variants {
 }
 
 task create_version_catpure_file {
-    meta {
-        description: "pull assembly software into a sinlge tsv file"
-    }
+
 
     input {
         File version_capture_ont_assembly_py
