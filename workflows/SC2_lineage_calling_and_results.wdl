@@ -69,7 +69,7 @@ workflow SC2_lineage_calling_and_results {
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
         terra_data_table_path = terra_data_table_path,
-        workflow_version = workflow_version_capture.workflow_version
+        workflow_version = workflow_version_capture.workflow_version,
         analysis_date = workflow_version_capture.analysis_date
     }
 
@@ -78,18 +78,18 @@ workflow SC2_lineage_calling_and_results {
 
     call create_version_capture_file {
         input: 
-            version_capture_lineage_calling_and_results_py_ = version_capture_lineage_calling_and_results_py,
+            version_capture_lineage_calling_and_results_py = version_capture_lineage_calling_and_results_py,
             pangolin_version = pangolin.pangolin_version,
             nextclade_version = nextclade.nextclade_version,
             project_name = project_name,
-            workflow_version = worfklow_verion_capture.workflow_version,
+            workflow_version = workflow_version_capture.workflow_version,
             analysis_date = workflow_version_capture.analysis_date,
             pangolin_lineage_csv = pangolin.lineage
     }
 
     call transfer {
       input:
-          out_dir = out_dir,
+          outdirpath = outdirpath,
           cat_fastas = concatenate.cat_fastas,
           pangolin_lineage = pangolin.lineage,
           nextclade_json = nextclade.nextclade_json,
@@ -98,7 +98,7 @@ workflow SC2_lineage_calling_and_results {
           nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
           sequencing_results_csv = results_table.sequencing_results_csv,
           wgs_horizon_report_csv = results_table.wgs_horizon_report_csv,
-          assembly_software_file = assembly_software_file
+          version_capture_lineage_calling_and_results = create_version_capture_file.version_capture_lineage_calling_and_results
     }
 
     output {
@@ -112,8 +112,8 @@ workflow SC2_lineage_calling_and_results {
         File nextclade_variants_csv = parse_nextclade.nextclade_variants_csv
         File sequencing_results_csv = results_table.sequencing_results_csv
         File wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
-        File version_capture_lineage_calling_and_results = create_version_capture.version_capture_lineage_calling_and_results
-        String transfer_date_lineage_calling = transfer.tranfer_date_lineage_calling
+        File version_capture_lineage_calling_and_results = create_version_capture_file.version_capture_lineage_calling_and_results
+        String transfer_date_lineage_calling = transfer.transfer_date_lineage_calling
     }
 }
 
@@ -361,7 +361,7 @@ task transfer {
 
     output {
 
-        transfer_date_lineage_calling = read_string("TRANSFER_DATE")
+        String transfer_date_lineage_calling = read_string("TRANSFER_DATE")
     }
 
     runtime {

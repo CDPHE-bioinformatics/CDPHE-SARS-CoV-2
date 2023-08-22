@@ -105,11 +105,11 @@ workflow SC2_illumina_pe_assembly {
 
     call create_version_capture_file {
         input:
-            concat_assembly_software_illumina_py = concat_assembly_software_illumina_py,
+            version_capture_illumina_pe_assembly_py = version_capture_illumina_pe_assembly_py,
             project_name = project_name,
-            seqyclearn_version = seqyclean.seqyclean_version,
-            fastqc_version = fastqc.fastqc_version,
-            bwa_version = align_reads.assembler_version,
+            seqyclean_version = seqyclean.seqyclean_version,
+            fastqc_version = fastqc_raw.fastqc_version,
+            bwa_version = align_reads.bwa_version,
             samtools_version_broadinstitute = align_reads.samtools_version_broadinstitute,
             ivar_version = ivar_consensus.ivar_version,
             samtools_version_andersenlabapps = ivar_consensus.samtools_version_andersenlabapps,
@@ -141,7 +141,7 @@ workflow SC2_illumina_pe_assembly {
             cov_s_gene_out = bam_stats.cov_s_gene_out,
             cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out,
             renamed_consensus = rename_fasta.renamed_consensus,
-            version_capture_illumina_pe_assembly = create_version_capture_file.assembly_software_file
+            version_capture_illumina_pe_assembly = create_version_capture_file.version_capture_illumina_pe_assembly
     }
 
     output {
@@ -172,7 +172,7 @@ workflow SC2_illumina_pe_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
 
-        File version_capture_illumina_pe_assembly = create_version_capture.assembly_software_file
+        File version_capture_illumina_pe_assembly = create_version_capture_file.version_capture_illumina_pe_assembly
         String transfer_date_assembly = transfer.transfer_date_assembly
 
     }
@@ -239,7 +239,7 @@ task fastqc {
         File fastqc1_zip = "${fastq1_name}_fastqc.zip"
         File fastqc2_html = "${fastq2_name}_fastqc.html"
         File fastqc2_zip = "${fastq2_name}_fastqc.zip"
-        String fastqc_version = read_string ("VERSION")
+        String fastqc_version = read_string("VERSION")
 
     }
 
@@ -551,7 +551,7 @@ task create_version_capture_file {
     input {
         File version_capture_illumina_pe_assembly_py
         String project_name
-        String seqyclearn_version
+        String seqyclean_version
         String fastqc_version
         String bwa_version
         String samtools_version_broadinstitute

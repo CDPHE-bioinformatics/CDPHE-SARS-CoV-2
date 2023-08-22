@@ -486,7 +486,7 @@ task get_primer_site_variants {
     }
 }
 
-task create_version_catpure_file {
+task create_version_capture_file {
 
 
     input {
@@ -553,7 +553,7 @@ task transfer {
     command <<<
 
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
-        gsutil -m cp ~{trimsort_bai} ~{outdi_path}/alignments/
+        gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/
         gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{samstats_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
@@ -573,7 +573,7 @@ task transfer {
 
 
     output {
-        String assembly_transfer_date = read_string("TRANSFERDATE")
+        String transfer_date_assembly = read_string("TRANSFERDATE")
     }
 
     runtime {

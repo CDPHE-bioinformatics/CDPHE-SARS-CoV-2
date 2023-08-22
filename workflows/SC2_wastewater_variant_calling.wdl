@@ -71,16 +71,16 @@ workflow SC2_wastewater_variant_calling {
         input:
     }
     
-    call create_version_catpure_file {
+    call create_version_capture_file {
         input:
+            version_capture_wwt_variant_calling_py = version_capture_wwt_variant_calling_py
             project_name = project_name,
-            samtools_version_staphb = add_RG.samtools_version_staphb,
-            samtools_version_andersenlabapps = variant_calling.samtools_version_andersenlabapps,
-            ivar_version = variant_calling.ivar_version,
-            freyja_version = freyja_demix.freyja_version,
+            samtools_version_staphb = select_all(add_RG.samtools_version_staphb)[0],
+            samtools_version_andersenlabapps = select_all(variant_calling.samtools_version_andersenlabapps)[0],
+            ivar_version = select_all(variant_calling.ivar_version)[0],
+            freyja_version = select_all(freyja_demix.freyja_version)[0],
             analysis_date = workflow_version_capture.analysis_date,
-            workflow_version = workflow_version_capture.workflow_version,
-            version_catpure_wwt_variant_calling_py = version_capture_wwt_variant_calling_py 
+            workflow_version = workflow_version_capture.workflow_version
             
 
     }
@@ -103,9 +103,8 @@ workflow SC2_wastewater_variant_calling {
         Array[File] demix = freyja_demix.demix
         File demix_aggregated = freyja_aggregate.demix_aggregated
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
-        String transfer_date = transfer_outputs.transfer_date
         File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
-        String transfer_date_wwt_variant_calling = transfer.transfer_date_wwt_variant_calling
+        String transfer_date_wwt_variant_calling = transfer_outputs.transfer_date_wwt_variant_calling
     }
 }
 
