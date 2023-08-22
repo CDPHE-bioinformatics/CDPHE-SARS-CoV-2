@@ -13,6 +13,8 @@ This workflow should be run following assembly with one of the SC2 reference bas
 
 <br/>
 
+![SC2_illumina_pe_assembly.wdl workflow diagram](./figures/SC2_lineage_calling_and_results.drawio.png "SC2_illumina_pe_assembly.wdl workflow diagram")
+
 ## Inputs and Setup
 <br/>
 

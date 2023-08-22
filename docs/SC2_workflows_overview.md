@@ -15,7 +15,7 @@ Our SARS-CoV-2 whole genome reference-based assembly workflows are highly adapta
 
 ## Workflows
 
-Below is a list of available workflows and a brief description of the workflow. A full description of each workflow can be found on each workflow's readme page. 
+Below is a list of available and maintained workflows and a brief description of the workflow. A full description of each workflow can be found on each workflow's readme page. 
 
 <br/>
 
@@ -49,7 +49,7 @@ Sequence assembly and variant calling for wastewater SC2 samples requires three 
 Figure 1. High level overview of workflow process for clinical and wastewater SC2 samples.
 
 
-![SC2 high level overview workflow diagram](./figures/SC2_readme_diagrams-overview.drawio.png "high level overview of SC2 workflow")
+![SC2 high level overview workflow diagram](./figures/SC2_overview.drawio.png "high level overview of SC2 workflow")
 
 <br/>
 

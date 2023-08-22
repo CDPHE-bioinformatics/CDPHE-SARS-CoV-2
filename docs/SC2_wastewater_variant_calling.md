@@ -10,6 +10,10 @@ Prior to running this workflow, one fo teh reference based assembly workflows sh
 
 <br/>
 
+![SC2_illumina_pe_assembly.wdl workflow diagram](./figures/SC2_wastewater_variant_calling.drawio.png "SC2_illumina_pe_assembly.wdl workflow diagram")
+
+<br/>
+
 ## Inputs and Setup
 <br/>
 
