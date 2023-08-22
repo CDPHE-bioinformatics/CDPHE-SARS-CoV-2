@@ -95,6 +95,7 @@ workflow SC2_ont_assembly {
             project_name = project_name, 
             guppy_version = Demultiplex.guppy_version,
             artic_version = Medaka.artic_version,
+            medaka_version = Medaka.medaka_version,
             samtools_version = Bam_stats.samtools_version,
             pyScaf_version = Scaffold.pyScaf_version,
             bcftools_version = get_primer_site_variants.bcftools_version,
@@ -251,7 +252,9 @@ task Medaka {
         cp /primer-schemes/nCoV-2019/V3/nCoV-2019.reference.fasta ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.reference.fasta
         cp ~{primer_bed} ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.scheme.bed
         
-        artic -v > VERSION
+        artic -v > VERSION_artic
+        medaka --version | tee VERSION_medaka
+
         artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_name}_~{index_1_id}
 
     >>>
@@ -263,7 +266,8 @@ task Medaka {
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
-        String artic_version = read_string("VERSION")
+        String artic_version = read_string("VERSION_artic")
+        String medaka_version = read_string("VERSION_medaka")
     }
 
     runtime {
@@ -490,6 +494,7 @@ task create_version_catpure_file {
         String project_name
         String guppy_version
         String artic_version
+        String medaka_version
         String samtools_version
         String pyScaf_version
         String bcftools_version
@@ -503,6 +508,7 @@ task create_version_catpure_file {
         --project_name "~{project_name}" \
         --guppy_version "~{guppy_version}" \
         --artic_version "~{artic_version}" \
+        --medaka_version "~{medaka_version}" \
         --samtools_version "~{samtools_version}" \
         --pyScaf_version "~{pyScaf_version}" \
         --bcftools_version "~{bcftools_version}" \

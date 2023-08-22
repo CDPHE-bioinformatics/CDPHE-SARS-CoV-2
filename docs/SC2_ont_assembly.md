@@ -1,7 +1,7 @@
 # SC2_ont_assembly Workflow
 
 ## Overview
-This workflow was developed for the assembly of Oxford Nanopore Technology (ONT) read data following the ARTIC SARS-CoV-2 sequencing protocol and using the ONT native barcoding kit. This workflow assumes that basecalling and conversion of fast5 files into fastq has already occurred (e.g. using MinKNOW). The workflow accepts "sample" as the root entity type. The following steps are preformed during the workflow:
+This workflow was developed for the assembly of Oxford Nanopore Technology (ONT) read data following the ARTIC SARS-CoV-2 sequencing protocol and using the ONT native barcoding kit. This workflow is based off of the nCoV-2019 novel coronavirus bioinfroamtics protocol: https://artic.network/ncov-2019/ncov2019-bioinformatics-sop.html. This workflow assumes that basecalling and conversion of fast5 files into fastq has already occurred (e.g. using MinKNOW). The workflow accepts "sample" as the root entity type. The following steps are preformed during the workflow:
 
 1. Barcodes are removed from raw sequencing reads using guppy_barcoder.
 2. Raw reads are quality filtered using guppyplex.
