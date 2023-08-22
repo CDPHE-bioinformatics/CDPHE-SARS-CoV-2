@@ -7,12 +7,12 @@ task workflow_version_capture {
   meta {
     "capture version release"
   }
-  command {
+  command <<<
     Workflow_Version="SC2 v2.0.0"
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
     echo "$Workflow_Version" > WORKFLOW_VERSION
-  }
+  >>>
   output {
     String analysis_date = read_string("TODAY")
     String workflow_version = read_string("WORKFLOW_VERSION")
