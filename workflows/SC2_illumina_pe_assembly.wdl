@@ -21,7 +21,7 @@ workflow SC2_illumina_pe_assembly {
         # python scripts
         File    calc_percent_coverage_py
         File    s_gene_amplicons
-        File    version_capture_illumina_pe_asembly_py
+        File    version_capture_illumina_pe_assembly_py
     }
 
     # secrete variables
@@ -565,7 +565,7 @@ task create_version_capture_file {
 
     command <<<
 
-        python ~{version_capture_illumina_pe_asembly_py} \
+        python ~{version_capture_illumina_pe_assembly_py} \
         --project_name "~{project_name}" \
         --seqyclean_version "~{seqyclean_version}" \
         --fastqc_version "~{fastqc_version}" \

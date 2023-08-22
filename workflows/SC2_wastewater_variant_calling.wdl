@@ -71,7 +71,7 @@ workflow SC2_wastewater_variant_calling {
         input:
     }
     
-    call_create_version_catpure_file {
+    call create_version_catpure_file {
         input:
             project_name = project_name,
             samtools_version_staphb = add_RG.samtools_version_staphb,

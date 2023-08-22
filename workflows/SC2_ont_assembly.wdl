@@ -553,7 +553,7 @@ task transfer {
     command <<<
 
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
-        gsutil -m cp ~{trimstor_bai} ~{outdi_path}/alignments/
+        gsutil -m cp ~{trimsort_bai} ~{outdi_path}/alignments/
         gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{samstats_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/

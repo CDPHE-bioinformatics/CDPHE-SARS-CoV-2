@@ -52,7 +52,7 @@ workflow SC2_lineage_calling_and_results {
         nextclade_json = nextclade.nextclade_json
     }
 
-    call version capture.workflow_version_catpure as workflow_version_capture{
+    call version_capture.workflow_version_catpure as workflow_version_capture{
         input:
     }
 
