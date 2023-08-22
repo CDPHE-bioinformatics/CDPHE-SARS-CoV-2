@@ -1,7 +1,7 @@
 version 1.0
 
 # import workflow version capture task
-import "../tasks/version_capture_task" as version_capture
+import "../tasks/version_capture_task.wdl" as version_capture
 
 workflow SC2_lineage_calling_and_results {
 
