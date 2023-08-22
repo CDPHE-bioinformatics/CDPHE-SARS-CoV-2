@@ -5,7 +5,7 @@ task workflow_version_capture {
     String? timezone
   }
   meta {
-    "capture version release"
+    description: "capture version release"
   }
   command <<<
     Workflow_Version="SC2 v2.0.0"
