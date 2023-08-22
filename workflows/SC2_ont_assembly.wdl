@@ -366,14 +366,14 @@ task Scaffold {
 
     Int disk_size = 3 * ceil(size(fasta, "GB"))
 
-    command {
+    command <<<
         
         # grab version
         pyScaf.py --version | tee VERSION
 
-        pyScaf.py -f ${fasta} -o ${sample_name}_${index_1_id}_consensus_scaffold.fa -r ${ref}
+        pyScaf.py -f ~{fasta} -o ~{sample_name}_~{index_1_id}_consensus_scaffold.fa -r ~{ref}
 
-    }
+    >>>
 
     output {
         File scaffold_consensus = "${sample_name}_${index_1_id}_consensus_scaffold.fa"
@@ -399,11 +399,11 @@ task rename_fasta {
         File fasta
     }
 
-    command {
+    command <<<
 
         sed 's/>.*/>CO-CDPHE-~{sample_name}/' ~{fasta} > ~{sample_name}_consensus_renamed.fa
 
-    }
+    >>>
 
     output {
 
@@ -428,11 +428,11 @@ task calc_percent_cvg {
         File calc_percent_coverage_py
     }
 
-    command {
+    command <<<
         python ~{calc_percent_coverage_py} \
           --sample_name ~{sample_name} \
           --fasta_file ~{fasta}
-      }
+      >>>
 
     output {
 

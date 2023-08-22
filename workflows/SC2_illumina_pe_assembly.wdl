@@ -185,13 +185,13 @@ task seqyclean {
         File fastq_2
     }
 
-    command {
+    command <<<
 
-        seqyclean -minlen 70 -qual 30 30 -gz -1 ${fastq_1} -2 ${fastq_2} -c ${contam} -o ${sample_name}_clean
+        seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_1} -2 ~{fastq_2} -c ~{contam} -o ~{sample_name}_clean
 
         # grab seqyclean version 
         seqyclean -h | awk '/Version/ {print $2}' | tee VERSION
-    }
+    >>>
 
     output {
 
@@ -223,14 +223,14 @@ task fastqc {
     String fastq1_name = basename(basename(basename(fastq_1, ".gz"), ".fastq"), ".fq")
     String fastq2_name = basename(basename(basename(fastq_2, ".gz"), ".fastq"), ".fq")
 
-    command {
+    command <<<
 
-        fastqc --outdir $PWD ${fastq_1} ${fastq_2}
+        fastqc --outdir $PWD ~{fastq_1} ~{fastq_2}
 
         # grab version 
         fastqc --version | awk '/FastQC/ {print $2}' | tee VERSION
 
-    }
+    >>>
 
     output {
 
@@ -263,20 +263,20 @@ task align_reads {
         String sample_name
     }
 
-    command {
+    command <<<
 
         # echo bwa 0.7.17-r1188 > VERSION
         # grab version bwa and samtools versions
         bwa 2>&1 | awk '/Version/{print $2}' | tee VERSION_bwa
         samtools --version | awk '/samtools/ {print $2}' |tee VERSION_samtools
         
-        bwa index -p reference.fasta -a is ${ref}
-        bwa mem -t 2 reference.fasta ${fastq_1} ${fastq_2} | \
+        bwa index -p reference.fasta -a is ~{ref}
+        bwa mem -t 2 reference.fasta ~{fastq_1} ~{fastq_2} | \
         samtools sort | \
-        samtools view -u -h -F 4 -o ./${sample_name}_aln.sorted.bam
-        samtools index ./${sample_name}_aln.sorted.bam
+        samtools view -u -h -F 4 -o ./~{sample_name}_aln.sorted.bam
+        samtools index ./~{sample_name}_aln.sorted.bam
 
-    }
+    >>>
 
     output {
 
@@ -307,13 +307,13 @@ task ivar_trim {
         String sample_name
     }
 
-    command {
+    command <<<
 
-        ivar trim -e -i ${bam} -b ${primers} -p ${sample_name}_trim.bam
-        samtools sort ${sample_name}_trim.bam -o ${sample_name}_trim.sort.bam
-        samtools index ${sample_name}_trim.sort.bam
+        ivar trim -e -i ~{bam} -b ~{primers} -p ~{sample_name}_trim.bam
+        samtools sort ~{sample_name}_trim.bam -o ~{sample_name}_trim.sort.bam
+        samtools index ~{sample_name}_trim.sort.bam
 
-    }
+    >>>
 
     output {
 
@@ -344,13 +344,13 @@ task ivar_var {
         File bam
     }
 
-    command {
+    command <<<
 
-        samtools faidx ${ref}
-        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ${ref} ${bam} | \
-        ivar variants -p ${sample_name}_variants -q 20 -t 0.6 -m 10 -r ${ref} -g ${gff}
+        samtools faidx ~{ref}
+        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        ivar variants -p ~{sample_name}_variants -q 20 -t 0.6 -m 10 -r ~{ref} -g ~{gff}
 
-    }
+    >>>
 
     output {
 
@@ -519,11 +519,12 @@ task calc_percent_cvg {
 
     }
 
-    command {
+    command <<<
         python ~{calc_percent_coverage_py} \
           --sample_name ~{sample_name} \
           --fasta_file ~{fasta}
-      }
+      >>>
+
     output {
 
       File percent_cvg_csv  = "${sample_name}_consensus_cvg_stats.csv"

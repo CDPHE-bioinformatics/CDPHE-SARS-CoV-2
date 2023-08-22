@@ -151,14 +151,14 @@ task pangolin {
         File cat_fastas
     }
 
-    command {
+    command <<<
 
         pangolin --version > VERSION
 
         pangolin --skip-scorpio --expanded-lineage --threads 32 \
-            --outfile pangolin_lineage_report.csv ${cat_fastas}
+            --outfile pangolin_lineage_report.csv ~{cat_fastas}
 
-    }
+    >>>
 
     output {
 
@@ -184,11 +184,11 @@ task nextclade {
         File multifasta
     }
 
-    command {
+    command <<<
         nextclade --version > VERSION
         nextclade dataset get --name='sars-cov-2' --reference='MN908947' --output-dir='data/sars-cov-2'
         nextclade run --input-dataset data/sars-cov-2 --output-json nextclade.json --output-csv nextclade.csv ${multifasta}
-    }
+    >>>
 
     output {
         String nextclade_version = read_string("VERSION")
@@ -213,12 +213,12 @@ task parse_nextclade {
       String project_name
     }
 
-    command {
+    command <<<
       python ~{nextclade_json_parser_py} \
           --nextclade_json ~{nextclade_json} \
           --project_name ~{project_name}
 
-    }
+    >>>
 
     output {
       File nextclade_clades_csv = '${project_name}_nextclade_results.csv'
