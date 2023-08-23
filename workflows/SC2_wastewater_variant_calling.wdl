@@ -73,7 +73,7 @@ workflow SC2_wastewater_variant_calling {
     
     call create_version_capture_file {
         input:
-            version_capture_wwt_variant_calling_py = version_capture_wwt_variant_calling_py
+            version_capture_wwt_variant_calling_py = version_capture_wwt_variant_calling_py,
             project_name = project_name,
             samtools_version_staphb = select_all(add_RG.samtools_version_staphb)[0],
             samtools_version_andersenlabapps = select_all(variant_calling.samtools_version_andersenlabapps)[0],
