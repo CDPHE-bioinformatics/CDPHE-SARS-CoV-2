@@ -100,7 +100,8 @@ workflow SC2_ont_assembly {
             pyScaf_version = Scaffold.pyScaf_version,
             bcftools_version = get_primer_site_variants.bcftools_version,
             analysis_date = workflow_version_capture.analysis_date,
-            workflow_version = workflow_version_capture.workflow_version 
+            workflow_version = workflow_version_capture.workflow_version,
+            version_capture_ont_assembly_py = version_capture_ont_assembly_py 
     }
 
     call transfer {
