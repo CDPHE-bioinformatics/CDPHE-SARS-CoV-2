@@ -514,7 +514,7 @@ task create_version_capture_file {
         --pyScaf_version "~{pyScaf_version}" \
         --bcftools_version "~{bcftools_version}" \
         --analysis_date "~{analysis_date}" \
-        --workflow_verion "~{workflow_version}" 
+        --workflow_version "~{workflow_version}" 
 
 
     >>>

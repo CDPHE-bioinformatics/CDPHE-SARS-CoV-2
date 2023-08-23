@@ -68,7 +68,7 @@ if __name__ == '__main__':
     df.at[6, 'version'] = samtools_version_andersenlabapps
 
     df.at[7, 'software'] = 'samtools'
-    df.at[7 'associated_docker_container'] = 'staphb/samtools'
+    df.at[7, 'associated_docker_container'] = 'staphb/samtools'
     df.at[7, 'version'] = samtools_version_staphb
 
     # add project name and anaysis date
