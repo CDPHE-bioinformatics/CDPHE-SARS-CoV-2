@@ -31,7 +31,7 @@ if __name__ == '__main__':
     samtools_version = options.samtools_version
     pyScaf_version = options.pyScaf_version
     bcftools_version = options.bcftools_version
-    analysis_date = options.anlaysis_date
+    analysis_date = options.analysis_date
     workflow_version = options.workflow_version
 
     df = pd.DataFrame()

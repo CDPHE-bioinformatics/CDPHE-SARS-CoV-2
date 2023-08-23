@@ -8,7 +8,7 @@ task workflow_version_capture {
     description: "capture version release"
   }
   command <<<
-    Workflow_Version="SC2 v2.0.0"
+    Workflow_Version="v2.0.0"
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
     echo "$Workflow_Version" > WORKFLOW_VERSION
