@@ -313,7 +313,7 @@ task create_version_capture_file {
     >>>
 
     output {
-        File version_capture_wwt_variant_calling = 'version_capture_wwt_variant_calling_~{project_name}_v~{workflow_version}.csv'
+        File version_capture_wwt_variant_calling = 'version_capture_wwt_variant_calling_~{project_name}_~{workflow_version}.csv'
     }
 
     runtime {

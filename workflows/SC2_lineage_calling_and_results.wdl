@@ -314,7 +314,7 @@ task create_version_capture_file {
     >>>
 
     output {
-        File version_capture_lineage_calling_and_results = "version_capture_lineage_calling_and_results_~{project_name}_v~{workflow_version}.csv"
+        File version_capture_lineage_calling_and_results = "version_capture_lineage_calling_and_results_~{project_name}_~{workflow_version}.csv"
     }
 
     runtime {

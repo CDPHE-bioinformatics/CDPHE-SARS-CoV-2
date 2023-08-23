@@ -60,5 +60,5 @@ if __name__ == '__main__':
     col_order = ['project_name', 'analysis_date', 'software', 'associated_docker_container', 'version']
     df = df[col_order]
     
-    outfile = f'version_capture_wastewater_variant_calling_{project_name}_v{workflow_version}.csv'
+    outfile = f'version_capture_wastewater_variant_calling_{project_name}_{workflow_version}.csv'
     df.to_csv(outfile, index = False)

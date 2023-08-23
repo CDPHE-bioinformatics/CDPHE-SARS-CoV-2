@@ -520,7 +520,7 @@ task create_version_capture_file {
     >>>
 
     output {
-        File version_capture_ont_assembly = 'version_capture_ont_asembly_~{project_name}_v~{workflow_version}.csv'
+        File version_capture_ont_assembly = 'version_capture_ont_asembly_~{project_name}_~{workflow_version}.csv'
     }
 
     runtime {
