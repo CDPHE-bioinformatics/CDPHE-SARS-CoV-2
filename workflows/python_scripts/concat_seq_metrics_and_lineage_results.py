@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+# update 2022-08-23
+## change data type for pango_version (no big changes)
 
 # updated 2022-03-04
 ## added assembler version
@@ -54,7 +56,7 @@ pangolin_data_types = {'taxon': object,
  'scorpio_conflict': 'float64',
  'scorpio_notes': 'object',
  'version': object,
- 'pangolin_version': 'float64',
+ 'pangolin_version': object,
  'scorpio_version': object,
  'constellation_version': object,
  'is_designated': 'bool',
