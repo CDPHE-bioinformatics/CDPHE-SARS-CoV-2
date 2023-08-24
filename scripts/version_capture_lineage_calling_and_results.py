@@ -26,7 +26,7 @@ if __name__ == '__main__':
     nextclade_version = options.nextclade_version
     analysis_date = options.analysis_date
     workflow_version = options.workflow_version
-    pangolin_lineage_csv = options.workflow_version
+    pangolin_lineage_csv = options.pangolin_lineage_csv
 
     # read in pangolin_lineage_csv and pull out versions in file
     pangolin_df = pd.read_csv(pangolin_lineage_csv)
