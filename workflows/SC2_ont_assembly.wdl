@@ -370,7 +370,7 @@ task Scaffold {
     command <<<
         
         # grab version
-        pyScaf.py --version | tee VERSION
+        pyScaf.py --version > VERSION 2>&1 # writes version to stderr instead of stdout
 
         pyScaf.py -f ~{fasta} -o ~{sample_name}_~{index_1_id}_consensus_scaffold.fa -r ~{ref}
 
