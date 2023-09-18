@@ -178,17 +178,18 @@ task pangolin {
     }
 }
 
+
 task nextclade {
 
     input {
         File multifasta
     }
 
-    command <<<
+    command {
         nextclade --version > VERSION
         nextclade dataset get --name='sars-cov-2' --reference='MN908947' --output-dir='data/sars-cov-2'
         nextclade run --input-dataset data/sars-cov-2 --output-json nextclade.json --output-csv nextclade.csv ${multifasta}
-    >>>
+    }
 
     output {
         String nextclade_version = read_string("VERSION")

@@ -272,7 +272,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
     sample_name = pangolin.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     pangolin.insert(value = sample_name, column = 'sample_name', loc = 0)
-    drop_columns = ['fasta_header', 'pango_designation_version', 'pangolin_scorpio_version'
+    drop_columns = ['fasta_header', 'pango_designation_version', 'pangolin_scorpio_version',
                     'pangolin_constellation_version']
     pangolin = pangolin.drop(columns = drop_columns)
     pangolin = pangolin.set_index('sample_name')
@@ -330,7 +330,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     j = j[primary_columns]
 
 
-    outfile = f'{project_name}_sequencing_results_v{workflow_version}.csv' 
+    outfile = f'{project_name}_sequencing_results_{workflow_version}.csv' 
     j.to_csv(outfile, index = False)
 
     return j
@@ -366,42 +366,7 @@ def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
     
     return aggregated_lineage_df
 
-def make_wgs_horizon_output (results_df, project_name, pangolin_version, 
-                             analysis_date, workflow_version):
 
-    results_df['report_to_epi'] = ''
-    results_df['Run_Date'] = str(date.today())
-
-    # rename columns 
-    results_df = results_df.rename(columns = {'hsn' : 'accession_id', 'pango_designation_version' : 'pangoLEARN_version'})
-    
-    results_df['pangolin_version'] = pangolin_version
-    results_df['workflow_version'] = workflow_version
-    results_df['anlaysis_date'] = analysis_date
-
-    col_order = ['accession_id', 'percent_coverage', 'pangolin_lineage', 'pangolin_version',
-                 'report_to_epi', 'Run_Date', 'pangoLEARN_version']
-    
-   
-    results_df = results_df[col_order]
-
-    outfile = "%s_wgs_horizon_report.csv" % project_name
-    results_df.to_csv(outfile, index = False)
-
-
-    # for new horizon parser when ready...
-    # results_df['pangolin_version'] = pangolin_version
-    # results_df['workflow_version'] = workflow_version
-    # results_df['anlaysis_date'] = analysis_date
-
-    # col_order2 = ['hsn', 'percent_coverage', 'mean_depth', 'pangolin_lineage',
-    #               'aggregated_lineage', 'expanded_lineage', 'pangolin_version',
-    #               'project_name', 'platform', 'workflow_version', 'anlaysis_date', 'run_date']
-
-    # results_df = results_df[col_order2]
-
-    # outfile = "%s_wgs_horizon_report.csv" % project_name
-    # results_df.to_csv(outfile, index = False)
 
 
 if __name__ == '__main__':
@@ -449,10 +414,6 @@ if __name__ == '__main__':
                                 spike_variants_df = spike_variants_df,
                                 workflow_version = workflow_version)
     
-    # create wgs horizon output
-    make_wgs_horizon_output(project_name = project_name,
-                            results_df=results_df,
-                            workflow_version = workflow_version,
-                            analysis_date = analysis_date)
+
     
 
