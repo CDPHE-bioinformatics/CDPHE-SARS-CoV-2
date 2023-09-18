@@ -97,7 +97,6 @@ workflow SC2_lineage_calling_and_results {
           nextclade_clades_csv = parse_nextclade.nextclade_clades_csv,
           nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
           sequencing_results_csv = results_table.sequencing_results_csv,
-          wgs_horizon_report_csv = results_table.wgs_horizon_report_csv,
           version_capture_lineage_calling_and_results = create_version_capture_file.version_capture_lineage_calling_and_results
     }
 
@@ -337,7 +336,6 @@ task transfer {
         File nextclade_clades_csv
         File nextclade_variants_csv
         File sequencing_results_csv
-        File wgs_horizon_report_csv
         File version_capture_lineage_calling_and_results
     }
 
@@ -351,7 +349,6 @@ task transfer {
         gsutil -m cp ~{nextclade_clades_csv} ~{outdirpath}/nextclade_out/
         gsutil -m cp ~{nextclade_variants_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{sequencing_results_csv} ~{outdirpath}/summary_results/
-        gsutil -m cp ~{wgs_horizon_report_csv} ~{outdirpath}/summary_results/
         gsutil -m cp ~{version_capture_lineage_calling_and_results} ~{outdirpath}/summary_results/
 
         transferdate=`date`
