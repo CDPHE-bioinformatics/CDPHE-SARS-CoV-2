@@ -111,7 +111,6 @@ workflow SC2_lineage_calling_and_results {
         File nextclade_clades_csv = parse_nextclade.nextclade_clades_csv
         File nextclade_variants_csv = parse_nextclade.nextclade_variants_csv
         File sequencing_results_csv = results_table.sequencing_results_csv
-        File wgs_horizon_report_csv = results_table.wgs_horizon_report_csv
         File version_capture_lineage_calling_and_results = create_version_capture_file.version_capture_lineage_calling_and_results
         String transfer_date_lineage_calling = transfer.transfer_date_lineage_calling
     }
@@ -274,7 +273,7 @@ task results_table {
 
     output {
         File sequencing_results_csv = "~{project_name}_sequencing_results_v~{workflow_version}.csv"
-        File wgs_horizon_report_csv = "~{project_name}_wgs_horizon_report.csv"
+
     }
 
     runtime {
