@@ -352,7 +352,7 @@ task transfer {
         gsutil -m cp ~{version_capture_lineage_calling_and_results} ~{outdirpath}/summary_results/
 
         transferdate=`date`
-        echo $transferdate | tee TRANSFERDATE
+        echo $transferdate | tee TRANSFER_DATE
     
     >>>
 
