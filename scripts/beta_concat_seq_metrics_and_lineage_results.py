@@ -284,7 +284,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
     # read in nextclade csv
     nextclade = pd.read_csv(nextclade_clades_csv, dtype = nextclade_clades_data_types)
-    nextclade = nextclade.drop(columns = ['fasta_header', 'hsn', 'nextclade_version'])
+    nextclade = nextclade.drop(columns = ['fasta_header', 'hsn'])
     nextclade['nextclade_version'] = nextclade_version
     nextclade = nextclade.set_index('sample_name')
 

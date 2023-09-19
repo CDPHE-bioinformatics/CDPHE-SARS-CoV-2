@@ -271,7 +271,7 @@ task results_table {
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results_v~{workflow_version}.csv"
+        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version}.csv"
 
     }
 
