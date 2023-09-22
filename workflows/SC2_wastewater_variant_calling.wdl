@@ -222,7 +222,7 @@ task mutations_tsv {
         sed 's/$/\t~{sample_name}/' ~{variants} > ~{sample_name}_variants_temp.tsv
 
         #cut columns needed for allele counts and frequency output and then rename the column headers
-        awk '{print($20,"\t",$1,"\t",$2,"\t",$3,"\t",$4,"\t",$17,"\t",$19,"\t",$5,"\t",$8,"\t",$11,"\t",$15)}' ~{sample_name}_variants_temp.tsv | sed -e '1s/~{sample_name}/sample_name/' -e '1s/REGION/ref_genome/' -e '1s/POS/position/' -e '1s/REF/ref_nucl/' -e '1s/ALT/alt_nucl/' -e '1s/REF_AA/ref_aa/' -e '1s/ALT_AA/alt_aa/' -e '1s/REF_DP/ref_depth/' -e '1s/ALT_DP/alt_depth/' -e '1s/ALT_FREQ/alt_freq/' -e '1s/GFF_FEATURE/gff_feature/' > ~{sample_name}_mutations.tsv
+        awk '{print($20,"\t",$1,"\t",$2,"\t",$3,"\t",$4,"\t",$5,"\t",$7,"\t",$16,"\t",$17,"\t",$8,"\t",$10,"\t",$18,"\t",$19,"\t",$11,"\t",$12,"\t",$13,"\t",$14,"\t",$15,"\t")}' ~{sample_name}_variants_temp.tsv | sed -e '1s/~{sample_name}/sample_name/' -e '1s/REGION/ref_genome/' -e '1s/POS/position/' -e '1s/REF/ref_nucl/' -e '1s/ALT/alt_nucl/' -e '1s/REF_DP/ref_depth/' -e '1s/REF_QUAL/ref_qual/' -e '1s/REF_CODON/ref_codon/' -e '1s/REF_AA/ref_aa/' -e '1s/ALT_DP/alt_depth/' -e '1s/ALT_QUAL/alt_qual/' -e '1s/ALT_CODON/alt_codon/' -e '1s/ALT_AA/alt_aa/' -e '1s/ALT_FREQ/alt_freq/' -e '1s/TOTAL_DP/total_depth/' -e '1s/PVAL/pval/' -e '1s/PASS/pass/' -e '1s/GFF_FEATURE/gff_feature/' > ~{sample_name}_mutations.tsv
     >>>
 
     output {
