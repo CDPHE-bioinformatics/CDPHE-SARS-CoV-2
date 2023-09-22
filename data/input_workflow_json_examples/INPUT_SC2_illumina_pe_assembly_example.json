@@ -1,9 +1,0 @@
-{"SC2_illumina_pe_assembly.adapater_and_contaminants" : "${workspace.adapaters_and_contaminants_fa}",             
-"SC2_illumina_pe_assembly.covid_genome" : "${workspace.covid_genome_fa}",             
-"SC2_illumina_pe_assembly.covid_gff" : "${workspace.covid_genome_gff}",             
-"SC2_illumina_pe_assembly.fastq_1" : "${this.fastq_1}",            
-"SC2_illumina_pe_assembly.fastq_2" : "${this.fastq_2}",            
-"SC2_illumina_pe_assembly.primer_bed" : "${workspace.artic_v4-1_bed}",            
-"SC2_illumina_pe_assembly.s_gene_amplicons" : "${workspace.artic_v4-1_s_gene_amplicons}",            
-"SC2_illumina_pe_assembly.calc_percent_coverage_py" : "${workspace.covid_calc_percent_coverage_py}",            
-"SC2_illumina_pe_assembly.sample_name" : "${this.entity-name_id}"}

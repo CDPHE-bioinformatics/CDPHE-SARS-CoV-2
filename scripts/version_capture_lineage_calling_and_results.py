@@ -58,13 +58,9 @@ if __name__ == '__main__':
     df.at[4, 'associated_docker_container'] = 'staphb/pangolin'
     df.at[4, 'version'] = pangolin_constellation_version
 
-    df.at[5, 'software'] = 'pangolin_version'
-    df.at[5, 'associated_docker_container'] = 'staphb/pangolin'
-    df.at[5, 'version'] = pangolin_version
-
-    df.at[6, 'software'] = 'nextclade_version'
-    df.at[6, 'associated_docker_container'] = 'nextstrain/nextclade'
-    df.at[6, 'version'] = nextclade_version
+    df.at[5, 'software'] = 'nextclade_version'
+    df.at[5, 'associated_docker_container'] = 'nextstrain/nextclade'
+    df.at[5, 'version'] = nextclade_version
 
     # add project name and anaysis date
     df['project_name'] = project_name
