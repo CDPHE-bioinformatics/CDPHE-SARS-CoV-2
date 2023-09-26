@@ -2,12 +2,17 @@
     {
         "pangolin_lineage": "XBB.1.5",
         "expanded_lineage": "XBB.1.5",
-        "date_added": ""
+        "date_added": "1991-01-19"
     },
     {
         "pangolin_lineage": "XBB.1.16",
         "expanded_lineage": "XBB.1.16",
         "date_added": "2023-04-18"
+    },
+    {
+        "pangolin_lineage": "XBB.1.16.1",
+        "expanded_lineage": "XBB.1.16.1",
+        "date_added": "2023-05-30"
     },
     {
         "pangolin_lineage": "XBB.1.9.1",
@@ -22,12 +27,17 @@
     {
         "pangolin_lineage": "XBB",
         "expanded_lineage": "XBB",
-        "date_added": ""
+        "date_added": "1991-01-18"
     },
     {
         "pangolin_lineage": "XBB.1.5.1",
         "expanded_lineage": "XBB.1.5.1",
         "date_added": "2023-03-10"
+    },
+    {
+        "pangolin_lineage": "XBB.1.5.10",
+        "expanded_lineage": "XBB.1.5.10",
+        "date_added": "2023-06-13"
     },
     {
         "pangolin_lineage": "XBB.2.3",
@@ -42,71 +52,176 @@
     {
         "pangolin_lineage": "BQ.1.1",
         "expanded_lineage": "B.1.1.529.5.3.1.1.1.1.1.1",
-        "date_added": ""
+        "date_added": "1991-01-15"
     },
     {
         "pangolin_lineage": "CH.1.1",
         "expanded_lineage": "B.1.1.529.2.75.3.4.1.1.1.1",
-        "date_added": ""
+        "date_added": "1991-01-17"
     },
     {
         "pangolin_lineage": "BQ.1",
         "expanded_lineage": "B.1.1.529.5.3.1.1.1.1.1",
-        "date_added": ""
+        "date_added": "1991-01-14"
     },
     {
         "pangolin_lineage": "BN.1",
         "expanded_lineage": "B.1.1.529.2.75.5.1",
-        "date_added": ""
+        "date_added": "1991-01-16"
     },
     {
         "pangolin_lineage": "BA.5",
         "expanded_lineage": "B.1.1.529.5",
-        "date_added": ""
+        "date_added": "1991-01-10"
     },
     {
         "pangolin_lineage": "BA.1.1",
         "expanded_lineage": "B.1.1.529.1.1",
-        "date_added": ""
+        "date_added": "1991-01-02"
     },
     {
         "pangolin_lineage": "BA.2",
         "expanded_lineage": "B.1.1.529.2",
-        "date_added": ""
+        "date_added": "1991-01-03"
     },
     {
         "pangolin_lineage": "BA.2.75",
         "expanded_lineage": "B.1.1.529.2.75",
-        "date_added": ""
+        "date_added": "1991-01-05"
     },
     {
         "pangolin_lineage": "BA.2.12.1",
         "expanded_lineage": "B.1.1.529.2.12.1",
-        "date_added": ""
+        "date_added": "1991-01-04"
     },
     {
         "pangolin_lineage": "BA.2.75.2",
         "expanded_lineage": "B.1.1.529.2.75.2",
-        "date_added": ""
+        "date_added": "1991-01-06"
     },
     {
         "pangolin_lineage": "BF.7",
         "expanded_lineage": "B.1.1.529.5.2.1.7",
-        "date_added": ""
+        "date_added": "1991-01-12"
     },
     {
         "pangolin_lineage": "BA.5.2.6",
         "expanded_lineage": "B.1.1.529.5.2.6",
-        "date_added": ""
+        "date_added": "1991-01-11"
     },
     {
         "pangolin_lineage": "BF.11",
         "expanded_lineage": "B.1.1.529.5.2.1.11",
-        "date_added": ""
+        "date_added": "1991-01-13"
     },
     {
         "pangolin_lineage": "BA.4.6",
         "expanded_lineage": "B.1.1.529.4.6",
-        "date_added": ""
+        "date_added": "1991-01-09"
+    },
+    {
+        "pangolin_lineage": "BA.1",
+        "expanded_lineage": "B.1.1.529.1",
+        "date_added": "1991-01-01"
+    },
+    {
+        "pangolin_lineage": "BA.3",
+        "expanded_lineage": "B.1.1.529.3",
+        "date_added": "1991-01-07"
+    },
+    {
+        "pangolin_lineage": "BA.4",
+        "expanded_lineage": "B.1.1.529.4",
+        "date_added": "1991-01-08"
+    },
+    {
+        "pangolin_lineage": "EU.1.1",
+        "expanded_lineage": "XBB.1.5.26.1.1",
+        "date_added": "2023-06-30"
+    },
+    {
+        "pangolin_lineage": "FE.1.1",
+        "expanded_lineage": "XBB.1.18.1.1.1",
+        "date_added": "2023-06-30"
+    },
+    {
+        "pangolin_lineage": "XBB.1.5.68",
+        "expanded_lineage": "XBB.1.5.68",
+        "date_added": "2023-06-30"
+    },
+    {
+        "pangolin_lineage": "XBB.1.5.59",
+        "expanded_lineage": "XBB.1.5.59",
+        "date_added": "2023-07-13"
+    },
+    {
+        "pangolin_lineage": "XBB.1.16.6",
+        "expanded_lineage": "XBB.1.16.6",
+        "date_added": "2023-07-13"
+    },
+    {
+        "pangolin_lineage": "EG.5",
+        "expanded_lineage": "XBB.1.9.2.5",
+        "date_added": "2023-07-13"
+    },
+    {
+        "pangolin_lineage": "FL.1.5.1",
+        "expanded_lineage": "XBB.1.9.1.1.5.1",
+        "date_added": "2023-08-08"
+    },
+    {
+        "pangolin_lineage": "XBB.1.5.72",
+        "expanded_lineage": "XBB.1.5.72",
+        "date_added": "2023-07-28"
+    },
+    {
+        "pangolin_lineage": "XBB.1.5.70",
+        "expanded_lineage": "XBB.1.5.70",
+        "date_added": "2023-08-25"
+    },
+    {
+        "pangolin_lineage": "EG.6.1",
+        "expanded_lineage": "XBB.1.9.2.6.1",
+        "date_added": "2023-08-25"
+    },
+    {
+        "pangolin_lineage": "XBB.1.16.11",
+        "expanded_lineage": "XBB.1.16.11",
+        "date_added": "2023-08-25"
+    },
+    {
+        "pangolin_lineage": "GE.1",
+        "expanded_lineage": "XBB.2.3.10.1",
+        "date_added": "2023-08-25"
+    },
+    {
+        "pangolin_lineage": "FD.1.1",
+        "expanded_lineage": "XBB.1.5.15.1.1",
+        "date_added": "2023-08-25"
+    },
+    {
+        "pangolin_lineage": "HV.1",
+        "expanded_lineage": "XBB.1.9.2.5.1.6.1",
+        "date_added": "2023-09-07"
+    },
+    {
+        "pangolin_lineage": "XBB.42.2",
+        "expanded_lineage": "XBB.42.2",
+        "date_added": "2023-09-07"
+    },
+    {
+        "pangolin_lineage": "XBB.2.3.8",
+        "expanded_lineage": "XBB.2.3.8",
+        "date_added": "2023-09-07"
+    },
+    {
+        "pangolin_lineage": "XBB.1.42.2",
+        "expanded_lineage": "XBB.1.42.2",
+        "date_added": "2023-09-26"
+    },
+    {
+        "pangolin_lineage": "B.1.1.529",
+        "expanded_lineage": "B.1.1.529",
+        "date_added": "2023-09-26"
     }
 ]
