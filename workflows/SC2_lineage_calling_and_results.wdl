@@ -45,16 +45,18 @@ workflow SC2_lineage_calling_and_results {
             multifasta = concatenate.cat_fastas
     }
 
+    call version_capture.workflow_version_capture as workflow_version_capture{
+        input:
+    }
+
     call parse_nextclade {
       input:
         project_name = project_name,
         nextclade_json_parser_py = nextclade_json_parser_py,
-        nextclade_json = nextclade.nextclade_json
+        nextclade_json = nextclade.nextclade_json,
+        workflow_version = workflow_version_capture.workflow_version
     }
 
-    call version_capture.workflow_version_capture as workflow_version_capture{
-        input:
-    }
 
     call results_table {
       input:
@@ -210,18 +212,20 @@ task parse_nextclade {
       File nextclade_json_parser_py
       File nextclade_json
       String project_name
+      String workflow_version
     }
 
     command <<<
       python ~{nextclade_json_parser_py} \
           --nextclade_json ~{nextclade_json} \
-          --project_name ~{project_name}
+          --project_name ~{project_name} \
+          --workflow_version ~{workflow_version}
 
     >>>
 
     output {
-      File nextclade_clades_csv = '${project_name}_nextclade_results.csv'
-      File nextclade_variants_csv = '${project_name}_nextclade_variant_summary.csv'
+      File nextclade_clades_csv = '${project_name}_nextclade_results_${workflow_version}.csv'
+      File nextclade_variants_csv = '${project_name}_nextclade_variant_summary_${workflow_version}.csv'
     }
 
     runtime {

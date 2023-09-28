@@ -36,6 +36,7 @@ def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument("--nextclade_json",  help="nextclade json file")
     parser.add_argument('--project_name')
+    parser.add_argument('--workflow_version')
     options = parser.parse_args(args)
     return options
 
@@ -47,7 +48,7 @@ def get_sample_name_from_fasta_header(fasta_header):
     else:
         return fasta_header
 
-def extract_variant_list(json_path, project_name):
+def extract_variant_list(json_path, project_name, workflow_version):
 
     # create pd data frame to fill
     df = pd.DataFrame()
@@ -162,11 +163,11 @@ def extract_variant_list(json_path, project_name):
     df['end_nuc_pos'] = nuc_end_list
 
     # save df    
-    path = f'{project_name}_nextclade_variant_summary.csv' 
+    path = f'{project_name}_nextclade_variant_summary_{workflow_version}.csv' 
     df.to_csv(path, index=False)
     
     
-def get_nextclade(json_path, project_name):
+def get_nextclade(json_path, project_name, workflow_version):
 
     # create pd data frame to fill
     sample_name_list = []
@@ -203,7 +204,7 @@ def get_nextclade(json_path, project_name):
     df['total_AA_deletions'] = totalAADeletions_list
     
     # save df to file
-    path = f'{project_name}_nextclade_results.csv' 
+    path = f'{project_name}_nextclade_results {workflow_version}.csv' 
     df.to_csv(path, index = False)
 
     
@@ -212,7 +213,8 @@ if __name__ == '__main__':
     options = getOptions()
     nextclade_json = options.nextclade_json
     project_name = options.project_name
+    workflow_version = options.workflow_version
 
-    get_nextclade(json_path = nextclade_json, project_name = project_name)
-    extract_variant_list(json_path = nextclade_json, project_name = project_name)
+    get_nextclade(json_path = nextclade_json, project_name = project_name, workflow_version = workflow_version)
+    extract_variant_list(json_path = nextclade_json, project_name = project_name, workflow_version  = workflow_version)
         
