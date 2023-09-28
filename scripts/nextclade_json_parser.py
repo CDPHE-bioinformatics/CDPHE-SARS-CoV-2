@@ -204,7 +204,7 @@ def get_nextclade(json_path, project_name, workflow_version):
     df['total_AA_deletions'] = totalAADeletions_list
     
     # save df to file
-    path = f'{project_name}_nextclade_results {workflow_version}.csv' 
+    path = f'{project_name}_nextclade_results_{workflow_version}.csv' 
     df.to_csv(path, index = False)
 
     
