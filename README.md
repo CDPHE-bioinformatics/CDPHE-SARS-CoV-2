@@ -49,7 +49,7 @@ Sequence assembly and variant calling for wastewater SC2 samples requires three 
 Figure 1. High level overview of workflow process for clinical and wastewater SC2 samples.
 
 
-![SC2 high level overview workflow diagram](./img/SC2_overview_workflow_diagram.png "High level overview of SC2 workflow")
+![SC2 high level overview workflow diagram](./docs/img/SC2_overview_workflow_diagram.png "High level overview of SC2 workflow")
 
 <br/>
 
