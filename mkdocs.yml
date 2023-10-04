@@ -1,0 +1,14 @@
+site_name: CDPHE-SARS-CoV-2
+site_url: https://CDPHE-bioinformatics.github.io/CDPHE-SARS-CoV-2/
+nav:
+        - Home: index.md
+        - Setup: setup.md
+        - Indel Finder: indel_finder.md
+        - Python Scripts: python_scripts.md
+        - Assembly Workflows: assembly_workflow.md
+        - Transfer Workflows: transfer_workflow.md
+        - Results Workflows: results_workflow.md
+        - Wastewater Workflow: wastewater_workflow.md
+        - Nextstrain Workflow: nextstrain_workflow.md
+theme:
+        name: readthedocs
