@@ -21,5 +21,3 @@ This workflow transfers the output file generated from the publicly available [s
 | `tip_frequencies_json` | this.tip_frequencies_json                    | `gs://{user_defined_gcp_bucket}/tip_frequencies_json/` |
 | `unmasked_snps`        | this.unmasked_snps                           | `gs://{user_defined_gcp_bucket}/unmasked_snps/`        |
 | `out_dir`              | `gs://{user_defined_gcp_bucket}/assemblies/` | NA                                                     |
-
-![SC2_nextstrain_transfer.wdl workflow diagram](img/SC2_nextstrain_transfer.png)
