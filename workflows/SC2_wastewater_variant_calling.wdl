@@ -183,7 +183,8 @@ task freyja_demix {
 
     command <<<
 
-        freyja --version | tee VERSION
+        freyja --version | awk '{print $NF}' | tee VERSION
+        # $NF refers to the last feild split by white spaces
 
         #get updated lineages for demixing
         mkdir ./freyja_db
