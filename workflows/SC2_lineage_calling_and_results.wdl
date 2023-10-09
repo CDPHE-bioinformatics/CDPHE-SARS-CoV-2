@@ -153,7 +153,7 @@ task pangolin {
 
     command <<<
 
-        pangolin --version | awk -F ' ' '{print $NF}' > VERSION
+        pangolin --version | awk '/pangolin/ {print $2}' > VERSION
 
         pangolin --skip-scorpio --expanded-lineage --threads 32 \
             --outfile pangolin_lineage_report.csv ~{cat_fastas}
@@ -186,7 +186,7 @@ task nextclade {
     }
 
     command <<
-        nextclade --version | awk '{print $NF}' > VERSION
+        nextclade --version | awk '/nextclade/ {print $2}' > VERSION
         nextclade dataset get --name='sars-cov-2' --reference='MN908947' --output-dir='data/sars-cov-2'
         nextclade run --input-dataset data/sars-cov-2 --output-json nextclade.json --output-csv nextclade.csv ${multifasta}
     >>
