@@ -146,7 +146,7 @@ task variant_calling {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "andersenlabapps/ivar:1.4.2"
+        docker:    "staphb/ivar:1.4.2"
     } 
 }
 
