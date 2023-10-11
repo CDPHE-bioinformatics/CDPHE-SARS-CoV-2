@@ -146,7 +146,7 @@ task variant_calling {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "andersenlabapps/ivar:1.3.1"
+        docker:    "andersenlabapps/ivar:1.4.2"
     } 
 }
 
@@ -200,7 +200,7 @@ task csq_and_mutations {
 
     runtime {
 
-        docker: "staphb/bcftools"
+        docker: "staphb/bcftools:1.18"
         memory: "16 GB"
         cpu: 4
         disks: "local-disk 100 SSD"
