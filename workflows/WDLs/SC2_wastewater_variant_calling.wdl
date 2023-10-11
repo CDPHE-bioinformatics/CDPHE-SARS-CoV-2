@@ -12,6 +12,10 @@ workflow SC2_wastewater_variant_calling {
         # reference files/workspace data
         File covid_genome
         File covid_gff
+        File covid_gff3
+
+        # Python script
+        File ivar_variants_to_vcf
 
     }
     # secret variables
@@ -36,16 +40,19 @@ workflow SC2_wastewater_variant_calling {
 
         }
 
-        call freyja_demix {
+        call ivar_to_vcf_and_csq {
             input:
-                variants = variant_calling.variants,
-                depth = variant_calling.depth,
+                variants_ivar = variant_calling.variants_ivar,
+                ivar_variants_to_vcf = ivar_variants_to_vcf,
+                ref = covid_genome,
+                ref_gff3 = covid_gff3,
                 sample_name = id_bam.left
         }
-        
-        call mutations_tsv {
+
+        call freyja_demix {
             input:
-                variants = variant_calling.variants,
+                variants = ivar_to_vcf_and_csq.variants_bcftools,
+                depth = variant_calling.depth,
                 sample_name = id_bam.left
         }
     }
@@ -57,12 +64,12 @@ workflow SC2_wastewater_variant_calling {
 
     call combine_mutations_tsv {
         input:
-            mutations_tsv = mutations_tsv.mutations_tsv
+            mutations_tsv = ivar_to_vcf_and_csq.mutations_tsv
     }
     
     call transfer_outputs {
         input:
-            variants = variant_calling.variants,
+            variants = ivar_to_vcf_and_csq.variants_bcftools,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
@@ -72,7 +79,7 @@ workflow SC2_wastewater_variant_calling {
 
     output {
         Array[File] addrg_bam = add_RG.rgbam
-        Array[File] variants = variant_calling.variants
+        Array[File] variants = ivar_to_vcf_and_csq.variants_bcftools
         Array[File] depth = variant_calling.depth
         Array[File] demix = freyja_demix.demix
         File demix_aggregated = freyja_aggregate.demix_aggregated
@@ -121,7 +128,7 @@ task variant_calling {
     >>>
 
     output {
-        File variants = "~{sample_name}_variants.tsv"
+        File variants_ivar = "~{sample_name}_variants.tsv"
         File depth = "~{sample_name}_depth.tsv"
 
     }
@@ -136,6 +143,40 @@ task variant_calling {
         docker:    "andersenlabapps/ivar:1.3.1"
     } 
 }
+
+task ivar_to_vcf_and_csq {
+    input {
+        File variants_ivar
+        File ivar_variants_to_vcf
+        File ref
+        File ref_gff3
+        String sample_name
+    }
+
+    command <<<
+
+        python ~{ivar_variants_to_vcf} ~{variants_ivar} ~{sample_name}.vcf
+        bcftools csq -f ~{ref} -g ~{ref_gff3} ~{sample_name}.vcf -Ov -o ~{sample_name}_variants.vcf
+        bcftools query -f '[%CHROM\t%SAMPLE\t%POS\t%REF\t%ALT\t%REF_DP\t%ALT_DP\t%AF\t%DP\t%FILTER\t%INFO/GFF_FEATURE\t%INFO/REF_CODON\t%INFO/REF_AA\t%INFO/ALT_CODON\t%INFO/ALT_AA\t%INFO/POS_AA\t%TBCSQ\n]' ~{sample_name}_variants.vcf > ~{sample_name}_variants_formatted.tsv
+        echo -e "ref_genome\tsample_name\tposition\tref_nucl\talt_nucl\tref_dp\talt_dp\talt_freq\ttotal_dp\tpass\tgff_feature\tref_codon\tref_aa\talt_codon\talt_aa\tposition_aa\tbcsq" | cat - ~{sample_name}_variants_temp.tsv > ~{sample_name}_variants_formatted.tsv
+
+    >>>
+
+    output {
+        File variants_bcftools = "${sample_name}_variants.vcf"
+        File mutations_tsv = "${sample_name}_mutations.tsv"
+    }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v1"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
+    }
+}
+
 
 task freyja_demix {
     input {
@@ -167,34 +208,6 @@ task freyja_demix {
         cpu: 8
         disks: "local-disk 200 SSD"
         continueOnReturnCode: [0, 1]
-    }
-}
-
-task mutations_tsv {
-    input {
-        String sample_name
-        File variants
-    }
-
-    command <<<
-        
-        #add a column that is filled in with the sample name
-        sed 's/$/\t~{sample_name}/' ~{variants} > ~{sample_name}_variants_temp.tsv
-
-        #cut columns needed for allele counts and frequency output and then rename the column headers
-        awk '{print($20,"\t",$1,"\t",$2,"\t",$3,"\t",$4,"\t",$17,"\t",$19,"\t",$5,"\t",$8,"\t",$11)}' ~{sample_name}_variants_temp.tsv | sed -e '1s/~{sample_name}/sample_name/' -e '1s/REGION/ref_genome/' -e '1s/POS/position/' -e '1s/REF/ref_nucl/' -e '1s/ALT/alt_nucl/' -e '1s/REF_AA/ref_aa/' -e '1s/ALT_AA/alt_aa/' -e '1s/REF_DP/ref_depth/' -e '1s/ALT_DP/alt_depth/' -e '1s/ALT_FREQ/alt_freq/' > ~{sample_name}_mutations.tsv
-
-    >>>
-
-    output {
-        File mutations_tsv = "${sample_name}_mutations.tsv"
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 500 HDD"
     }
 }
 
@@ -230,7 +243,7 @@ task combine_mutations_tsv {
 
     command <<<
         
-        # combine the coutns and frequency files for all samples into one
+        # combine the counts and frequency files for all samples into one
         awk 'FNR==1 && NR!=1{next;}{print}' ~{sep=' ' mutations_tsv} >> combined_mutations.tsv
     
     >>>
