@@ -44,6 +44,12 @@ workflow SC2_wastewater_variant_calling {
             input:
                 variants_ivar = variant_calling.variants_ivar,
                 ivar_variants_to_vcf = ivar_variants_to_vcf,
+                sample_name = id_bam.left
+        }
+
+        call csq_and_mutations {
+            input:
+                vcf = ivar_to_vcf_and_csq.vcf,
                 ref = covid_genome,
                 ref_gff3 = covid_gff3,
                 sample_name = id_bam.left
@@ -51,7 +57,7 @@ workflow SC2_wastewater_variant_calling {
 
         call freyja_demix {
             input:
-                variants = ivar_to_vcf_and_csq.variants_bcftools,
+                variants = csq_and_mutations.variants_bcftools,
                 depth = variant_calling.depth,
                 sample_name = id_bam.left
         }
@@ -64,12 +70,12 @@ workflow SC2_wastewater_variant_calling {
 
     call combine_mutations_tsv {
         input:
-            mutations_tsv = ivar_to_vcf_and_csq.mutations_tsv
+            mutations_tsv = csq_and_mutations.mutations_tsv
     }
     
     call transfer_outputs {
         input:
-            variants = ivar_to_vcf_and_csq.variants_bcftools,
+            variants = csq_and_mutations.variants_bcftools,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
@@ -79,7 +85,7 @@ workflow SC2_wastewater_variant_calling {
 
     output {
         Array[File] addrg_bam = add_RG.rgbam
-        Array[File] variants = ivar_to_vcf_and_csq.variants_bcftools
+        Array[File] variants = csq_and_mutations.variants_bcftools
         Array[File] depth = variant_calling.depth
         Array[File] demix = freyja_demix.demix
         File demix_aggregated = freyja_aggregate.demix_aggregated
@@ -148,6 +154,32 @@ task ivar_to_vcf_and_csq {
     input {
         File variants_ivar
         File ivar_variants_to_vcf
+        String sample_name
+    }
+
+    command <<<
+
+        python ~{ivar_variants_to_vcf} ~{variants_ivar} ~{sample_name}.vcf
+
+    >>>
+
+    output {
+        File vcf = "${sample_name}.vcf"
+    }
+
+    runtime {
+
+      docker: "mchether/py3-bio:v1"
+      memory: "1 GB"
+      cpu: 4
+      disks: "local-disk 10 SSD"
+
+    }
+}
+
+task csq_and_mutations {
+    input {
+        File vcf
         File ref
         File ref_gff3
         String sample_name
@@ -155,8 +187,7 @@ task ivar_to_vcf_and_csq {
 
     command <<<
 
-        python ~{ivar_variants_to_vcf} ~{variants_ivar} ~{sample_name}.vcf
-        bcftools csq -f ~{ref} -g ~{ref_gff3} ~{sample_name}.vcf -Ov -o ~{sample_name}_variants.vcf
+        bcftools csq -f ~{ref} -g ~{ref_gff3} ~{vcf} -Ov -o ~{sample_name}_variants.vcf
         bcftools query -f '[%CHROM\t%SAMPLE\t%POS\t%REF\t%ALT\t%REF_DP\t%ALT_DP\t%AF\t%DP\t%FILTER\t%INFO/GFF_FEATURE\t%INFO/REF_CODON\t%INFO/REF_AA\t%INFO/ALT_CODON\t%INFO/ALT_AA\t%INFO/POS_AA\t%TBCSQ\n]' ~{sample_name}_variants.vcf > ~{sample_name}_variants_formatted.tsv
         echo -e "ref_genome\tsample_name\tposition\tref_nucl\talt_nucl\tref_dp\talt_dp\talt_freq\ttotal_dp\tpass\tgff_feature\tref_codon\tref_aa\talt_codon\talt_aa\tposition_aa\tbcsq" | cat - ~{sample_name}_variants_temp.tsv > ~{sample_name}_variants_formatted.tsv
 
@@ -169,10 +200,10 @@ task ivar_to_vcf_and_csq {
 
     runtime {
 
-      docker: "mchether/py3-bio:v1"
-      memory: "1 GB"
-      cpu: 4
-      disks: "local-disk 10 SSD"
+        docker: "staphb/bcftools"
+        memory: "16 GB"
+        cpu: 4
+        disks: "local-disk 100 SSD"
 
     }
 }
