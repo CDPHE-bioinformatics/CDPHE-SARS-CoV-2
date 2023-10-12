@@ -29,7 +29,7 @@ def make_dir(path):
 
 def ivar_variants_to_vcf(FileIn,FileOut,passOnly=False,minAF=0):
     filename = os.path.splitext(FileIn)[0]
-    sample_id = filename.split('_')[0]
+    sample_id = os.path.splitext(FileOut)[0]
     header = ('##fileformat=VCFv4.2\n'
               '##source=iVar\n'
               '##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">\n'
