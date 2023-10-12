@@ -40,7 +40,7 @@ workflow SC2_wastewater_variant_calling {
 
         }
 
-        call ivar_to_vcf_and_csq {
+        call ivar_to_vcf {
             input:
                 variants_ivar = variant_calling.variants_ivar,
                 ivar_variants_to_vcf = ivar_variants_to_vcf,
@@ -49,7 +49,7 @@ workflow SC2_wastewater_variant_calling {
 
         call csq_and_mutations {
             input:
-                vcf = ivar_to_vcf_and_csq.vcf,
+                vcf = ivar_to_vcf.vcf,
                 ref = covid_genome,
                 ref_gff3 = covid_gff3,
                 sample_name = id_bam.left
@@ -150,7 +150,7 @@ task variant_calling {
     } 
 }
 
-task ivar_to_vcf_and_csq {
+task ivar_to_vcf {
     input {
         File variants_ivar
         File ivar_variants_to_vcf
