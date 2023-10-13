@@ -76,6 +76,7 @@ workflow SC2_wastewater_variant_calling {
     call transfer_outputs {
         input:
             variants = csq_and_mutations.variants_bcftools,
+            mutations_tsv = csq_and_mutations.mutations_tsv,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
@@ -294,6 +295,7 @@ task combine_mutations_tsv {
 task transfer_outputs {
     input {
         Array[File] variants
+        Array[File] mutations_tsv
         Array[File] depth
         Array[File] demix
         File demix_aggregated
@@ -307,6 +309,7 @@ task transfer_outputs {
     command <<<
 
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' mutations_tsv} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
