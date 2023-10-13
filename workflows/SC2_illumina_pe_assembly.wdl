@@ -139,6 +139,8 @@ workflow SC2_illumina_pe_assembly {
             stats_out = bam_stats.stats_out,
             covhist_out = bam_stats.covhist_out,
             cov_out = bam_stats.cov_out,
+            depth_out = bam_stats.depth_out,
+            amplicon_depth_out = bam_stats.amplicon_depth_out,
             cov_s_gene_out = bam_stats.cov_s_gene_out,
             cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out,
             renamed_consensus = rename_fasta.renamed_consensus,
@@ -620,6 +622,8 @@ task transfer {
         File stats_out
         File covhist_out
         File cov_out
+        File depth_out
+        File amplicon_depth_out
         File cov_s_gene_out
         File cov_s_gene_amplicons_out
         File renamed_consensus
@@ -642,6 +646,8 @@ task transfer {
         gsutil -m cp ~{trimsort_bamindex} ~{outdirpath}/alignments/
         gsutil -m cp ~{variants} ~{outdirpath}/variants/
         gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{depth_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{amplicon_depth_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/

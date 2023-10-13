@@ -114,6 +114,8 @@ workflow SC2_ont_assembly {
         samstats_out = Bam_stats.stats_out,
         covhist_out = Bam_stats.covhist_out,
         cov_out = Bam_stats.cov_out,
+        depth_out = Bam_stats.depth_out,
+        amplicon_depth_out = Bam_stats.amplicon_depth_out,
         cov_s_gene_out = Bam_stats.cov_s_gene_out,
         cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
         variants = Medaka.variants,
@@ -550,6 +552,8 @@ task transfer {
         File samstats_out
         File covhist_out
         File cov_out
+        File depth_out
+        File amplicon_depth_out
         File cov_s_gene_out
         File cov_s_gene_amplicons_out
         File variants
@@ -567,6 +571,8 @@ task transfer {
         gsutil -m cp ~{samstats_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{depth_out} ~{outdirpath}/bam_stats/
+        gsutil -m cp ~{amplicon_depth_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{variants} ~{outdirpath}/variants/
