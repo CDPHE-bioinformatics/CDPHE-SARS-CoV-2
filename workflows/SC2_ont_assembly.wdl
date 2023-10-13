@@ -312,7 +312,7 @@ task Bam_stats {
         samtools coverage -o ~{sample_name}_~{index_1_id}_coverage.txt ~{bam}
 
         samtools depth -a -o ~{sample_name}_~{index_1_id}_depth.txt ~{bam}
-        samtools depth -b {primer_bed} -o ~{sample_name}_~{index_1_id}_amplicon_depth.txt ~{bam}
+        samtools depth -b ~{primer_bed} -o ~{sample_name}_~{index_1_id}_amplicon_depth.txt ~{bam}
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
