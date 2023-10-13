@@ -54,7 +54,8 @@ workflow SC2_ont_assembly {
             bai = Medaka.trimsort_bai,
             sample_name = sample_name,
             index_1_id = index_1_id,
-            s_gene_amplicons = s_gene_amplicons
+            s_gene_amplicons = s_gene_amplicons,
+            primer_bed = primer_bed
             
     }
     call Scaffold {
@@ -132,6 +133,8 @@ workflow SC2_ont_assembly {
         File samstats_out = Bam_stats.stats_out
         File covhist_out = Bam_stats.covhist_out
         File cov_out = Bam_stats.cov_out
+        File depth_out = Bam_stats.depth_out
+        File amplicon_depth_out = Bam_stats.amplicon_depth_out
         File cov_s_gene_out = Bam_stats.cov_s_gene_out
         File cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out
         File variants = Medaka.variants
@@ -287,6 +290,7 @@ task Bam_stats {
         File bam
         File bai
         File s_gene_amplicons
+        File primer_bed
     }
 
     Int disk_size = 3 * ceil(size(bam, "GB"))
@@ -305,6 +309,8 @@ task Bam_stats {
 
         samtools coverage -o ~{sample_name}_~{index_1_id}_coverage.txt ~{bam}
 
+        samtools depth -a -o ~{sample_name}_~{index_1_id}_depth.txt ~{bam}
+        samtools depth -b {primer_bed} -o ~{sample_name}_~{index_1_id}_amplicon_depth.txt ~{bam}
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
@@ -341,6 +347,8 @@ task Bam_stats {
         File stats_out  = "${sample_name}_${index_1_id}_stats.txt"
         File covhist_out  = "${sample_name}_${index_1_id}_coverage_hist.txt"
         File cov_out  = "${sample_name}_${index_1_id}_coverage.txt"
+        File depth_out = "${sample_name}_${index_1_id}_depth.txt"
+        File amplicon_depth_out = "${sample_name}_${index_1_id}_amplicon_depth.txt"
         File cov_s_gene_out = "${sample_name}_${index_1_id}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
         String samtools_version = read_string("VERSION")
