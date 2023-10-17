@@ -226,6 +226,8 @@ task Medaka {
 
     output {
         File consensus = "${sample_name}_${index_1_id}.consensus.fasta"
+        File untrimmed_sorted_bam = "${sample_name}_${index_1_id}.sorted.bam"
+        File untrimmed_sorted_bai = "${sample_name}_${index_1_id}.sorted.bam.bai"
         File sorted_bam = "${sample_name}_${index_1_id}.trimmed.rg.sorted.bam"
         File trimsort_bam = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam"
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
