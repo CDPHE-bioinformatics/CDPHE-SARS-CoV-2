@@ -234,6 +234,9 @@ task Medaka {
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String medaka_version = read_string("VERSION")
+
+        File align_report = "${sample_name}_${index_1_id}.alignreport.txt"
+        File align_report_error = "${sample_name}_${index_1_id}.alignreport.er"
     }
 
     runtime {
