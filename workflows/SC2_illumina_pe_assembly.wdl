@@ -140,7 +140,6 @@ workflow SC2_illumina_pe_assembly {
             covhist_out = bam_stats.covhist_out,
             cov_out = bam_stats.cov_out,
             depth_out = bam_stats.depth_out,
-            amplicon_depth_out = bam_stats.amplicon_depth_out,
             cov_s_gene_out = bam_stats.cov_s_gene_out,
             cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out,
             renamed_consensus = rename_fasta.renamed_consensus,
@@ -171,7 +170,6 @@ workflow SC2_illumina_pe_assembly {
         File covhist_out = bam_stats.covhist_out
         File cov_out = bam_stats.cov_out
         File depth_out = bam_stats.depth_out
-        File amplicon_depth_out = bam_stats.amplicon_depth_out
         File cov_s_gene_out = bam_stats.cov_s_gene_out
         File cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out
         File renamed_consensus = rename_fasta.renamed_consensus
@@ -436,7 +434,7 @@ task bam_stats {
         samtools coverage -m -o ~{sample_name}_coverage_hist.txt ~{bam}
         samtools coverage -o ~{sample_name}_coverage.txt ~{bam}
         samtools depth -a -o ~{sample_name}_depth.txt ~{bam}
-        samtools depth -b ~{primer_bed} -o ~{sample_name}_amplicon_depth.txt ~{bam}
+
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
@@ -474,7 +472,6 @@ task bam_stats {
         File covhist_out  = "${sample_name}_coverage_hist.txt"
         File cov_out  = "${sample_name}_coverage.txt"
         File depth_out = "${sample_name}_depth.txt"
-        File amplicon_depth_out = "${sample_name}_amplicon_depth.txt"
         File cov_s_gene_out = "${sample_name}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
         String samtools_version_staphb = read_string("VERSION")
@@ -623,7 +620,6 @@ task transfer {
         File covhist_out
         File cov_out
         File depth_out
-        File amplicon_depth_out
         File cov_s_gene_out
         File cov_s_gene_amplicons_out
         File renamed_consensus
@@ -647,7 +643,6 @@ task transfer {
         gsutil -m cp ~{variants} ~{outdirpath}/variants/
         gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{depth_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{amplicon_depth_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
         gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
