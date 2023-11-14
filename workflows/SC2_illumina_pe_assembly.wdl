@@ -298,7 +298,7 @@ task align_reads {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "broadinstitute/viral-core:2.0.21"
+        docker:    "quay.io/broadinstitute/viral-core:2.2.3"
     }
 }
 
