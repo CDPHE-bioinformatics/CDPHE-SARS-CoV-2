@@ -234,7 +234,7 @@ task Read_Filtering {
     }
 
     runtime {
-        docker: "quay.io/staphb/artic-ncov2019:latest"
+        docker: "quay.io/staphb/artic-ncov2019:1.3.0"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
