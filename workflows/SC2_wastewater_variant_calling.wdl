@@ -13,7 +13,7 @@ workflow SC2_wastewater_variant_calling {
 
     input {
 
-        Array[SampleInfo] sampleInfo
+        Array[SampleInfo] SampleInfo
         Array[String] out_dir_array
         Array[String] project_name_array
 
