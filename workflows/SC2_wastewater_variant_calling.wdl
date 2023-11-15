@@ -33,7 +33,6 @@ workflow SC2_wastewater_variant_calling {
                 bam = id_bam.right
         }
 
-
         call variant_calling {
             input:
                 bam = add_RG.rgbam,
@@ -47,7 +46,10 @@ workflow SC2_wastewater_variant_calling {
             input:
                 variants = variant_calling.variants,
                 depth = variant_calling.depth,
-                sample_name = id_bam.left
+                sample_name = id_bam.left,
+                bam = add_RG.rgbam,
+                ref = covid_genome,
+                ref_gff = covid_gff
         }
         
         call mutations_tsv {
@@ -57,9 +59,9 @@ workflow SC2_wastewater_variant_calling {
         }
     }
 
-    call freyja_aggregate {
+    call freyja_aggregate_and_fun {
         input:
-            demix = freyja_demix.demix
+            demix = freyja_demix_and_covariants.demix
     }
 
     call combine_mutations_tsv {
@@ -78,7 +80,7 @@ workflow SC2_wastewater_variant_calling {
             samtools_version_staphb = select_all(add_RG.samtools_version_staphb)[0],
             samtools_version_andersenlabapps = select_all(variant_calling.samtools_version_andersenlabapps)[0],
             ivar_version = select_all(variant_calling.ivar_version)[0],
-            freyja_version = select_all(freyja_demix.freyja_version)[0],
+            freyja_version = select_all(freyja_demix_and_covariants.freyja_version)[0],
             analysis_date = workflow_version_capture.analysis_date,
             workflow_version = workflow_version_capture.workflow_version
             
@@ -88,10 +90,13 @@ workflow SC2_wastewater_variant_calling {
     call transfer_outputs {
         input:
             variants = variant_calling.variants,
+            covariants = freyja_demix_and_covariants.covariants,
             depth = variant_calling.depth,
-            demix = freyja_demix.demix,
+            demix = freyja_demix_and_covariants.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
-            demix_aggregated = freyja_aggregate.demix_aggregated,
+            demix_aggregated = freyja_aggregate_and_fun.demix_aggregated,
+            summarized_plot = freyja_aggregate_and_fun.summarized_plot,
+            lineage_plot = freyja_aggregate_and_fun.lineage_plot
             outdirpath = outdirpath,
             version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
     }
@@ -100,8 +105,11 @@ workflow SC2_wastewater_variant_calling {
         Array[File] addrg_bam = add_RG.rgbam
         Array[File] variants = variant_calling.variants
         Array[File] depth = variant_calling.depth
-        Array[File] demix = freyja_demix.demix
-        File demix_aggregated = freyja_aggregate.demix_aggregated
+        Array[File] demix = freyja_demix_and_covariants.demix
+        Array[File] covariants = freyja_demix_and_covariants.covariants
+        File demix_aggregated = freyja_aggregate_and_fun.demix_aggregated
+        File summarized_plot = freyja_aggregate_and_fun.summarized_plot
+        File lineage_plot = freyja_aggregate_and_fun.lineage_plot
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
         File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
         String transfer_date_wwt_variant_calling = transfer_outputs.transfer_date_wwt_variant_calling
@@ -174,11 +182,14 @@ task variant_calling {
     } 
 }
 
-task freyja_demix {
+task freyja_demix_and_covariants {
     input {
         String sample_name
         File variants
         File depth
+        File bam
+        File ref
+        File ref_gff
     }
 
     command <<<
@@ -195,15 +206,18 @@ task freyja_demix {
         
         freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
 
+        freyja covariants ~{bam} 0 29900 --ref-genome ~{ref} -gff-file ~{ref_gff} --output ~{sample_name}_covariants.tsv --sort_by site
+
     >>>
 
     output {
         File demix = "${sample_name}_demixed.tsv"
+        File covariants = "${sample_name}_covariants.tsv"
         String freyja_version = read_string("VERSION")
     }
 
     runtime {
-        docker: "staphb/freyja:latest"
+        docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -238,7 +252,7 @@ task mutations_tsv {
     }
 }
 
-task freyja_aggregate {
+task freyja_aggregate_and_fun {
     input {
         Array[File] demix
     }
@@ -248,15 +262,19 @@ task freyja_aggregate {
         mkdir demix_outputs
         mv ~{sep=' ' demix} demix_outputs/
         freyja aggregate demix_outputs/ --output demix_aggregated.tsv
+        freyja plot demix_aggregated.tsv --output summarized_plot.png
+        freyja plot demix_aggregated.tsv --lineages --output lineage_plot.png
 
     >>>
 
     output {
         File demix_aggregated = "demix_aggregated.tsv"
+        File summarized_plot = "summarized_plot.png"
+        File lineage_plot = "lineage_plot.png"
     }
 
     runtime {
-        docker: "staphb/freyja:latest"
+        docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -329,9 +347,12 @@ task create_version_capture_file {
 task transfer_outputs {
     input {
         Array[File] variants
+        Array[File] covariants
         Array[File] depth
         Array[File] demix
         File demix_aggregated
+        File summarized_plot
+        File lineage_plot
         File combined_mutations_tsv
         File version_capture_wwt_variant_calling
         String outdirpath
@@ -342,9 +363,12 @@ task transfer_outputs {
     command <<<
 
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' covariants} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{summarized_plot} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{lineage_plot} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{version_capture_wwt_variant_calling} ~{outdirpath}/summary_results/
 
