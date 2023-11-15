@@ -96,7 +96,7 @@ workflow SC2_wastewater_variant_calling {
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
             demix_aggregated = freyja_aggregate_and_fun.demix_aggregated,
             summarized_plot = freyja_aggregate_and_fun.summarized_plot,
-            lineage_plot = freyja_aggregate_and_fun.lineage_plot
+            lineage_plot = freyja_aggregate_and_fun.lineage_plot,
             outdirpath = outdirpath,
             version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
     }
