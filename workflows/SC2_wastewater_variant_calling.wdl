@@ -206,7 +206,7 @@ task freyja_demix_and_covariants {
         
         freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
 
-        freyja covariants ~{bam} 0 29900 --ref-genome ~{ref} -gff-file ~{ref_gff} --output ~{sample_name}_covariants.tsv --sort_by site
+        freyja covariants ~{bam} 0 29900 --ref-genome ~{ref} --gff-file ~{ref_gff} --output ~{sample_name}_covariants.tsv --sort_by site
 
     >>>
 
