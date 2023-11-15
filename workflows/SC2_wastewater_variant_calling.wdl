@@ -42,7 +42,7 @@ workflow SC2_wastewater_variant_calling {
 
         }
 
-        call freyja_demix {
+        call freyja_demix_and_covariants {
             input:
                 variants = variant_calling.variants,
                 depth = variant_calling.depth,
