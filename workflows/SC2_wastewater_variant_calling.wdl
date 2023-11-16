@@ -3,17 +3,12 @@ version 1.0
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
 
-struct SampleInfo {
-    Array[File] trimsort_bam
-    Array[File] trimsort_bamindex 
-    Array[String] sample_name
-}
-
 workflow SC2_wastewater_variant_calling {
 
     input {
 
-        Array[SampleInfo] SampleInfo
+        Array[File] trimsort_bam
+        Array[String] sample_name
         Array[String] out_dir_array
         Array[String] project_name_array
 
@@ -31,41 +26,36 @@ workflow SC2_wastewater_variant_calling {
     String outdirpath = sub(out_dir, "/$", "")
 
 
-    scatter(info in SampleInfo) {
-        scatter(i in info) {
-            
-            call add_RG {
-                input:
-                    sample_name = info.sample_name[i],
-                    bam = info.trimsort_bam[i]
-            }
+    scatter (id_bam in zip(sample_name, trimsort_bam)) {
+        call add_RG {
+            input:
+                sample_name = id_bam.left,
+                bam = id_bam.right
+        }
 
+        call variant_calling {
+            input:
+                bam = add_RG.rgbam,
+                ref = covid_genome,
+                ref_gff = covid_gff,
+                sample_name = id_bam.left
 
-            call variant_calling {
-                input:
-                    bam = info.trimsort_bamindex[i],
-                    ref = covid_genome,
-                    ref_gff = covid_gff,
-                    sample_name = info.sample_name[i]
+        }
 
-            }
-
-            
-            call freyja_demix_and_covariants {
-                input:
-                    variants = variant_calling.variants,
-                    depth = variant_calling.depth,
-                    sample_name = info.sample_name[i],
-                    bam = info.trimsort_bam[i],
-                    ref = covid_genome,
-                    ref_gff = covid_gff
-            }
-            
-            call mutations_tsv {
-                input:
-                    variants = variant_calling.variants,
-                    sample_name = info.sample_name[i]
-            }
+        call freyja_demix_and_covariants {
+            input:
+                variants = variant_calling.variants,
+                depth = variant_calling.depth,
+                sample_name = id_bam.left,
+                bam = add_RG.rgbam,
+                ref = covid_genome,
+                ref_gff = covid_gff
+        }
+        
+        call mutations_tsv {
+            input:
+                variants = variant_calling.variants,
+                sample_name = id_bam.left
         }
     }
 
@@ -204,6 +194,9 @@ task freyja_demix_and_covariants {
 
     command <<<
 
+        #index bam file     
+        samtools index ~{bam}
+
         freyja --version | awk '{print $NF}' | tee VERSION
         # $NF refers to the last feild split by white spaces
 
@@ -216,7 +209,7 @@ task freyja_demix_and_covariants {
         
         freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
 
-        freyja covariants ~{bam} 0 29900 --ref-genome ~{ref} --gff-file ~{ref_gff} --output ~{sample_name}_covariants.tsv --sort_by site
+        freyja covariants ~{bam} 0 29900 --ref-genome ~{ref} -gff-file ~{ref_gff} --output ~{sample_name}_covariants.tsv --sort_by site
 
     >>>
 
