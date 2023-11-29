@@ -77,7 +77,7 @@ workflow SC2_wastewater_variant_calling {
         input:
             variants_ivar = variant_calling.variants_ivar,
             variants_bcftools = csq_and_mutations.variants_bcftools,
-            ivar_translated = ivar_to_vcf.ivar_translated,
+            ivar_translated = ivar_to_vcf.vcf,
             mutations_tsv = csq_and_mutations.mutations_tsv,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
