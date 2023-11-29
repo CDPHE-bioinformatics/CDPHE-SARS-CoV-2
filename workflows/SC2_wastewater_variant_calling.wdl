@@ -95,8 +95,6 @@ workflow SC2_wastewater_variant_calling {
             demix = freyja_demix_and_covariants.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
             demix_aggregated = freyja_aggregate_and_fun.demix_aggregated,
-            #summarized_plot = freyja_aggregate_and_fun.summarized_plot,
-            #lineage_plot = freyja_aggregate_and_fun.lineage_plot,
             outdirpath = outdirpath,
             version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
     }
@@ -108,8 +106,6 @@ workflow SC2_wastewater_variant_calling {
         Array[File] demix = freyja_demix_and_covariants.demix
         Array[File] covariants = freyja_demix_and_covariants.covariants
         File demix_aggregated = freyja_aggregate_and_fun.demix_aggregated
-        #File summarized_plot = freyja_aggregate_and_fun.summarized_plot
-        #File lineage_plot = freyja_aggregate_and_fun.lineage_plot
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
         File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
         String transfer_date_wwt_variant_calling = transfer_outputs.transfer_date_wwt_variant_calling
@@ -265,15 +261,11 @@ task freyja_aggregate_and_fun {
         mkdir demix_outputs
         mv ~{sep=' ' demix} demix_outputs/
         freyja aggregate demix_outputs/ --output demix_aggregated.tsv
-        #freyja plot demix_aggregated.tsv --output summarized_plot.png
-        #freyja plot demix_aggregated.tsv --lineages --output lineage_plot.png
 
     >>>
 
     output {
         File demix_aggregated = "demix_aggregated.tsv"
-        #File summarized_plot = "summarized_plot.png"
-        #File lineage_plot = "lineage_plot.png"
     }
 
     runtime {
@@ -354,8 +346,6 @@ task transfer_outputs {
         Array[File] depth
         Array[File] demix
         File demix_aggregated
-        #File summarized_plot
-        #File lineage_plot
         File combined_mutations_tsv
         File version_capture_wwt_variant_calling
         String outdirpath
@@ -370,8 +360,6 @@ task transfer_outputs {
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
-        #gsutil -m cp ~{summarized_plot} ~{outdirpath}/waste_water_variant_calling/
-        #gsutil -m cp ~{lineage_plot} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{version_capture_wwt_variant_calling} ~{outdirpath}/summary_results/
 
