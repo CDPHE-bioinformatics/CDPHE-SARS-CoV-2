@@ -75,7 +75,9 @@ workflow SC2_wastewater_variant_calling {
     
     call transfer_outputs {
         input:
-            variants = csq_and_mutations.variants_bcftools,
+            variants_ivar = variant_calling.variants_ivar,
+            variants_bcftools = csq_and_mutations.variants_bcftools,
+            ivar_translated = ivar_to_vcf.ivar_translated,
             mutations_tsv = csq_and_mutations.mutations_tsv,
             depth = variant_calling.depth,
             demix = freyja_demix.demix,
@@ -130,12 +132,12 @@ task variant_calling {
     command <<<
 
     samtools mpileup -A -aa -d 600000 -B -Q 20 -q 0 -f ~{ref} ~{bam} | tee >(cut -f1-4 > ~{sample_name}_depth.tsv) | \
-    ivar variants -p ~{sample_name}_variants.tsv -q 20 -t 0.0 -r ~{ref} -g ~{ref_gff}
+    ivar variants -p ~{sample_name}_variants_ivar.tsv -q 20 -t 0.0 -r ~{ref} -g ~{ref_gff}
     
     >>>
 
     output {
-        File variants_ivar = "~{sample_name}_variants.tsv"
+        File variants_ivar = "~{sample_name}_variants_ivar.tsv"
         File depth = "~{sample_name}_depth.tsv"
 
     }
@@ -160,12 +162,12 @@ task ivar_to_vcf {
 
     command <<<
 
-        python ~{ivar_variants_to_vcf} ~{variants_ivar} ~{sample_name}.vcf
+        python ~{ivar_variants_to_vcf} ~{variants_ivar} ~{sample_name}_ivar_translated.vcf
 
     >>>
 
     output {
-        File vcf = "${sample_name}.vcf"
+        File vcf = "${sample_name}_ivar_translated.vcf"
     }
 
     runtime {
@@ -188,14 +190,14 @@ task csq_and_mutations {
 
     command <<<
 
-        bcftools csq -f ~{ref} -g ~{ref_gff3} ~{vcf} -Ov -o ~{sample_name}_variants.vcf
+        bcftools csq -f ~{ref} -g ~{ref_gff3} ~{vcf} -Ov -o ~{sample_name}_variants_bcftools.vcf
         bcftools query -f '[%CHROM\t%SAMPLE\t%POS\t%REF\t%ALT\t%REF_DP\t%ALT_DP\t%AF\t%DP\t%FILTER\t%INFO/GFF_FEATURE\t%INFO/REF_CODON\t%INFO/REF_AA\t%INFO/ALT_CODON\t%INFO/ALT_AA\t%INFO/POS_AA\t%TBCSQ\n]' ~{sample_name}_variants.vcf > ~{sample_name}_variants_temp.tsv
         echo -e "ref_genome\tsample_name\tposition\tref_nucl\talt_nucl\tref_dp\talt_dp\talt_freq\ttotal_dp\tpass\tgff_feature\tref_codon\tref_aa\talt_codon\talt_aa\tposition_aa\tbcsq" | cat - ~{sample_name}_variants_temp.tsv > ~{sample_name}_mutations.tsv
 
     >>>
 
     output {
-        File variants_bcftools = "${sample_name}_variants.vcf"
+        File variants_bcftools = "${sample_name}_variants_bcftools.vcf"
         File mutations_tsv = "${sample_name}_mutations.tsv"
     }
 
@@ -294,7 +296,9 @@ task combine_mutations_tsv {
 
 task transfer_outputs {
     input {
-        Array[File] variants
+        Array[File] variants_ivar
+        Array[File] variants_bcftools
+        Array[File] ivar_translated
         Array[File] mutations_tsv
         Array[File] depth
         Array[File] demix
@@ -308,7 +312,9 @@ task transfer_outputs {
 
     command <<<
 
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' variants_ivar} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' ivar_translated} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' variants_bcftools} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' mutations_tsv} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
