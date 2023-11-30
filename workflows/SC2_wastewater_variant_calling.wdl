@@ -91,6 +91,7 @@ workflow SC2_wastewater_variant_calling {
         input:
             variants = variant_calling.variants,
             covariants = freyja_demix_and_covariants.covariants,
+            covariants_plot = freyja_demix_and_covariants.covariants_plot,
             depth = variant_calling.depth,
             demix = freyja_demix_and_covariants.demix,
             combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
@@ -105,6 +106,7 @@ workflow SC2_wastewater_variant_calling {
         Array[File] depth = variant_calling.depth
         Array[File] demix = freyja_demix_and_covariants.demix
         Array[File] covariants = freyja_demix_and_covariants.covariants
+        Array[File] covariants_plot = freyja_demix_and_covariants.covariants_plot
         File demix_aggregated = freyja_aggregate_and_fun.demix_aggregated
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
         File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
@@ -207,11 +209,14 @@ task freyja_demix_and_covariants {
 
         freyja covariants ~{bam} 0 29900 --ref-genome ~{ref} --gff-file ~{ref_gff} --output ~{sample_name}_covariants.tsv --sort_by site
 
+        freyja plot-covariants ~{sample_name}_covariants.tsv --nt_muts --output {sample_name}_covariants.png
+
     >>>
 
     output {
         File demix = "${sample_name}_demixed.tsv"
         File covariants = "${sample_name}_covariants.tsv"
+        File covariants_plot = "${sample_name}_covariants.png"
         String freyja_version = read_string("VERSION")
     }
 
@@ -343,13 +348,13 @@ task transfer_outputs {
     input {
         Array[File] variants
         Array[File] covariants
+        Array[File] covariants_plot
         Array[File] depth
         Array[File] demix
         File demix_aggregated
         File combined_mutations_tsv
         File version_capture_wwt_variant_calling
         String outdirpath
-
     }
 
 
@@ -357,6 +362,7 @@ task transfer_outputs {
 
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' covariants} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' covariants_plot} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
