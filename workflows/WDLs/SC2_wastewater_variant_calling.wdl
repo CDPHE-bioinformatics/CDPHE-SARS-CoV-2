@@ -191,7 +191,7 @@ task csq_and_mutations {
     command <<<
 
         bcftools csq -f ~{ref} -g ~{ref_gff3} ~{vcf} -Ov -o ~{sample_name}_variants_bcftools.vcf
-        bcftools query -f '[%CHROM\t%SAMPLE\t%POS\t%REF\t%ALT\t%REF_DP\t%ALT_DP\t%AF\t%DP\t%FILTER\t%INFO/GFF_FEATURE\t%INFO/REF_CODON\t%INFO/REF_AA\t%INFO/ALT_CODON\t%INFO/ALT_AA\t%INFO/POS_AA\t%TBCSQ\n]' ~{sample_name}_variants.vcf > ~{sample_name}_variants_temp.tsv
+        bcftools query -f '[%CHROM\t%SAMPLE\t%POS\t%REF\t%ALT\t%REF_DP\t%ALT_DP\t%AF\t%DP\t%FILTER\t%INFO/GFF_FEATURE\t%INFO/REF_CODON\t%INFO/REF_AA\t%INFO/ALT_CODON\t%INFO/ALT_AA\t%INFO/POS_AA\t%TBCSQ\n]' ~{sample_name}_variants_bcftools.vcf > ~{sample_name}_variants_temp.tsv
         echo -e "ref_genome\tsample_name\tposition\tref_nucl\talt_nucl\tref_dp\talt_dp\talt_freq\ttotal_dp\tpass\tgff_feature\tref_codon\tref_aa\talt_codon\talt_aa\tposition_aa\tbcsq" | cat - ~{sample_name}_variants_temp.tsv > ~{sample_name}_mutations.tsv
 
     >>>
