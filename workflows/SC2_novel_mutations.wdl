@@ -13,6 +13,7 @@ workflow SC2_novel_mutations {
         # Reference files
         File historical_full
         File historical_unique
+        File metadata
 
         # Python scripts
         File novel_mutations_append_py
@@ -60,14 +61,16 @@ task append_new_mutations {
         Array[File] combined_mutations_array
         File historical_full
         File historical_unique
+        File metadata
         File novel_mutations_append_py
     }
 
     command <<<
-        python ~{novel_mutations_append_py} --project_names ~{sep(',', project_names_array)}\
-        --combined_mutations_files ~{sep(',', combined_mutations_array)} \
+        python ~{novel_mutations_append_py} --project_names ~{sep(' ', project_names_array)}\
+        --combined_mutations_files ~{sep(' ', combined_mutations_array)} \
         --historical_full ~{historical_full} \
-        --historical_unique ~{historical_unique}
+        --historical_unique ~{historical_unique} \
+        --metadata ~{metadata}
     >>>
 
     output {
