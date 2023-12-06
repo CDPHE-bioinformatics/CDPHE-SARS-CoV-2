@@ -14,6 +14,7 @@ workflow SC2_novel_mutations {
         File historical_full
         File historical_unique
         File metadata
+        File gff_mutations
 
         # Python scripts
         File novel_mutations_append_py
@@ -28,7 +29,9 @@ workflow SC2_novel_mutations {
             combined_mutations_array = combined_mutations_array,
             novel_mutations_append_py = novel_mutations_append_py,
             historical_full = historical_full,
-            historical_unique = historical_unique
+            historical_unique = historical_unique,
+            metadata = metadata,
+            gff_mutations = gff_mutations
     }
 
     scatter (project in append_new_mutations.project_unique_mutations) {
@@ -62,6 +65,7 @@ task append_new_mutations {
         File historical_full
         File historical_unique
         File metadata
+        File gff_mutations
         File novel_mutations_append_py
     }
 
@@ -70,13 +74,15 @@ task append_new_mutations {
         --combined_mutations_files ~{sep(' ', combined_mutations_array)} \
         --historical_full ~{historical_full} \
         --historical_unique ~{historical_unique} \
-        --metadata ~{metadata}
+        --metadata ~{metadata} \
+        --gff ~{gff_mutations}
     >>>
 
     output {
         File historical_full_updated = "historical_full_updated.csv"
         File historical_unique_updated = "historical_unique_updated.csv"
         Array[File] project_unique_mutations = glob("*_unique_mutations.csv")
+        Array[File]? project_missing_dates = glob("*_missing_dates.csv")
     }
 
     runtime {
