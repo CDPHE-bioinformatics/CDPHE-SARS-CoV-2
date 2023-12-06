@@ -8,7 +8,8 @@ workflow SC2_novel_mutations {
         Array[String] out_dir_array 
         String historical_full_path
         String historical_unique_path
-
+        String novel_mutations_path
+        String today
 
         # Reference files
         File historical_full
@@ -31,7 +32,8 @@ workflow SC2_novel_mutations {
             historical_full = historical_full,
             historical_unique = historical_unique,
             metadata = metadata,
-            gff_mutations = gff_mutations
+            gff_mutations = gff_mutations,
+            today = today
     }
 
     scatter (project in append_new_mutations.project_unique_mutations) {
@@ -47,7 +49,9 @@ workflow SC2_novel_mutations {
             historical_full_updated = append_new_mutations.historical_full_updated,
             historical_unique_updated = append_new_mutations.historical_unique_updated,
             historical_full_path = historical_full_path,
-            historical_unique_path = historical_unique_path
+            historical_unique_path = historical_unique_path,
+            recurrent_mutations = append_new_mutations.recurrent_mutations,
+            novel_mutations_path = novel_mutations_path
     }
 
     output {
@@ -62,6 +66,7 @@ task append_new_mutations {
     input {
         Array[String] project_names_array
         Array[File] combined_mutations_array
+        String today
         File historical_full
         File historical_unique
         File metadata
@@ -70,19 +75,23 @@ task append_new_mutations {
     }
 
     command <<<
+        date +"%d-%m-%Y" > today
+
         python ~{novel_mutations_append_py} --project_names ~{sep(' ', project_names_array)}\
         --combined_mutations_files ~{sep(' ', combined_mutations_array)} \
         --historical_full ~{historical_full} \
         --historical_unique ~{historical_unique} \
         --metadata ~{metadata} \
-        --gff ~{gff_mutations}
+        --gff ~{gff_mutations} \
+        --today ~{today}
     >>>
 
     output {
-        File historical_full_updated = "historical_full_updated.csv"
-        File historical_unique_updated = "historical_unique_updated.csv"
-        Array[File] project_unique_mutations = glob("*_unique_mutations.csv")
-        Array[File]? project_missing_dates = glob("*_missing_dates.csv")
+        File historical_full_updated = "historical_full_updated.tsv"
+        File historical_unique_updated = "historical_unique_updated.tsv"
+        Array[File] project_unique_mutations = glob("*_unique_mutations.tsv")
+        Array[File]? project_missing_dates = glob("*_missing_dates.tsv")
+        File? recurrent_mutations = "recurrent_mutations_{today}.tsv"
     }
 
     runtime {
@@ -99,7 +108,7 @@ task transfer_project_outputs {
         String out_dir_path
     }
 
-    String project_name = basename(project_unique_mutations, "_unique_mutations.csv")
+    String project_name = basename(project_unique_mutations, "_unique_mutations.tsv")
 
     command <<<
         gsutil -m cp ~{project_unique_mutations} ~{out_dir_path}/~{project_name}/novel_mutations/
@@ -120,11 +129,14 @@ task transfer_appended_outputs {
         File historical_unique_updated
         String historical_full_path
         String historical_unique_path
+        File? recurrent_mutations
+        String novel_mutations_path
     }
 
     command <<<
         gsutil -m cp ~{historical_full_updated} ~{historical_full_path}
         gsutil -m cp ~{historical_unique_updated} ~{historical_unique_path}
+        gsutil -m cp ~{recurrent_mutations} ~{novel_mutations_path}
     >>>
 
     runtime {
