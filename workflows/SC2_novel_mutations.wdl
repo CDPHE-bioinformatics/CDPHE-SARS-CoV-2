@@ -6,8 +6,7 @@ workflow SC2_novel_mutations {
         Array[String] project_names_array
         Array[File] combined_mutations_array
         Array[String] out_dir_array 
-        String historical_full_path
-        String historical_unique_path
+        String historical_data_path
         String novel_mutations_path
         String today
 
@@ -48,8 +47,7 @@ workflow SC2_novel_mutations {
         input:
             historical_full_updated = append_new_mutations.historical_full_updated,
             historical_unique_updated = append_new_mutations.historical_unique_updated,
-            historical_full_path = historical_full_path,
-            historical_unique_path = historical_unique_path,
+            historical_data_path = historical_data_path,
             recurrent_mutations = append_new_mutations.recurrent_mutations,
             novel_mutations_path = novel_mutations_path
     }
@@ -127,15 +125,14 @@ task transfer_appended_outputs {
     input {
         File historical_full_updated
         File historical_unique_updated
-        String historical_full_path
-        String historical_unique_path
+        String historical_data_path
         File? recurrent_mutations
         String novel_mutations_path
     }
 
     command <<<
-        gsutil -m cp ~{historical_full_updated} ~{historical_full_path}
-        gsutil -m cp ~{historical_unique_updated} ~{historical_unique_path}
+        gsutil -m cp ~{historical_full_updated} ~{historical_data_path}
+        gsutil -m cp ~{historical_unique_updated} ~{historical_data_path}
         gsutil -m cp ~{recurrent_mutations} ~{novel_mutations_path}
     >>>
 
