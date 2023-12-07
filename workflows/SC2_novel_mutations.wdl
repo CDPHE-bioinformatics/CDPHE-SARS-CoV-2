@@ -61,6 +61,10 @@ workflow SC2_novel_mutations {
 
 task append_new_mutations {
 
+    meta {
+        volatile: true
+    }
+
     input {
         Array[String] project_names_array
         Array[File] combined_mutations_array
