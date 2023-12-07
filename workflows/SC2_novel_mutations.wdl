@@ -5,9 +5,8 @@ workflow SC2_novel_mutations {
     input {
         Array[String] project_names_array
         Array[File] combined_mutations_array
-        Array[String] out_dir_array 
+        String covwwt_path 
         String historical_data_path
-        String novel_mutations_path
         String today
 
         # Reference files
@@ -19,9 +18,7 @@ workflow SC2_novel_mutations {
         # Python scripts
         File novel_mutations_append_py
     }
-    # Secret variables
-    String out_dir = out_dir_array[0]
-    String out_dir_path = sub(out_dir, "/$", "")
+
 
     call append_new_mutations {
         input:
@@ -39,7 +36,7 @@ workflow SC2_novel_mutations {
         call transfer_project_outputs {
             input:
                 project_unique_mutations = project,
-                out_dir_path = out_dir_path
+                covwwt_path = covwwt_path
         }    
     }
 
@@ -49,7 +46,8 @@ workflow SC2_novel_mutations {
             historical_unique_updated = append_new_mutations.historical_unique_updated,
             historical_data_path = historical_data_path,
             recurrent_mutations = append_new_mutations.recurrent_mutations,
-            novel_mutations_path = novel_mutations_path
+            novel_mutations = append_new_mutations.novel_mutations,
+            covwwt_path = covwwt_path
     }
 
     output {
@@ -94,6 +92,7 @@ task append_new_mutations {
         Array[File] project_unique_mutations = glob("*_unique_mutations.tsv")
         Array[File]? project_missing_dates = glob("*_missing_dates.tsv")
         File? recurrent_mutations = "recurrent_mutations_{today}.tsv"
+        File? novel_mutations = "novel_mutations_{today}.tsv"
     }
 
     runtime {
@@ -107,13 +106,13 @@ task append_new_mutations {
 task transfer_project_outputs {
     input {
         File project_unique_mutations
-        String out_dir_path
+        String covwwt_path
     }
 
     String project_name = basename(project_unique_mutations, "_unique_mutations.tsv")
 
     command <<<
-        gsutil -m cp ~{project_unique_mutations} ~{out_dir_path}/~{project_name}/novel_mutations/
+        gsutil -m cp ~{project_unique_mutations} ~{covwwt_path}/~{project_name}/novel_mutations/
     >>>
 
     runtime {
@@ -131,13 +130,16 @@ task transfer_appended_outputs {
         File historical_unique_updated
         String historical_data_path
         File? recurrent_mutations
-        String novel_mutations_path
+        File? novel_mutations
+        String covwwt_path
     }
 
     command <<<
         gsutil -m cp ~{historical_full_updated} ~{historical_data_path}
         gsutil -m cp ~{historical_unique_updated} ~{historical_data_path}
-        gsutil -m cp ~{recurrent_mutations} ~{novel_mutations_path}
+        gsutil -m cp ~{recurrent_mutations} ~{covwwt_path}/recurrent_mutations
+        gsutil -m cp ~{novel_mutations} ~{covwwt_path}/novel_mutations
+
     >>>
 
     runtime {
