@@ -54,6 +54,9 @@ workflow SC2_novel_mutations {
         Array[File] project_unique_mutations = append_new_mutations.project_unique_mutations
         File historical_full_updated = append_new_mutations.historical_full_updated
         File historical_unique_updated = append_new_mutations.historical_unique_updated
+        Array[File]? project_missing_dates = append_new_mutations.project_missing_dates
+        File? recurrent_mutations = append_new_mutations.recurrent_mutations
+        File? novel_mutations = append_new_mutations.novel_mutations
     }
 }
 
@@ -87,10 +90,10 @@ task append_new_mutations {
     >>>
 
     output {
-        File historical_full_updated = "historical_full_updated.tsv"
-        File historical_unique_updated = "historical_unique_updated.tsv"
-        Array[File] project_unique_mutations = glob("*_unique_mutations.tsv")
         Array[File]? project_missing_dates = glob("*_missing_dates.tsv")
+        Array[File] project_unique_mutations = glob("*_unique_mutations.tsv")
+        File historical_full_updated = "historical_full_updated.tsv"
+        File historical_unique_updated = "historical_unique_updated.tsv"        
         File? recurrent_mutations = "recurrent_mutations_{today}.tsv"
         File? novel_mutations = "novel_mutations_{today}.tsv"
     }
@@ -139,7 +142,6 @@ task transfer_appended_outputs {
         gsutil -m cp ~{historical_unique_updated} ~{historical_data_path}
         gsutil -m cp ~{recurrent_mutations} ~{covwwt_path}/recurrent_mutations
         gsutil -m cp ~{novel_mutations} ~{covwwt_path}/novel_mutations
-
     >>>
 
     runtime {
