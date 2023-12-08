@@ -1,4 +1,4 @@
-version 1.1
+version 1.0
 
 workflow SC2_novel_mutations {
 
@@ -80,8 +80,8 @@ task append_new_mutations {
     command <<<
         date +"%d-%m-%Y" > today
 
-        python ~{novel_mutations_append_py} --project_names ~{sep(' ', project_names_array)}\
-        --combined_mutations_files ~{sep(' ', combined_mutations_array)} \
+        python ~{novel_mutations_append_py} --project_names ~{sep=' ' project_names_array}\
+        --combined_mutations_files ~{sep=' ' combined_mutations_array} \
         --historical_full ~{historical_full} \
         --historical_unique ~{historical_unique} \
         --metadata ~{metadata} \
