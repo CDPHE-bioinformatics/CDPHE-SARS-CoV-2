@@ -99,7 +99,7 @@ task append_new_mutations {
     }
 
     runtime {
-        docker: "mchether/py3-bio:v4"
+        docker: "ariannaesmith/py3.10.9-bio:v1"
         memory: "1 GB"
         cpu: 4
         disks: "local-disk 10 SSD"
