@@ -78,15 +78,15 @@ task append_new_mutations {
     }
 
     command <<<
-        date +"%d-%m-%Y" > today
 
-        python ~{novel_mutations_append_py} --project_names ~{sep=' ' project_names_array}\
+        python ~{novel_mutations_append_py} --project_names ~{sep=' ' project_names_array} \
         --combined_mutations_files ~{sep=' ' combined_mutations_array} \
         --historical_full ~{historical_full} \
         --historical_unique ~{historical_unique} \
         --metadata ~{metadata} \
         --gff ~{gff_mutations} \
         --today ~{today}
+
     >>>
 
     output {
