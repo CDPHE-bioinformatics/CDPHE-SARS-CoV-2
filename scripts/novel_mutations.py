@@ -408,6 +408,8 @@ def add_features_new_mutations(df, df_new_full, cols):
     
     df = df[cols]
 
+    df.to_csv(f'novel_mutations_{today}.tsv', sep = '\t', index = False)
+    
     return df
 
 
@@ -450,8 +452,6 @@ def update_features_prev_seen_mutations(df, cols):
     # Put columns back in order
     df = df[cols]
     
-    df.to_csv(f'novel_mutations_{today}.tsv', sep = '\t', index = False)
-    
     return df
 
 
@@ -479,6 +479,7 @@ def update_unique_data(df_new_unique, df_new_full, df_historical_unique):
     df_temp = df_new_unique.merge(df_historical_unique, on = duplicate_cols, 
                                   how = 'left', suffixes = ['_new', '_historical'])
     df_temp = df_temp.astype({'alt_nucl' : 'category'})
+    
     # Have column order 
     cols = df_historical_unique.columns
     
@@ -532,8 +533,8 @@ def main():
     df_unique = update_unique_data(df_new_unique, df_new_full, df_historical_unique)
     
     # Write all files to .tsv (updated unique, updated full, each project unique)
-    df_unique.to_csv('historical_unique_mutations.tsv', sep = '\t', index = False)
-    df_full.to_csv('historical_full_mutations.tsv', sep = '\t', index = False)
+    df_unique.to_csv('novel_mutations_historical_unique.tsv', sep = '\t', index = False)
+    df_full.to_csv('novel_mutations_historical_full.tsv', sep = '\t', index = False)
 
 
 if __name__ == '__main__':
@@ -553,13 +554,4 @@ if __name__ == '__main__':
         read_reference_files(historical_full, historical_unique, metadata, gff)
         
     main()
-
-
-
-
-
-
-
-
-
 
