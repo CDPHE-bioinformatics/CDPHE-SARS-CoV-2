@@ -48,12 +48,10 @@ def read_reference_files(historical_full, historical_unique, metadata, gff):
     df_historical_full[hist_category_cols] = df_historical_full[hist_category_cols].astype('category')
     
     hist_category_cols = hist_category_cols[:-1]
-    hist_category_cols.extend(['type', 'id_return', 'parent_id', 'parent', 
+    hist_category_cols.extend(['mutation_type', 'id_return', 'parent_id', 'parent', 
                                'parent_start', 'parent_end', 'indel_length'])
     df_historical_unique[hist_category_cols] = df_historical_unique[hist_category_cols].astype('category')
-    
-    df_gff = pd.read_csv(gff, sep = '\t')
-    
+        
     return df_historical_full, df_historical_unique, df_metadata, df_gff
 
 
@@ -148,7 +146,7 @@ def assign_gene_coordinates(row):
 
     """
     # Indels start at position after reference position given
-    if row.type == 'insertion' or row.type == 'deletion':
+    if row.mutation_type == 'insertion' or row.mutation_type == 'deletion':
         position = row.position + 1
     else:
         position = row.position
@@ -158,7 +156,7 @@ def assign_gene_coordinates(row):
     gene_coordinate_number = math.floor((nuc_pos_on_gene - 1)/ 3) + 1
     gene_coordinate_str = str(gene_coordinate_number)
     
-    match row.type:
+    match row.mutation_type:
         
         case 'snp':
             # Some ref/alt aa are nan
@@ -195,7 +193,7 @@ def assign_gene_coordinates(row):
 
 def assign_nuc_coordinates(row):
     """ Lambda function to calculcate nucleotide coordinate for mutation """
-    match row.type:
+    match row.mutation_type:
         case 'insertion':
             position = row.position + 1
             coordinate = f'ins{str(position)}{row.alt_nucl[1:]}'
@@ -340,7 +338,7 @@ def recurrent_mutations(df):
     """
     # Check for recurrent mutations not seen in >6mo
     recurrent_cols = ['position', 'ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', 
-                      'gff_feature', 'type', 'gene_coordinate', 'nuc_coordinate', 
+                      'gff_feature', 'mutation_type', 'gene_coordinate', 'nuc_coordinate', 
                       'date_first_detected_new', 'date_last_detected_new', 
                       'times_detected_new', 'date_first_detected_historical', 
                       'date_last_detected_historical', 'times_detected_historical']
@@ -382,11 +380,11 @@ def add_features_new_mutations(df, df_new_full, cols):
     
     # Columns to calculate
     # type
-    df['type'] = df.apply(lambda x: get_mutation_type(x['alt_nucl']), axis = 1)
+    df['mutation_type'] = df.apply(lambda x: get_mutation_type(x['alt_nucl']), axis = 1)
     
     # indel length
     df['indel_length'] = df.apply(lambda x: len(x['alt_nucl']) - 1 
-                                  if x['type'] != 'snp' else np.nan, axis = 1)
+                                  if x['mutation_type'] != 'snp' else np.nan, axis = 1)
     
     # Fill in blank gff_features if applicable
     df.gff_feature.fillna(df.apply(lambda x: get_gff_id(x.position), axis = 1), 
@@ -399,7 +397,7 @@ def add_features_new_mutations(df, df_new_full, cols):
     
     # Get gene and nuc coordinates
     coordinate_cols = ['position', 'ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', \
-                       'parent', 'parent_start', 'parent_end', 'type']
+                       'parent', 'parent_start', 'parent_end', 'mutation_type']
     df['gene_coordinate'] = df.apply(lambda x: 
                                      assign_gene_coordinates(x[coordinate_cols]) 
                                      if(np.all(pd.notnull(x['gff_feature']))) else np.nan, axis = 1)
@@ -497,7 +495,7 @@ def update_unique_data(df_new_unique, df_new_full, df_historical_unique):
     
     # Update historical file, first with updated mutations and then with new mutations
     static_cols = ['position', 'ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', 
-                   'gff_feature', 'type', 'id_return', 'parent_id', 'parent',
+                   'gff_feature', 'mutation_type', 'id_return', 'parent_id', 'parent',
                    'parent_start', 'parent_end', 'gene_coordinate', 
                    'nuc_coordinate', 'indel_length']
     df_unique_updated = df_historical_unique.merge(df_new_updated_features, on = 
