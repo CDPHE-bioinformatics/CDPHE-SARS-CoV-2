@@ -94,8 +94,8 @@ task append_new_mutations {
         Array[File] project_unique_mutations = glob("*_unique_mutations.tsv")
         File historical_full_updated = "novel_mutations_historical_full.tsv"
         File historical_unique_updated = "novel_mutations_historical_unique.tsv"        
-        File? recurrent_mutations = "recurrent_mutations_{today}.tsv"
-        File? novel_mutations = "novel_mutations_{today}.tsv"
+        File? recurrent_mutations = "recurrent_mutations_~{today}.tsv"
+        File? novel_mutations = "novel_mutations_~{today}.tsv"
     }
 
     runtime {
