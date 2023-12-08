@@ -32,12 +32,31 @@ workflow SC2_novel_mutations {
             today = today
     }
 
+
+    Boolean recurrent_mutations_defined = defined(append_new_mutations.recurrent_mutations)
+    Boolean novel_mutations_defined = defined(append_new_mutations.novel_mutations)
+    
+
     scatter (project in append_new_mutations.project_unique_mutations) {
         call transfer_project_outputs {
             input:
                 project_unique_mutations = project,
                 covwwt_path = covwwt_path
         }    
+    }
+
+    if (recurrent_mutations_defined) {
+        call transfer_optional_output {
+            file_to_transfer = append_new_mutations.recurrent_mutations
+            transfer_path = ~{covwwt_path}/recurrent_mutations
+        }
+    }
+
+    if (novel_mutations_defined) {
+        call transfer_optional_output {
+            file_to_transfer = append_new_mutations.novel_mutations
+            transfer_path = ~{covwwt_path}/novel_mutations
+        }
     }
 
     call transfer_appended_outputs {
@@ -140,8 +159,25 @@ task transfer_appended_outputs {
     command <<<
         gsutil -m cp ~{historical_full_updated} ~{historical_data_path}
         gsutil -m cp ~{historical_unique_updated} ~{historical_data_path}
-        gsutil -m cp ~{recurrent_mutations} ~{covwwt_path}/recurrent_mutations
-        gsutil -m cp ~{novel_mutations} ~{covwwt_path}/novel_mutations
+    >>>
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "1 GB"
+        cpu: 1
+        disks: "local-disk 50 SSD"
+    }
+}
+
+task transfer_optional_output {
+
+    input {
+        File file_to_transfer
+        String transfer_path
+    }
+
+    command <<<
+        gsutil -m cp ~{file_to_transfer} ~{transfer_path}
     >>>
 
     runtime {
