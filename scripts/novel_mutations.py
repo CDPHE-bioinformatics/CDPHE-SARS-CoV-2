@@ -37,9 +37,7 @@ def read_reference_files(historical_full, historical_unique, metadata, gff):
                          parse_dates = ['collection_date'])
     df_historical_unique = pd.read_csv(historical_unique, sep = '\t', 
                            parse_dates = ['date_first_detected', 'date_last_detected'])
-    df_metadata = pd.read_csv(metadata, sep = '\t', usecols = ['sample_name', 
-                           'sample_type', 'project_name', 'sample_name_base',
-                           'site_id', 'collection_date'], parse_dates = ['collection_date'])
+    df_metadata = pd.read_csv(metadata, sep = '\t', parse_dates = ['collection_date'])
     df_gff = pd.read_csv(gff, sep = '\t')
     
     # Change some columns to categorical to decrease memory usage
@@ -146,6 +144,8 @@ def assign_gene_coordinates(row):
 
     """
     # Indels start at position after reference position given
+    # Declare this variable for 
+    mut_type = row.mutation_type
     if row.mutation_type == 'insertion' or row.mutation_type == 'deletion':
         position = row.position + 1
     else:
