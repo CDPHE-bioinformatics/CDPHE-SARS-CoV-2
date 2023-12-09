@@ -145,7 +145,6 @@ def assign_gene_coordinates(row):
     """
     # Indels start at position after reference position given
     # Declare this variable for 
-    mut_type = row.mutation_type
     if row.mutation_type == 'insertion' or row.mutation_type == 'deletion':
         position = row.position + 1
     else:
