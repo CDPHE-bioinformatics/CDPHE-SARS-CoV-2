@@ -45,21 +45,21 @@ workflow SC2_novel_mutations {
         }    
     }
 
+    String covwwt_novel_mutations_path = "~{covwwt_path}/novel_mutations"
+
     if (recurrent_mutations_defined) {
-        String transfer_path_recurrent = "~{covwwt_path}/recurrent_mutations"
         call transfer_optional_output as transfer_recurrent_mutations {
             input:
                 file_to_transfer = append_new_mutations.recurrent_mutations,
-                transfer_path = transfer_path_recurrent
+                transfer_path = covwwt_novel_mutations_path
         }
     }
 
     if (novel_mutations_defined) {
-        String transfer_path_novel = "~{covwwt_path}/novel_mutations"
         call transfer_optional_output as transfer_novel_mutations {
             input: 
                 file_to_transfer = append_new_mutations.novel_mutations,
-                transfer_path = transfer_path_novel
+                transfer_path = covwwt_novel_mutations_path
         }
     }
 
