@@ -46,16 +46,20 @@ workflow SC2_novel_mutations {
     }
 
     if (recurrent_mutations_defined) {
-        call transfer_optional_output {
-            file_to_transfer = append_new_mutations.recurrent_mutations
-            transfer_path = ~{covwwt_path}/recurrent_mutations
+        String transfer_path_recurrent = "~{covwwt_path}/recurrent_mutations"
+        call transfer_optional_output as transfer_recurrent_mutations {
+            input:
+                file_to_transfer = append_new_mutations.recurrent_mutations,
+                transfer_path = transfer_path_recurrent
         }
     }
 
     if (novel_mutations_defined) {
-        call transfer_optional_output {
-            file_to_transfer = append_new_mutations.novel_mutations
-            transfer_path = ~{covwwt_path}/novel_mutations
+        String transfer_path_novel = "~{covwwt_path}/novel_mutations"
+        call transfer_optional_output as transfer_novel_mutations {
+            input: 
+                file_to_transfer = append_new_mutations.novel_mutations,
+                transfer_path = transfer_path_novel
         }
     }
 
@@ -64,9 +68,6 @@ workflow SC2_novel_mutations {
             historical_full_updated = append_new_mutations.historical_full_updated,
             historical_unique_updated = append_new_mutations.historical_unique_updated,
             historical_data_path = historical_data_path,
-            recurrent_mutations = append_new_mutations.recurrent_mutations,
-            novel_mutations = append_new_mutations.novel_mutations,
-            covwwt_path = covwwt_path
     }
 
     output {
@@ -151,9 +152,6 @@ task transfer_appended_outputs {
         File historical_full_updated
         File historical_unique_updated
         String historical_data_path
-        File? recurrent_mutations
-        File? novel_mutations
-        String covwwt_path
     }
 
     command <<<
@@ -172,7 +170,7 @@ task transfer_appended_outputs {
 task transfer_optional_output {
 
     input {
-        File file_to_transfer
+        File? file_to_transfer
         String transfer_path
     }
 
