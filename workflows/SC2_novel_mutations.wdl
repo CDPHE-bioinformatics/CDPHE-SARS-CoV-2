@@ -45,7 +45,7 @@ workflow SC2_novel_mutations {
         }    
     }
 
-    String covwwt_novel_mutations_path = "~{covwwt_path}/novel_mutations"
+    String covwwt_novel_mutations_path = "~{covwwt_path}/novel_mutations/"
 
     if (recurrent_mutations_defined) {
         call transfer_optional_output as transfer_recurrent_mutations {
