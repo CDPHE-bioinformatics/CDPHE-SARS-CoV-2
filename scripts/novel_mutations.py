@@ -290,6 +290,8 @@ def parse_project_mutations(project_dict, df_metadata):
         df = df[df.sample_type == 'sample']
         df = check_collection_date_exists(df, project)
         
+        df = df.drop(columns = ['pass', 'sample_type'])
+        
         # Drop duplicates from replicates (based on site id and collection date)
         duplicate_cols = ['position', 'ref_nucl', 'alt_nucl', 'collection_date', 'site_id']
         df = df.drop_duplicates(subset = duplicate_cols)
