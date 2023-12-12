@@ -25,6 +25,9 @@ def parse_arguments(args = sys.argv[1:]):
                         wastewater metadata')
     parser.add_argument('--gff', help = 'workspace reference for formatted gff file')
     parser.add_argument('--today', help = 'today\'s date in %m-%d-%Y format')
+    parser.add_argument('--sites_to_drop', nargs = '*', help = 'space-separated \
+                        list of any wastewater facility site ids to not include')
+
 
     parsed_args = parser.parse_args(args)
     
@@ -251,11 +254,11 @@ def unique_counts_and_dates(df):
 
 def parse_project_mutations(project_dict, df_metadata):
     """
-    Parse passed combined mutations files. Drop freyja failed samples, 
-    duplicates from replicates, and merge with metadata to add collection date
-    and site ids. Drop verification and control samples. Output small file of 
-    unique mutations for each project. Return df of all 'pass' samples across 
-    projects with collection dates and site ids.
+    Parse passed combined mutations files. Drop any sites indicated, freyja 
+    failed samples, duplicates from replicates, and merge with metadata to add 
+    collection date and site ids. Drop verification and control samples. Output 
+    small file of unique mutations for each project. Return df of all 'pass' 
+    samples across projects with collection dates and site ids.
 
     Parameters
     ----------
@@ -287,6 +290,11 @@ def parse_project_mutations(project_dict, df_metadata):
         # Merge with metadata for collection date and site id and check that all 
         # samples have this info. Drop controls and verification samples
         df = df.merge(df_metadata, on = 'sample_name', how = 'left')
+        
+        # Drop specified site ids if any
+        if len(sites_to_drop) > 1:
+            df = df[~df['site_id'].isin(sites_to_drop)]
+            
         df = df[df.sample_type == 'sample']
         df = check_collection_date_exists(df, project)
         
@@ -547,6 +555,7 @@ if __name__ == '__main__':
     metadata = args.metadata
     gff = args.gff
     today = args.today
+    sites_to_drop = args.sites_to_drop
     
     # Read in reference files
     df_historical_full, df_historical_unique, df_metadata, df_gff = \
