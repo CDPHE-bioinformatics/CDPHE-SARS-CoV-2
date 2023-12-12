@@ -139,7 +139,7 @@ task transfer_project_outputs {
     String project_name = basename(project_unique_mutations, "_unique_mutations.tsv")
 
     command <<<
-        gsutil -m cp ~{project_unique_mutations} ~{covwwt_path}/~{project_name}/novel_mutations/
+        gsutil -m cp ~{project_unique_mutations} ~{covwwt_path}/~{project_name}/terra_outputs/novel_mutations/
     >>>
 
     runtime {
