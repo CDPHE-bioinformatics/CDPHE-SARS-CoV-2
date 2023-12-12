@@ -8,6 +8,7 @@ workflow SC2_novel_mutations {
         String covwwt_path 
         String historical_data_path
         String today
+        Array[String] sites_to_drop
 
         # Reference files
         File historical_full
@@ -29,7 +30,8 @@ workflow SC2_novel_mutations {
             historical_unique = historical_unique,
             metadata = metadata,
             gff_mutations = gff_mutations,
-            today = today
+            today = today,
+            sites_to_drop = sites_to_drop
     }
 
 
@@ -89,6 +91,7 @@ task append_new_mutations {
     input {
         Array[String] project_names_array
         Array[File] combined_mutations_array
+        Array[String] sites_to_drop
         String today
         File historical_full
         File historical_unique
@@ -105,7 +108,8 @@ task append_new_mutations {
         --historical_unique ~{historical_unique} \
         --metadata ~{metadata} \
         --gff ~{gff_mutations} \
-        --today ~{today}
+        --today ~{today} \
+        --sites_to_drop ~{sep=' ' sites_to_drop}
 
     >>>
 
