@@ -191,7 +191,7 @@ This script follows these steps:
 1. For each combined_mutations file, merges with metadata file. Drops samples from sites_to_drop, "fail" (from Freyja) samples, duplicated mutations from replicates, and controls. If any mutations do not have a collection date, it will produce a file with that information and error out.
 2. Creates and outputs a unique mutation file for each project. 
 3. Concatenates mutations and appends them to historical_full file. Recalculates date-related columns for historical_unique file and appends any new mutations. Checks for recurrent (not seen in > 6 months) and novel mutations and creates files if any found.
-4. Output all four files from step 3. **It will overwrite both historical files, so object versioning is recommended. **
+4. Output all four files from step 3. **This will overwrite both historical files, so object versioning is highly recommended.**
 
 ### Inputs
 

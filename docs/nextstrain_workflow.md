@@ -1,8 +1,8 @@
 # Nextstrain Workflow
 
-We use the publicly available [Nexstrain workflow](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info) to generate Nextstrain builds, and then transfer the results using this transfer workflow.
+We use the publicly available [Nextstrain workflow](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info) to generate Nextstrain builds, and then transfer the results using this transfer workflow.
 
-This workflow transfers the output file generated from the publicly available [sarscov2_nextstrain workflow](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info) to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_datatable_name}s." syntax refers Terra to pull the variable from the terra datatable as used for sample sets. The Google Bucket path describes where in the user google bucket the output file is transferred to.  
+This workflow transfers the output file generated from the publicly available [sarscov2_nextstrain workflow](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/sarscov2_nextstrain:master?tab=info) to a user specified google bucket. Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_data_table_name}s." syntax tells Terra to pull the variable from the sample-level terra data table. The Google Bucket path describes where in the user google bucket the output file is transferred to.  
 
 ## Inputs
 
