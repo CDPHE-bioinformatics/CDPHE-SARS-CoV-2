@@ -1,0 +1,8 @@
+{"SC2_novel_mutations.historical_full" : "${workspace.novel_mutations_historical_full}",
+"SC2_novel_mutations.historical_unique" : "${workspace.novel_mutations_historical_unique}",
+"SC2_novel_mutations.historical_full_path" : "${workspace.novel_mutations_historical_full_path}",
+"SC2_novel_mutations.historical_unique_path" : "${workspace.novel_mutations_historical_unique_path}",
+"SC2_novel_mutations.novel_mutations_append_py" : "${workspace.novel_mutations_append_py}",
+"SC2_novel_mutations.out_dir_array" : "${this.covwwt-novel-muts-12-1-23s.out_dir}",
+"SC2_novel_mutations.project_names_array" : "${this.covwwt-novel-muts-12-1-23s.covwwt-novel-muts-12-1-23_id}",
+"SC2_novel_mutations.combined_mutations_array" : "${this.covwwt-novel-muts-12-1-23s.combined_mutations}"}
