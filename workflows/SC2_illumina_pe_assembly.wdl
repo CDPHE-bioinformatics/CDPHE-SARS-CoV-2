@@ -2,7 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
-
+import "../tasks/hostile_task.wdl" as hostile_task
 
 
 workflow SC2_illumina_pe_assembly {
@@ -27,12 +27,20 @@ workflow SC2_illumina_pe_assembly {
     # secrete variables
     String outdirpath = sub(out_dir, "/$", "")
 
+    call hostile_task.hostile as hostile {
+        input:
+            read1 = fastq_1,
+            read2 = fastq_2,
+            samplename = sample_name,
+            seq_method = "ILLUMINA"
+    }
+
     call seqyclean {
         input:
             contam = adapters_and_contaminants,
             sample_name = sample_name,
-            fastq_1 = fastq_1,
-            fastq_2 = fastq_2
+            fastq_1 = hostile.read1_dehosted,
+            fastq_2 = select_first([hostile.read2_dehosted])
     }
 
     call fastqc as fastqc_raw {
@@ -147,6 +155,9 @@ workflow SC2_illumina_pe_assembly {
     }
 
     output {
+        Int? hostile_human_reads_removed = hostile.human_reads_removed
+        File hostile_read1_dehosted = hostile.read1_dehosted
+        File hostile_read2_dehosted = select_first([hostile.read2_dehosted])
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
         File seqyclean_summary = seqyclean.seqyclean_summary
