@@ -131,6 +131,8 @@ workflow SC2_illumina_pe_assembly {
     call transfer {
         input:
             outdirpath = outdirpath,
+            hostile_read1_dehosted = hostile.read1_dehosted,
+            hostile_read2_dehosted = select_first([hostile.read2_dehosted]),
             seqyclean_summary = seqyclean.seqyclean_summary,
             fastqc_raw1_html = fastqc_raw.fastqc1_html,
             fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
@@ -614,6 +616,8 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
+        File hostile_read1_dehosted
+        File hostile_read2_dehosted
         File seqyclean_summary 
         File fastqc_raw1_html
         File fastqc_raw1_zip
@@ -640,6 +644,8 @@ task transfer {
 
     command <<<
 
+        gsutil -m cp ~{hostile_read1_dehosted} ~{outdirpath}/hostile/
+        gsutil -m cp ~{hostile_read2_dehosted} ~{outdirpath}/hostile/
         gsutil -m cp ~{seqyclean_summary} ~{outdirpath}/seqyclean/
         gsutil -m cp ~{fastqc_raw1_html} ~{outdirpath}/fastqc/
         gsutil -m cp ~{fastqc_raw1_zip} ~{outdirpath}/fastqc/
