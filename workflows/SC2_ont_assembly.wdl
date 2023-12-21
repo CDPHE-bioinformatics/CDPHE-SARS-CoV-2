@@ -2,6 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
+import "../tasks/hostile_ont_task.wdl" as hostile_ont_task
 
 workflow SC2_ont_assembly {
 
@@ -34,9 +35,13 @@ workflow SC2_ont_assembly {
             fastq_files = ListFastqFiles.fastq_files,
             index_1_id = index_1_id
     }
+    call hostile_ont_task.hostile_ont as hostile_ont {
+        input:
+            fastq_files = Demultiplex.guppy_demux_fastq
+    }
     call Read_Filtering {
         input:
-            fastq_files = Demultiplex.guppy_demux_fastq,
+            fastq_files = hostile_ont.fastq_files_dehosted,
             index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
@@ -107,7 +112,8 @@ workflow SC2_ont_assembly {
 
     call transfer {
         input:
-        outdirpath = outdirpath, 
+        outdirpath = outdirpath,
+        hostile_fastq_files_dehosted = hostile_ont.fastq_files_dehosted,
         trimsort_bam = Medaka.trimsort_bam,
         trimsort_bai = Medaka.trimsort_bai,
         flagstat_out = Bam_stats.flagstat_out,
@@ -126,6 +132,11 @@ workflow SC2_ont_assembly {
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
+        Array[File] hostile_fastq_files_dehosted = hostile_ont.fastq_files_dehosted
+        Int? hostile_human_reads_removed = hostile_ont.human_reads_removed
+        Float? hostile_human_reads_removed_proportion = hostile_ont.human_reads_removed_proportion
+        String hostile_version = hostile_ont.hostile_version
+        String hostile_docker = hostile_ont.hostile_docker
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam
@@ -543,6 +554,7 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
+        Array[File] hostile_fastq_files_dehosted
         File trimsort_bam
         File trimsort_bai
         File flagstat_out
@@ -561,6 +573,7 @@ task transfer {
 
     command <<<
 
+        gsutil -m cp ~{sep=' ' hostile_fastq_files_dehosted} ~{outdirpath}/hostile/
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
         gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/
         gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/

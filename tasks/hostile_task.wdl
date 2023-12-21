@@ -21,6 +21,8 @@ task hostile {
     hostile --version | tee VERSION
 
     # dehost reads based on sequencing method
+    # this task currently not used for ONT because task expects
+    # concatenated reads. Instead using hostile_ont.wdl
     if [[ "~{seq_method}" == "OXFORD_NANOPORE" ]]; then
       hostile clean \
         --fastq1 ~{read1} \
