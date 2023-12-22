@@ -18,7 +18,7 @@ task hostile_ont {
   }
   command <<<
     # bc not in docker image, so install it here
-    apt install bc
+    apt-get -y install bc
 
     # date and version control
     date | tee DATE
