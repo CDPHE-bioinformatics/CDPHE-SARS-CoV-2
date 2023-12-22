@@ -24,8 +24,8 @@ task hostile_ont {
     date | tee DATE
     hostile --version | tee VERSION
 
-    total_removed = 0
-    total_proportion = 0
+    total_removed=0
+    total_proportion=0
 
     # dehost reads based on sequencing method
     # this task currently not used for ONT because task expects
