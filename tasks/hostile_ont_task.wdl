@@ -13,8 +13,8 @@ task hostile_ont {
     String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
 
     Int disk_size = 100
-    Int cpu = 4
-    Int mem = 16
+    Int cpu = 8
+    Int mem = 32
   }
   command <<<
 
