@@ -17,6 +17,9 @@ task hostile_ont {
     Int mem = 16
   }
   command <<<
+    # bc not in docker image, so install it here
+    sudo apt install bc
+
     # date and version control
     date | tee DATE
     hostile --version | tee VERSION
@@ -32,7 +35,7 @@ task hostile_ont {
         --fastq1 ${fastq} \
         --aligner "minimap2" \
         --threads ~{cpu} > decontamination-log.json
-      name=$(basename ${fastq} .fastq.gz)
+      name=$(basename ${fastq} .fastq)
       mv ./${name}.clean.fastq.gz "${name}_dehosted.fastq.gz"
 
       # extract the number of removed human reads
