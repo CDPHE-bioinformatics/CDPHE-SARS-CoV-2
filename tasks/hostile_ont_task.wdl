@@ -17,8 +17,6 @@ task hostile_ont {
     Int mem = 16
   }
   command <<<
-    # bc not in docker image, so install it here
-    apt-get -y install bc
 
     # date and version control
     date | tee DATE
@@ -41,8 +39,8 @@ task hostile_ont {
       # extract the number of removed human reads
       removed=$(grep '"reads_removed":' ./decontamination-log.json | awk -F': ' '{print $2}' | awk -F',' '{print $1}')
       proportion=$(grep '"reads_removed_proportion":' ./decontamination-log.json | awk -F': ' '{print $2}' | awk -F',' '{print $1}')
-      total_removed=$(echo "${total_removed} + ${removed}" | bc)
-      total_proportion=$(echo "${total_proportion} + ${proportion}" | bc)
+      total_removed=$(echo "print(${total_removed} + ${removed})" | python)
+      total_proportion=$(echo "print(${total_proportion} + ${proportion})" | python)
     done
 
     echo ${total_removed} > HUMANREADS
