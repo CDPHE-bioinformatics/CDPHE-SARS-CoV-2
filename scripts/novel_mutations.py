@@ -532,6 +532,9 @@ def main():
     
     # Append full data to historical
     df_full = pd.concat([df_historical_full, df_new_full], ignore_index = True)
+    # Check for duplicates again in case samples were re-run
+    df_full = df_full.drop_duplicates(subset = ['position', 'ref_nucl', 'alt_nucl', 
+                                'collection_date', 'site_id']).reset_index(drop = True)
     
     # For concatenated new mutation data, get dates and counts
     df_new_unique = unique_counts_and_dates(df_new_full)
