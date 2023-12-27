@@ -2,7 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
-
+import "../tasks/ncbi_scrub_task.wdl" as ncbi_scrub_task
 
 
 workflow SC2_illumina_pe_assembly {
@@ -27,12 +27,19 @@ workflow SC2_illumina_pe_assembly {
     # secrete variables
     String outdirpath = sub(out_dir, "/$", "")
 
+    call ncbi_scrub_task.ncbi_scrub_pe as ncbi_scrub_pe {
+        input:
+            read1 = fastq_1,
+            read2 = fastq_2,
+            samplename = sample_name
+    }
+
     call seqyclean {
         input:
             contam = adapters_and_contaminants,
             sample_name = sample_name,
-            fastq_1 = fastq_1,
-            fastq_2 = fastq_2
+            fastq_1 = ncbi_scrub_pe.read1_dehosted,
+            fastq_2 = ncbi_scrub_pe.read2_dehosted
     }
 
     call fastqc as fastqc_raw {
@@ -123,6 +130,8 @@ workflow SC2_illumina_pe_assembly {
     call transfer {
         input:
             outdirpath = outdirpath,
+            ncbi_scrub_read1_dehosted = ncbi_scrub_pe.read1_dehosted,
+            ncbi_scrub_read2_dehosted = ncbi_scrub_pe.read2_dehosted,
             seqyclean_summary = seqyclean.seqyclean_summary,
             fastqc_raw1_html = fastqc_raw.fastqc1_html,
             fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
@@ -147,6 +156,10 @@ workflow SC2_illumina_pe_assembly {
     }
 
     output {
+        Int ncbi_scrub_human_spots_removed = ncbi_scrub_pe.human_spots_removed
+        File ncbi_scrub_read1_dehosted = ncbi_scrub_pe.read1_dehosted
+        File ncbi_scrub_read2_dehosted = ncbi_scrub_pe.read2_dehosted
+        String ncbi_scrub_docker = ncbi_scrub_pe.ncbi_scrub_docker
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
         File seqyclean_summary = seqyclean.seqyclean_summary
@@ -603,6 +616,8 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
+        File ncbi_scrub_read1_dehosted
+        File ncbi_scrub_read2_dehosted
         File seqyclean_summary 
         File fastqc_raw1_html
         File fastqc_raw1_zip
@@ -629,6 +644,8 @@ task transfer {
 
     command <<<
 
+        gsutil -m cp ~{ncbi_scrub_read1_dehosted} ~{outdirpath}/ncbi_scrub/
+        gsutil -m cp ~{ncbi_scrub_read2_dehosted} ~{outdirpath}/ncbi_scrub/
         gsutil -m cp ~{seqyclean_summary} ~{outdirpath}/seqyclean/
         gsutil -m cp ~{fastqc_raw1_html} ~{outdirpath}/fastqc/
         gsutil -m cp ~{fastqc_raw1_zip} ~{outdirpath}/fastqc/

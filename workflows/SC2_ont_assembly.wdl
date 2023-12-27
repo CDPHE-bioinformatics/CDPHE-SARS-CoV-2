@@ -2,6 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
+import "../tasks/ncbi_scrub_ont_task.wdl" as ncbi_scrub_ont_task
 
 workflow SC2_ont_assembly {
 
@@ -34,9 +35,13 @@ workflow SC2_ont_assembly {
             fastq_files = ListFastqFiles.fastq_files,
             index_1_id = index_1_id
     }
+    call ncbi_scrub_ont_task.ncbi_scrub_ont as ncbi_scrub_ont {
+        input:
+            fastq_files = Demultiplex.guppy_demux_fastq
+    }
     call Read_Filtering {
         input:
-            fastq_files = Demultiplex.guppy_demux_fastq,
+            fastq_files = ncbi_scrub_ont.fastq_files_dehosted,
             index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
@@ -107,7 +112,8 @@ workflow SC2_ont_assembly {
 
     call transfer {
         input:
-        outdirpath = outdirpath, 
+        outdirpath = outdirpath,
+        ncbi_scrub_fastq_files_dehosted = ncbi_scrub_ont.fastq_files_dehosted,
         trimsort_bam = Medaka.trimsort_bam,
         trimsort_bai = Medaka.trimsort_bai,
         flagstat_out = Bam_stats.flagstat_out,
@@ -126,6 +132,9 @@ workflow SC2_ont_assembly {
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
+        Array[File] ncbi_scrub_fastq_files_dehosted = ncbi_scrub_ont.fastq_files_dehosted
+        Int ncbi_scrub_human_spots_removed = ncbi_scrub_ont.human_spots_removed
+        String ncbi_scrub_docker = ncbi_scrub_ont.ncbi_scrub_docker
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam
@@ -543,6 +552,7 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
+        Array[File] ncbi_scrub_fastq_files_dehosted
         File trimsort_bam
         File trimsort_bai
         File flagstat_out
@@ -561,6 +571,7 @@ task transfer {
 
     command <<<
 
+        gsutil -m cp ~{sep=' ' ncbi_scrub_fastq_files_dehosted} ~{outdirpath}/ncbi_scrub/
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
         gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/
         gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
