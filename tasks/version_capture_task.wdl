@@ -8,7 +8,7 @@ task workflow_version_capture {
     description: "capture version release"
   }
   command <<<
-    Workflow_Version="wip/ncbi-scrub"
+    Workflow_Version="wip-ncbi-scrub"
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
     echo "$Workflow_Version" > WORKFLOW_VERSION
