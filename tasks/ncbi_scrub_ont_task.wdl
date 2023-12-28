@@ -22,7 +22,7 @@ task ncbi_scrub_ont {
         removed=$(/opt/scrubber/scripts/scrub.sh -n ${fastq} |& tail -n1 | awk -F" " '{print $1}')
         total_removed=$(echo "print(${total_removed} + ${removed})" | python3)
         name=$(basename ${fastq} .fastq)
-        mv ./${name}.clean "${name}_dehosted.fastq"
+        mv ./${name}.fastq.clean "${name}_dehosted.fastq"
         gzip "${name}_dehosted.fastq" -c > "${name}_dehosted.fastq.gz"
     done
 
