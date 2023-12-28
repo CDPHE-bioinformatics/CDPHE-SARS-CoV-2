@@ -19,11 +19,6 @@ task ncbi_scrub_pe {
     paste <(zcat ~{read1} | paste - - - -) <(zcat ~{read2} | paste - - - -) | tr '\t' '\n' > interleaved.fastq
 
     # dehost reads
-    # for debugging
-    /opt/scrubber/scripts/scrub.sh interleaved.fastq
-
-    /opt/scrubber/scripts/scrub.sh -i interleaved.fastq
-    
     /opt/scrubber/scripts/scrub.sh -i interleaved.fastq |& tail -n1 | awk -F" " '{print $1}' > SPOTS_REMOVED
 
     # split interleaved reads and compress files
@@ -70,9 +65,6 @@ task ncbi_scrub_se {
     fi
 
     # dehost reads
-    # for debugging
-    /opt/scrubber/scripts/scrub.sh ${read1_unzip}
-
     /opt/scrubber/scripts/scrub.sh ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
     # gzip dehosted reads
