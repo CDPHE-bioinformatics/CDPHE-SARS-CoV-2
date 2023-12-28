@@ -113,6 +113,7 @@ workflow SC2_ont_assembly {
     call transfer {
         input:
         outdirpath = outdirpath,
+        sample_name = sample_name,
         hostile_fastq_files_dehosted = hostile_ont.fastq_files_dehosted,
         trimsort_bam = Medaka.trimsort_bam,
         trimsort_bai = Medaka.trimsort_bai,
