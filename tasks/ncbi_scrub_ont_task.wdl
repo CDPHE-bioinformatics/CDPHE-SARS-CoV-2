@@ -19,10 +19,9 @@ task ncbi_scrub_ont {
 
     # dehost reads
     for fastq in ~{sep=' ' fastq_files}; do
-        removed=$(/opt/scrubber/scripts/scrub.sh -i ${fastq} |& tail -n1 | awk -F" " '{print $1}')
-        total_removed=$(echo "print(${total_removed} + ${removed})" | python3)
         name=$(basename ${fastq} .fastq)
-        mv ./${name}.fastq.clean "${name}_dehosted.fastq"
+        removed=$(/opt/scrubber/scripts/scrub.sh -i ${fastq} -o "${name}_dehosted.fastq" |& tail -n1 | awk -F" " '{print $1}')
+        total_removed=$(echo "print(${total_removed} + ${removed})" | python3)
         gzip "${name}_dehosted.fastq" -c > "${name}_dehosted.fastq.gz"
     done
 
