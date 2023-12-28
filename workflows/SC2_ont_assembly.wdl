@@ -554,6 +554,7 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
+        String sample_name
         Array[File] hostile_fastq_files_dehosted
         File trimsort_bam
         File trimsort_bai
@@ -573,7 +574,7 @@ task transfer {
 
     command <<<
 
-        gsutil -m cp ~{sep=' ' hostile_fastq_files_dehosted} ~{outdirpath}/hostile/
+        gsutil -m cp ~{sep=' ' hostile_fastq_files_dehosted} ~{outdirpath}/hostile/~{sample_name}
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
         gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/
         gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
