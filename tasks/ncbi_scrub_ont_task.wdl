@@ -20,8 +20,12 @@ task ncbi_scrub_ont {
     # dehost reads
     for fastq in ~{sep=' ' fastq_files}; do
         echo $fastq
+        echo ${fastq}
+        cat $fastq > test.fastq
         ls -l $fastq
         /opt/scrubber/scripts/scrub.sh ${fastq}
+        /opt/scrubber/scripts/scrub.sh $fastq
+        /opt/scrubber/scripts/scrub.sh test.fastq
         removed=$(/opt/scrubber/scripts/scrub.sh ${fastq} |& tail -n1 | awk -F" " '{print $1}')
         total_removed=$(echo "print(${total_removed} + ${removed})" | python3)
         name=$(basename ${fastq} .fastq)
