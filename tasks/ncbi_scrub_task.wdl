@@ -65,7 +65,7 @@ task ncbi_scrub_se {
     fi
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh -n ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
 
     # gzip dehosted reads
     gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
