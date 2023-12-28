@@ -21,6 +21,8 @@ task ncbi_scrub_pe {
     # dehost reads
     # for debugging
     /opt/scrubber/scripts/scrub.sh interleaved.fastq
+
+    /opt/scrubber/scripts/scrub.sh -i interleaved.fastq
     
     /opt/scrubber/scripts/scrub.sh -i interleaved.fastq |& tail -n1 | awk -F" " '{print $1}' > SPOTS_REMOVED
 
