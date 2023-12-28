@@ -274,7 +274,7 @@ task Medaka {
     }
 
     runtime {
-        docker: "quay.io/staphb/artic-ncov2019:1.3.0"
+        docker: "staphb/artic:1.2.4-1.11.1"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
