@@ -29,11 +29,13 @@ workflow SC2_ont_assembly {
         input:
             gcs_fastq_dir = gcs_fastq_dir
     }
+
     call Demultiplex {
         input:
             fastq_files = ListFastqFiles.fastq_files,
             index_1_id = index_1_id
     }
+
     call Read_Filtering {
         input:
             fastq_files = Demultiplex.guppy_demux_fastq,
@@ -41,13 +43,14 @@ workflow SC2_ont_assembly {
             sample_name = sample_name,
             primer_set = primer_set
     }
+
     call Medaka {
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
             sample_name = sample_name,
-            index_1_id = index_1_id,
-            primer_bed = primer_bed
+            index_1_id = index_1_id
     }
+
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
@@ -58,6 +61,7 @@ workflow SC2_ont_assembly {
             primer_bed = primer_bed
             
     }
+    
     call Scaffold {
         input:
             sample_name = sample_name,
@@ -247,19 +251,14 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
-        File primer_bed
     }
 
     command <<<
     
-        mkdir -p ./primer-schemes/nCoV-2019/Vuser
-        cp /primer-schemes/nCoV-2019/V3/nCoV-2019.reference.fasta ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.reference.fasta
-        cp ~{primer_bed} ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.scheme.bed
-        
+        git clone https://github.com/artic-network/primer-schemes
+        artic minion --medaka --medaka-model r941_min_hac_g507 --normalise 20000 --threads 8 --read-file ~{filtered_reads} --scheme-directory primer-schemes --scheme-version 5.3.2 nCoV-2019 ~{sample_name}_~{index_1_id}
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
-
-        artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_name}_~{index_1_id}
 
     >>>
 
