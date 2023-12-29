@@ -20,7 +20,8 @@ task hostile {
     hostile --version | tee VERSION
 
     fastq1_name=~{fastq1}
-    fastq1_basename=${fastq1_name%%.*}  # get name without any extensions
+    fastq1_scrubbed_name="${fastq1_name%%.*}_scrubbed_fastq.gz"
+    echo ${fastq1_scrubbed_name} > FASTQ1_SCRUBBED_NAME
 
     # dehost reads based on sequencing method
     if [[ "~{seq_method}" == "OXFORD_NANOPORE" ]]; then
@@ -30,7 +31,7 @@ task hostile {
         --threads ~{cpu} | tee decontamination-log.json
 
       # rename scrubbed fastq
-      mv ./*.clean.fastq.gz "${fastq1_basename}_scrubbed.fastq.gz"
+      mv ./*.clean.fastq.gz "${fastq1_scrubbed_name}"
     else
       hostile clean \
         --fastq1 ~{fastq1} \
@@ -39,10 +40,11 @@ task hostile {
         --threads ~{cpu} | tee decontamination-log.json
 
       # rename scrubbed fastqs
-      mv ./*.clean_1.fastq.gz "${fastq1_basename}_scrubbed.fastq.gz"
+      mv ./*.clean_1.fastq.gz "${fastq1_scrubbed_name}"
       fastq2_name=~{fastq2}
-      fastq2_basename=${fastq2_name%%.*}
-      mv ./*.clean_2.fastq.gz "${fastq2_basename}_scrubbed.fastq.gz"
+      fastq2_scrubbed_name="${fastq2_name%%.*}_scrubbed_fastq.gz"
+      echo ${fastq2_scrubbed_name} > FASTQ2_SCRUBBED_NAME
+      mv ./*.clean_2.fastq.gz "${fastq2_scrubbed_name}"
     fi
 
     # extract the number of removed human reads
@@ -51,11 +53,8 @@ task hostile {
   >>>
   output {
     String hostile_version = read_string("VERSION")
-
-    # Illumina has R1/R2 so make sure to grab R1 file for fastq1_scrubbed
-    File fastq1_scrubbed = if seq_method == "OXFORD_NANOPORE" then glob("*_scrubbed.fastq.gz")[0] else glob("*_R1_scrubbed.fastq.gz")[0]
-
-    File? fastq2_scrubbed = glob("*_R2_scrubbed.fastq.gz")[0]
+    File fastq1_scrubbed = read_string("FASTQ1_SCRUBBED_NAME")
+    File? fastq2_scrubbed = read_string("FASTQ2_SCRUBBED_NAME")
     String human_reads_removed = read_string("HUMANREADS")
     String human_reads_removed_proportion = read_string("HUMANREADS_PROP")
     String hostile_docker = docker
