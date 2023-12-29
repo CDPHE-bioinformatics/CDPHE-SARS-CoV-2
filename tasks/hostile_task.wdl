@@ -42,7 +42,7 @@ task hostile {
       mv ./*.clean_1.fastq.gz "${fastq1_basename}_scrubbed.fastq.gz"
       fastq2_name=~{fastq2}
       fastq2_basename=${fastq2_name%%.*}
-      mv ./*.clean_2.fastq.gz "${fastq1_basename}_scrubbed.fastq.gz"
+      mv ./*.clean_2.fastq.gz "${fastq2_basename}_scrubbed.fastq.gz"
     fi
 
     # extract the number of removed human reads
