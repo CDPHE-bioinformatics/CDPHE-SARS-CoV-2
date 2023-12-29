@@ -29,9 +29,8 @@ workflow SC2_illumina_pe_assembly {
 
     call hostile_task.hostile as hostile {
         input:
-            read1 = fastq_1,
-            read2 = fastq_2,
-            samplename = sample_name,
+            fastq1 = fastq_1,
+            fastq2 = fastq_2,
             seq_method = "ILLUMINA"
     }
 
@@ -39,8 +38,8 @@ workflow SC2_illumina_pe_assembly {
         input:
             contam = adapters_and_contaminants,
             sample_name = sample_name,
-            fastq_1 = hostile.read1_dehosted,
-            fastq_2 = select_first([hostile.read2_dehosted])
+            fastq_1 = hostile.fastq1_scrubbed,
+            fastq_2 = select_first([hostile.fastq2_scrubbed])
     }
 
     call fastqc as fastqc_raw {
@@ -131,8 +130,8 @@ workflow SC2_illumina_pe_assembly {
     call transfer {
         input:
             outdirpath = outdirpath,
-            hostile_read1_dehosted = hostile.read1_dehosted,
-            hostile_read2_dehosted = select_first([hostile.read2_dehosted]),
+            fastq1_scrubbed = hostile.fastq1_scrubbed,
+            fastq2_scrubbed = select_first([hostile.fastq2_scrubbed]),
             seqyclean_summary = seqyclean.seqyclean_summary,
             fastqc_raw1_html = fastqc_raw.fastqc1_html,
             fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
@@ -157,9 +156,10 @@ workflow SC2_illumina_pe_assembly {
     }
 
     output {
-        Int? hostile_human_reads_removed = hostile.human_reads_removed
-        File hostile_read1_dehosted = hostile.read1_dehosted
-        File hostile_read2_dehosted = select_first([hostile.read2_dehosted])
+        Int human_reads_removed = hostile.human_reads_removed
+        Float human_reads_removed_proportion = hostile.human_reads_removed_proportion
+        File hostile_read1_dehosted = hostile.fastq1_scrubbed
+        File hostile_read2_dehosted = select_first([hostile.fastq2_scrubbed])
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
         File seqyclean_summary = seqyclean.seqyclean_summary
@@ -616,8 +616,8 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
-        File hostile_read1_dehosted
-        File hostile_read2_dehosted
+        File fastq1_scrubbed
+        File fastq2_scrubbed
         File seqyclean_summary 
         File fastqc_raw1_html
         File fastqc_raw1_zip
@@ -644,8 +644,8 @@ task transfer {
 
     command <<<
 
-        gsutil -m cp ~{hostile_read1_dehosted} ~{outdirpath}/hostile/
-        gsutil -m cp ~{hostile_read2_dehosted} ~{outdirpath}/hostile/
+        gsutil -m cp ~{fastq1_scrubbed} ~{outdirpath}/scrubbed_fastq/
+        gsutil -m cp ~{fastq2_scrubbed} ~{outdirpath}/scrubbed_fastq/
         gsutil -m cp ~{seqyclean_summary} ~{outdirpath}/seqyclean/
         gsutil -m cp ~{fastqc_raw1_html} ~{outdirpath}/fastqc/
         gsutil -m cp ~{fastqc_raw1_zip} ~{outdirpath}/fastqc/
