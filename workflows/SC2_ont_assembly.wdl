@@ -255,7 +255,9 @@ task Medaka {
 
     command <<<
     
-        git clone https://github.com/artic-network/primer-schemes
+        wget -q -O primer-schemes.zip https://github.com/artic-network/primer-schemes/archive/e6ddb7c4a21a65e1e4ae3c21129f9d08c2cac12f.zip
+        unzip primer-schemes.zip && mv primer-schemes-* primer-schemes
+
         artic minion --medaka --medaka-model r941_min_hac_g507 --normalise 20000 --threads 8 --read-file ~{filtered_reads} --scheme-directory primer-schemes --scheme-version 5.3.2 nCoV-2019 ~{sample_name}_~{index_1_id}
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
