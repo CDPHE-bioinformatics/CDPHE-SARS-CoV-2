@@ -34,7 +34,7 @@ task hostile {
         --threads ~{cpu} | tee decontamination-log.json
 
       # rename scrubbed fastq
-      mv ./*.clean.fastq.gz "${fastq1_scrubbed_name}"
+      mv ./*.clean.fastq.gz "~{fastq1_scrubbed_name}"
     else
       hostile clean \
         --fastq1 ~{fastq1} \
@@ -43,8 +43,8 @@ task hostile {
         --threads ~{cpu} | tee decontamination-log.json
 
       # rename scrubbed fastqs
-      mv ./*.clean_1.fastq.gz "${fastq1_scrubbed_name}"
-      mv ./*.clean_2.fastq.gz "${fastq2_scrubbed_name}"
+      mv ./*.clean_1.fastq.gz "~{fastq1_scrubbed_name}"
+      mv ./*.clean_2.fastq.gz "~{fastq2_scrubbed_name}"
     fi
 
     # extract the number of removed human reads
