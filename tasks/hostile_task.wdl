@@ -53,8 +53,8 @@ task hostile {
   >>>
   output {
     String hostile_version = read_string("VERSION")
-    File fastq1_scrubbed = read_string("FASTQ1_SCRUBBED_NAME")
-    File? fastq2_scrubbed = read_string("FASTQ2_SCRUBBED_NAME")
+    File fastq1_scrubbed = basename(read_string("FASTQ1_SCRUBBED_NAME"))
+    File? fastq2_scrubbed = basename(read_string("FASTQ2_SCRUBBED_NAME"))
     String human_reads_removed = read_string("HUMANREADS")
     String human_reads_removed_proportion = read_string("HUMANREADS_PROP")
     String hostile_docker = docker
