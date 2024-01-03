@@ -54,7 +54,7 @@ task hostile {
   output {
     String hostile_version = read_string("VERSION")
     File fastq1_scrubbed = "${fastq1_scrubbed_name}"
-    File? fastq2_scrubbed = "${fastq2_scrubbed_name}"
+    File? fastq2_scrubbed = if defined(fastq2) then "${fastq2_scrubbed_name}" else "/dev/null"
     String human_reads_removed = read_string("HUMANREADS")
     String human_reads_removed_proportion = read_string("HUMANREADS_PROP")
     String hostile_docker = docker
