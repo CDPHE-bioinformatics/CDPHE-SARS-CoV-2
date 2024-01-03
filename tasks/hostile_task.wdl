@@ -16,10 +16,7 @@ task hostile {
   }
 
   String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
-
-  # workaround to get basename() for optional file
-  String fastq2_name = if defined(fastq2) then fastq2 else ""
-  String fastq2_scrubbed_name = if defined(fastq2) then select_first([basename(fastq2_name, ".fastq.gz"), basename(fastq2_name, ".fastq")]) + "_scrubbed.fastq.gz" else "None"
+  String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
 
   command <<<
     # date and version control
