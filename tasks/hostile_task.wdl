@@ -19,15 +19,12 @@ task hostile {
 
   # workaround to get basename() for optional file
   String fastq2_name = if defined(fastq2) then fastq2 else ""
-  String fastq2_scrubbed_name = if defined(fastq2) then select_first([basename(fastq2_name, ".fastq.gz"), basename(fastq2_name, ".fastq")]) + "_scrubbed.fastq.gz" else ""
+  String fastq2_scrubbed_name = if defined(fastq2) then select_first([basename(fastq2_name, ".fastq.gz"), basename(fastq2_name, ".fastq")]) + "_scrubbed.fastq.gz" else "None"
 
   command <<<
     # date and version control
     date | tee DATE
     hostile --version | tee VERSION
-
-    # empty file for optional output fastq2
-    touch NULL
 
     # dehost reads based on sequencing method
     if [[ "~{seq_method}" == "OXFORD_NANOPORE" ]]; then
@@ -57,7 +54,7 @@ task hostile {
   output {
     String hostile_version = read_string("VERSION")
     File fastq1_scrubbed = "${fastq1_scrubbed_name}"
-    File? fastq2_scrubbed = if defined(fastq2) then "${fastq2_scrubbed_name}" else "NULL"
+    File? fastq2_scrubbed = "${fastq2_scrubbed_name}"
     String human_reads_removed = read_string("HUMANREADS")
     String human_reads_removed_proportion = read_string("HUMANREADS_PROP")
     String hostile_docker = docker
