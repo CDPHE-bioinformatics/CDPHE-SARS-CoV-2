@@ -13,6 +13,6 @@ task sum {
     docker: 'ubuntu:latest'
   }
   output {
-    Int total = read_int(stdout())
+    String total = read_string(stdout())
   }
 }
