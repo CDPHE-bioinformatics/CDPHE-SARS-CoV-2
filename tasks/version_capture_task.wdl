@@ -51,11 +51,11 @@ task task_version_capture {
   VersionInfoArray versions = { "versions": version_array }
 
   command <<<
-    python ~{version_capture_py}\
+    python ~{version_capture_py} \
       --versions_json ~{write_json(versions)} \
       --workflow_name ~{workflow_name} \
       --workflow_version ~{workflow_version} \
-      --project_name ~{project_name}
+      --project_name ~{project_name} \
       --analysis_date ~{analysis_date}
   >>>
 
