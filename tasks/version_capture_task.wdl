@@ -66,6 +66,6 @@ task task_version_capture {
     memory: "1 GB"
     cpu: 1
     docker: "mchether/py3-bio:v4"
-    disks: "local-disk 10 SDD"
+    disks: "local-disk 10 SSD"
   }
 }
