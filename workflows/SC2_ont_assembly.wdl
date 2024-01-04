@@ -511,51 +511,6 @@ task get_primer_site_variants {
     }
 }
 
-task create_version_capture_file {
-
-
-    input {
-        File version_capture_ont_assembly_py
-        String project_name
-        String guppy_version
-        String artic_version
-        String medaka_version
-        String samtools_version
-        String pyScaf_version
-        String bcftools_version
-        String analysis_date
-        String workflow_version
-    }
-
-    command <<<
-
-        python ~{version_capture_ont_assembly_py} \
-        --project_name "~{project_name}" \
-        --guppy_version "~{guppy_version}" \
-        --artic_version "~{artic_version}" \
-        --medaka_version "~{medaka_version}" \
-        --samtools_version "~{samtools_version}" \
-        --pyScaf_version "~{pyScaf_version}" \
-        --bcftools_version "~{bcftools_version}" \
-        --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}" 
-
-
-    >>>
-
-    output {
-        File version_capture_ont_assembly = 'version_capture_ont_asembly_~{project_name}_~{workflow_version}.csv'
-    }
-
-    runtime {
-
-      docker: "mchether/py3-bio:v4"
-      memory: "1 GB"
-      cpu: 4
-      disks: "local-disk 10 SSD"
-
-    }
-}
 
 task transfer {
     input {
