@@ -12,6 +12,7 @@ workflow SC2_ont_assembly {
         String    sample_name
         String    index_1_id
         String    primer_set
+        File    genome_index
         File    covid_genome
         File    primer_bed
         File    s_gene_primer_bed
@@ -41,6 +42,7 @@ workflow SC2_ont_assembly {
             input:
                 fastq1 = fastq_file,
                 seq_method = "OXFORD_NANOPORE",
+                genome_index = genome_index,
                 cpu = 1,  # limit CPU for each FASTQ to avoid quickly hitting quota limit
         }
     }
