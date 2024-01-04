@@ -273,15 +273,15 @@ task Medaka {
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
 
         VersionInfo artic_version_info = object {
-            "software": "artic",
-            "docker": docker,
-            "version": read_string("VERSION_artic")
+            software: "artic",
+            docker: docker,
+            version: read_string("VERSION_artic")
         }
 
         VersionInfo medaka_version_info = object {
-            "software": "medaka",
-            "docker": docker,
-            "version": read_string("VERSION_medaka")
+            software: "medaka",
+            docker: docker,
+            version: read_string("VERSION_medaka")
         }
     }
 
@@ -364,9 +364,9 @@ task Bam_stats {
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
         
         VersionInfo samtools_version_info = object {
-            "software": "samtools",
-            "docker": docker,
-            "version": read_string("VERSION")
+            software: "samtools",
+            docker: docker,
+            version: read_string("VERSION")
         }
     }
 
