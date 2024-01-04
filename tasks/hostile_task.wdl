@@ -40,7 +40,7 @@ task hostile {
         --fastq2 ~{fastq2} \
         --aligner "bowtie2" \
         --threads ~{cpu} \
-        --index ~{basename(genome_index)} | tee decontamination-log.json
+        --index ~{basename(genome_index, ".tar")} | tee decontamination-log.json
       # rename scrubbed fastqs
       mv ./*.clean_1.fastq.gz "~{fastq1_scrubbed_name}"
       mv ./*.clean_2.fastq.gz "~{fastq2_scrubbed_name}"
