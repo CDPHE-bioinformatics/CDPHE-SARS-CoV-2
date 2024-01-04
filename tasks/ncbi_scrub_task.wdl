@@ -5,36 +5,39 @@ version 1.0
 
 task ncbi_scrub_pe {
   input {
-    File read1
-    File read2
-    String samplename
+    File fastq1
+    File fastq2
     String docker = "us-docker.pkg.dev/general-theiagen/ncbi/sra-human-scrubber:2.2.1"
     Int disk_size = 100
   }
+
+  String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
+  String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
+
   command <<<
     # date and version control
     date | tee DATE
 
     # unzip read files as scrub tool does not take in .gz fastq files, and interleave them
-    paste <(zcat ~{read1} | paste - - - -) <(zcat ~{read2} | paste - - - -) | tr '\t' '\n' > interleaved.fastq
+    paste <(zcat ~{fastq1} | paste - - - -) <(zcat ~{fastq2} | paste - - - -) | tr '\t' '\n' > interleaved.fastq
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh -i interleaved.fastq |& tail -n1 | awk -F" " '{print $1}' > SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh -i interleaved.fastq |& tail -n1 | awk -F" " '{print $1}' > HUMANREADS
 
     # split interleaved reads and compress files
     paste - - - - - - - - < interleaved.fastq.clean \
-      | tee >(cut -f 1-4 | tr '\t' '\n' | gzip > ~{samplename}_R1_dehosted.fastq.gz) \
-      | cut -f 5-8 | tr '\t' '\n' | gzip > ~{samplename}_R2_dehosted.fastq.gz
+      | tee >(cut -f 1-4 | tr '\t' '\n' | gzip > ~{fastq1_scrubbed_name}) \
+      | cut -f 5-8 | tr '\t' '\n' | gzip > ~{fastq2_scrubbed_name}
       
   >>>
   output {
-    File read1_dehosted = "~{samplename}_R1_dehosted.fastq.gz"
-    File read2_dehosted = "~{samplename}_R2_dehosted.fastq.gz"
-    Int human_spots_removed = read_int("SPOTS_REMOVED")
+    File fastq1_scrubbed = "~{fastq1_scrubbed_name}"
+    File fastq2_scrubbed = "~{fastq2_scrubbed_name}"
+    Int human_reads_removed = read_string("HUMANREADS")
     String ncbi_scrub_docker = docker
   }
   runtime {
-      docker: "~{docker}"
+      docker: docker
       memory: "8 GB"
       cpu: 4
       disks:  "local-disk " + disk_size + " SSD"
@@ -46,37 +49,39 @@ task ncbi_scrub_pe {
 
 task ncbi_scrub_se {
   input {
-    File read1
-    String samplename
+    File fastq1
     String docker = "us-docker.pkg.dev/general-theiagen/ncbi/sra-human-scrubber:2.2.1"
     Int disk_size = 100
   }
+
+  String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
+
   command <<<
     # date and version control
     date | tee DATE
 
     # unzip fwd file as scrub tool does not take in .gz fastq files
-    if [[ "~{read1}" == *.gz ]]
+    if [[ "~{fastq1}" == *.gz ]]
     then
-      gunzip -c ~{read1} > r1.fastq
-      read1_unzip=r1.fastq
+      gunzip -c ~{fastq1} > r1.fastq
+      fastq1_unzip=r1.fastq
     else
-      read1_unzip=~{read1}
+      fastq1_unzip=~{fastq1}
     fi
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh ${read1_unzip} |& tail -n1 | awk -F" " '{print $1}' > FWD_SPOTS_REMOVED
+    /opt/scrubber/scripts/scrub.sh ${fastq1_unzip} |& tail -n1 | awk -F" " '{print $1}' > HUMANREADS
 
     # gzip dehosted reads
-    gzip ${read1_unzip}.clean -c > ~{samplename}_R1_dehosted.fastq.gz
+    gzip ${fastq1_unzip}.clean -c > ~{fastq1_scrubbed_name}
   >>>
   output {
-    File read1_dehosted = "~{samplename}_R1_dehosted.fastq.gz"
-    Int read1_human_spots_removed = read_int("FWD_SPOTS_REMOVED")
+    File fastq1_scrubbed = "~{fastq1_scrubbed_name}"
+    Int human_reads_removed = read_int("HUMANREADS")
     String ncbi_scrub_docker = docker
   }
   runtime {
-    docker: "~{docker}"
+    docker: docker
     memory: "8 GB"
     cpu: 4
     disks:  "local-disk " + disk_size + " SSD"
