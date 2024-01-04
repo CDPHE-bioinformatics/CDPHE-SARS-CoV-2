@@ -91,18 +91,18 @@ workflow SC2_ont_assembly {
         input:
     }
 
-    call create_version_capture_file {
+    call  version_capture.task_version_capture as task_version_capture {
         input:
-            project_name = project_name, 
-            guppy_version = Demultiplex.guppy_version,
-            artic_version = Medaka.artic_version,
-            medaka_version = Medaka.medaka_version,
-            samtools_version = Bam_stats.samtools_version,
-            pyScaf_version = Scaffold.pyScaf_version,
-            bcftools_version = get_primer_site_variants.bcftools_version,
-            analysis_date = workflow_version_capture.analysis_date,
+            version_array = [
+                Medaka.medaka_version_info,
+                Medaka.artic_version_info,
+                Bam_stats.samtools_version_info
+            ],
+            workflow_name = "SC2_ont_assembly",
             workflow_version = workflow_version_capture.workflow_version,
-            version_capture_ont_assembly_py = version_capture_ont_assembly_py 
+            project_name = project_name,
+            analysis_date = workflow_version_capture.analysis_date,
+            version_capture_py = version_capture_ont_assembly_py 
     }
 
     call transfer {
@@ -120,7 +120,7 @@ workflow SC2_ont_assembly {
         variants = Medaka.variants,
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        version_capture_ont_assembly = task_version_capture.version_capture_file
     }
 
     output {
@@ -144,7 +144,7 @@ workflow SC2_ont_assembly {
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
 
-        File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        File version_capture_ont_assembly = task_version_capture.version_capture_file
         String transfer_date_assembly = transfer.transfer_date_assembly
     }
 }
@@ -248,6 +248,7 @@ task Medaka {
         String sample_name
         File filtered_reads
         File primer_bed
+        String docker = "quay.io/staphb/artic-ncov2019:1.3.0"
     }
 
     command <<<
@@ -270,12 +271,22 @@ task Medaka {
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
-        String artic_version = read_string("VERSION_artic")
-        String medaka_version = read_string("VERSION_medaka")
+
+        VersionInfo artic_version_info = object {
+            "software": "artic",
+            "docker": docker,
+            "version": read_string("VERSION_artic")
+        }
+
+        VersionInfo medaka_version_info = object {
+            "software": "medaka",
+            "docker": docker,
+            "version": read_string("VERSION_medaka")
+        }
     }
 
     runtime {
-        docker: "quay.io/staphb/artic-ncov2019:1.3.0"
+        docker: docker
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
@@ -291,6 +302,7 @@ task Bam_stats {
         File bai
         File s_gene_amplicons
         File primer_bed
+        String docker = "staphb/samtools:1.16"
     }
 
     Int disk_size = 3 * ceil(size(bam, "GB"))
@@ -350,7 +362,12 @@ task Bam_stats {
         File depth_out = "${sample_name}_${index_1_id}_depth.txt"
         File cov_s_gene_out = "${sample_name}_${index_1_id}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
-        String samtools_version = read_string("VERSION")
+        
+        VersionInfo samtools_version_info = object {
+            "software": "samtools",
+            "docker": docker,
+            "version": read_string("VERSION")
+        }
     }
 
     runtime {
@@ -360,7 +377,7 @@ task Bam_stats {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.16"
+        docker:    docker
     }
 }
 
