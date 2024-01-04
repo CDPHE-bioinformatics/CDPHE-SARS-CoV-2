@@ -72,7 +72,7 @@ task ncbi_scrub_se {
     fi
 
     # dehost reads
-    /opt/scrubber/scripts/scrub.sh ${fastq1_unzip} |& tail -n1 | awk -F" " '{print $1}' > HUMANREADS
+    /opt/scrubber/scripts/scrub.sh -i ${fastq1_unzip} |& tail -n1 | awk -F" " '{print $1}' > HUMANREADS
 
     # gzip dehosted reads
     gzip ${fastq1_unzip}.clean -c > ~{fastq1_scrubbed_name}
