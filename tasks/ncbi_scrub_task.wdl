@@ -9,6 +9,7 @@ task ncbi_scrub_pe {
     File fastq2
     String docker = "us-docker.pkg.dev/general-theiagen/ncbi/sra-human-scrubber:2.2.1"
     Int disk_size = 100
+    Int cpu = 4
   }
 
   String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
@@ -33,13 +34,13 @@ task ncbi_scrub_pe {
   output {
     File fastq1_scrubbed = "~{fastq1_scrubbed_name}"
     File fastq2_scrubbed = "~{fastq2_scrubbed_name}"
-    Int human_reads_removed = read_string("HUMANREADS")
+    String human_reads_removed = read_string("HUMANREADS")
     String ncbi_scrub_docker = docker
   }
   runtime {
       docker: docker
       memory: "8 GB"
-      cpu: 4
+      cpu: cpu
       disks:  "local-disk " + disk_size + " SSD"
       disk: disk_size + " GB" # TES
       preemptible: 0
@@ -52,6 +53,7 @@ task ncbi_scrub_se {
     File fastq1
     String docker = "us-docker.pkg.dev/general-theiagen/ncbi/sra-human-scrubber:2.2.1"
     Int disk_size = 100
+    Int cpu = 4
   }
 
   String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
@@ -77,13 +79,13 @@ task ncbi_scrub_se {
   >>>
   output {
     File fastq1_scrubbed = "~{fastq1_scrubbed_name}"
-    Int human_reads_removed = read_int("HUMANREADS")
+    String human_reads_removed = read_string("HUMANREADS")
     String ncbi_scrub_docker = docker
   }
   runtime {
     docker: docker
     memory: "8 GB"
-    cpu: 4
+    cpu: cpu
     disks:  "local-disk " + disk_size + " SSD"
     disk: disk_size + " GB" # TES
     preemptible: 0
