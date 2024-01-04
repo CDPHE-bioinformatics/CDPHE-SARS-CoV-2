@@ -25,6 +25,8 @@ def create_version_df(options):
 
     records.insert(0, workflow_record)
     df = pd.DataFrame(records)
+    df = df.insert(0, 'project_name', options.project_name)
+    df = df.insert(1, 'analysis_date', options.analysis_date)
     return df
 
 if __name__ == '__main__':
