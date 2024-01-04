@@ -142,7 +142,7 @@ workflow SC2_ont_assembly {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
         Array[File] fastq_files_scrubbed = ncbi_scrub.fastq1_scrubbed
-        Int ncbi_scrub_human_reads_removed = sum_human_reads_removed.total
+        Int human_reads_removed = sum_human_reads_removed.total
         String ncbi_scrub_docker = ncbi_scrub.ncbi_scrub_docker[0]
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam

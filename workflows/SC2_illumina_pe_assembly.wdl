@@ -155,7 +155,7 @@ workflow SC2_illumina_pe_assembly {
     }
 
     output {
-        Int ncbi_scrub_human_reads_removed = ncbi_scrub_pe.human_reads_removed
+        Int human_reads_removed = ncbi_scrub_pe.human_reads_removed
         File fastq1_scrubbed = ncbi_scrub_pe.fastq1_scrubbed
         File fastq2_scrubbed = ncbi_scrub_pe.fastq2_scrubbed
         String ncbi_scrub_docker = ncbi_scrub_pe.ncbi_scrub_docker
