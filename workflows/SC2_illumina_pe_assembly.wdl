@@ -15,6 +15,7 @@ workflow SC2_illumina_pe_assembly {
         File    adapters_and_contaminants
         File    covid_genome
         File    covid_gff
+        File genome_index
         String  project_name
         String out_dir
 
@@ -31,6 +32,7 @@ workflow SC2_illumina_pe_assembly {
         input:
             fastq1 = fastq_1,
             fastq2 = fastq_2,
+            genome_index = genome_index,
             seq_method = "ILLUMINA"
     }
 
@@ -158,8 +160,8 @@ workflow SC2_illumina_pe_assembly {
     output {
         Int human_reads_removed = hostile.human_reads_removed
         Float human_reads_removed_proportion = hostile.human_reads_removed_proportion
-        File hostile_read1_dehosted = hostile.fastq1_scrubbed
-        File hostile_read2_dehosted = select_first([hostile.fastq2_scrubbed])
+        File fastq1_scrubbed = hostile.fastq1_scrubbed
+        File fastq2_scrubbed = select_first([hostile.fastq2_scrubbed])
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
         File seqyclean_summary = seqyclean.seqyclean_summary
