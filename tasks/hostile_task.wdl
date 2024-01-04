@@ -29,8 +29,8 @@ task hostile {
       hostile clean \
         --fastq1 ~{fastq1} \
         --aligner "minimap2" \
-        --threads ~{cpu} | tee decontamination-log.json
-        --index ~{genome_index}
+        --threads ~{cpu} \
+        --index ~{genome_index} | tee decontamination-log.json
       # rename scrubbed fastq
       mv ./*.clean.fastq.gz "~{fastq1_scrubbed_name}"
     else
@@ -38,8 +38,8 @@ task hostile {
         --fastq1 ~{fastq1} \
         --fastq2 ~{fastq2} \
         --aligner "bowtie2" \
-        --threads ~{cpu} | tee decontamination-log.json
-        --index ~{genome_index}
+        --threads ~{cpu} \
+        --index ~{genome_index} | tee decontamination-log.json
       # rename scrubbed fastqs
       mv ./*.clean_1.fastq.gz "~{fastq1_scrubbed_name}"
       mv ./*.clean_2.fastq.gz "~{fastq2_scrubbed_name}"
