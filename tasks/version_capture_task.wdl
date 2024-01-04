@@ -65,8 +65,7 @@ task task_version_capture {
   runtime {
     memory: "1 GB"
     cpu: 1
-    docker: "ubuntu:jammy"
-    disks: "local-disk 10 HDD"
-    dx_instance_type: "mem1_ssd1_v2_x2"   
+    docker: "mchether/py3-bio:v4"
+    disks: "local-disk 10 SDD"
   }
 }
