@@ -1,220 +1,284 @@
-#! /usr/bin/env python
-
-
-import re
-import pandas as pd 
-import numpy as np
-import sys
-import json
+"""
+Parses a nextclade json file and outputs nextclade results and variant summary.
+"""
 
 import argparse
+import json
+import logging
+import re
+import sys
 
-# note before you can use this script from the command line you must make the script executable
-# locate this script in ~/scripts and be sure that ~/scripts is ammended to your $PATH variable
-# to use nexclade_json_parser.py <path to json file>
-# will create two output files:
-# nextclade_variant_summary.csv
-# nextclade_results.csv
-
-# updated 2022-06-29
-# under data['results'][i]['insertions']
-# the new nextclade update got ride of the 'lenght' key 
-# only keys under insertions are 'pos' and 'ins'
-# i use len(data['results'][i]['insertions']['ins'] to find the length
+import pandas as pd
 
 
-#### FUNCTIONS #####
+logger = logging.getLogger(__name__)
 
-def hsn_from_id(sample_name):
-    # Horizon hsn has format 2XXXXXXXXX
-    if re.search(r'2[0-9]{9}', sample_name) is not None:
-        return re.search(r'2[0-9]{9}', sample_name).group()
-    else:
-        return ''
 
-def getOptions(args=sys.argv[1:]):
+def parse_args(args: list) -> argparse.Namespace:
+    """
+    Parses the command line arguments.
+
+    :param args: the command line arguments
+    :returns: the parsed arguments
+    """
     parser = argparse.ArgumentParser(description="Parses command.")
-    parser.add_argument("--nextclade_json",  help="nextclade json file")
-    parser.add_argument('--project_name')
-    parser.add_argument('--workflow_version')
-    options = parser.parse_args(args)
-    return options
+    parser.add_argument(
+        "--log_level",
+        help="the level to log at",
+        choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
+        default="INFO",
+    )
+    parser.add_argument("--nextclade_json", help="the nextclade json file path")
+    parser.add_argument("--project_name", help="the project name")
+    parser.add_argument("--workflow_version", help="the workflow version")
+    return parser.parse_args(args)
 
 
-def get_sample_name_from_fasta_header(fasta_header):
-    if re.search('CO-CDPHE', fasta_header):
-        sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
-        return sample_name 
-    else:
-        return fasta_header
+def setup_logging(log_level: str):
+    """
+    Sets up the logging.
 
-def extract_variant_list(json_path, project_name, workflow_version):
-
-    # create pd data frame to fill
-    df = pd.DataFrame()
-    sample_name_list = []
-    mutation_list = []
-    gene_list = []
-    refAA_list = []
-    altAA_list = []
-    codon_pos_list = []
-    nuc_start_list = []
-    nuc_end_list = []
+    :param log_level: the log level
+    """
+    log_format = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
+    logging.basicConfig(
+        level=log_level,
+        stream=sys.stdout,
+        format=log_format,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 
-    with open(json_path) as f:
-        data = json.load(f)
+def extract_hsn(sample_name: str) -> str:
+    """
+    Gets the hsn from the sample name. The hsn is the first 10 digits of the
+    sample name and begins with 2.
 
-    for i in range(len(data['results'])):
-        sample_name = data['results'][i]['seqName']
-        print(sample_name)
-
-    #     print(data[i]['seqName'])
-        if 'aaDeletions' in data['results'][i].keys():
-            aa_deletions = data['results'][i]['aaDeletions']
-            for item in aa_deletions:
-                
-                print(sample_name)
-                gene=item['gene']
-                refAA= item['refAA']
-                altAA= 'del'
-                pos=item['codon'] + 1
-                nuc_start = item['codonNucRange']['begin']
-                nuc_end = item['codonNucRange']['end']
-
-                mutation = '%s_%s%d%s' % (gene, refAA, pos, altAA)
-                
+    :param sample_name: the sample name
+    :returns: the hsn
+    """
+    hsn = ""
+    if sample_name:
+        match = re.search(r"2[0-9]{9}", sample_name)
+        if match:
+            hsn = match.group()
+    return hsn
 
 
-                sample_name_list.append(data['results'][i]['seqName'])
-                mutation_list.append(mutation)
-                gene_list.append(gene)
-                refAA_list.append(refAA)
-                altAA_list.append(altAA)
-                codon_pos_list.append(pos)
-                nuc_start_list.append(nuc_start)
-                nuc_end_list.append(nuc_end)
-                
-        if 'insertions' in data['results'][i].keys():
-            insertions = data['results'][i]['insertions']
-            for item in insertions:
-                gene= ''
-                refAA= 'ins'
-                altAA= item['ins']
-                pos=item['pos'] + 1
-                nuc_start = item['pos'] + 1
-                
-                # to find length now that update removed length key
-                insert_seq = item['ins']
-                length = len(insert_seq)
-                #####
-                
-                nuc_end = item['pos'] + 1 + length
+def extract_sample_name(fasta_header: str) -> str:
+    """
+    Parses a fasta header to get the sample name. The fasta header is expected
+    to have the format: >CO-CDPHE-<sample_name>
 
-                mutation = '%s_%s%d%s' % (gene, refAA, pos, altAA)
-                
-                sample_name_list.append(data['results'][i]['seqName'])
-                mutation_list.append(mutation)
-                gene_list.append(gene)
-                refAA_list.append(refAA)
-                altAA_list.append(altAA)
-                codon_pos_list.append(pos)
-                nuc_start_list.append(nuc_start)
-                nuc_end_list.append(nuc_end)
+    :param fasta_header: the fasta header
+    :returns: the sample name
+    """
+    sample_name = ""
+    if fasta_header:
+        match = re.search(r"CO-CDPHE-([0-9a-zA-Z_\\-\\.]+)", fasta_header)
+        if match:
+            sample_name = match.group(1)
+        else:
+            sample_name = fasta_header
+    return sample_name
 
-        if 'aaSubstitutions' in data['results'][i].keys():
-            aa_subs = data['results'][i]['aaSubstitutions']
-            for item in aa_subs:
-                gene = item['gene']
-                refAA = item['refAA']
-                if item['queryAA'] == '*':
-                    altAA = 'stop'
+
+def get_results(json_data: str) -> pd.DataFrame:
+    """
+    Gets the results from the nextclade json data.
+
+    :param json_data: the nextclade json data
+    :returns: the results
+    """
+    logger.info("Processing results for %s samples.", len(json_data['results']))
+
+    results = pd.DataFrame({
+        "fasta_header": [],
+        "sample_name": [],
+        "hsn": [],
+        "nextclade": [],
+        "total_nucleotide_mutations": [],
+        "total_nucleotide_deletions": [],
+        "total_nucleotide_insertions": [],
+        "total_AA_substitutions": [],
+        "total_AA_deletions": []
+    })
+
+    for i in range(len(json_data["results"])):
+        sample_json_data = json_data["results"][i]
+        sample_fasta_header = sample_json_data["seqName"]
+        sample_sample_name = extract_sample_name(sample_fasta_header)
+        sample_hsn = extract_hsn(sample_sample_name)
+
+        logger.debug("Processing sample %s.", sample_fasta_header)
+
+        if "clade" in sample_json_data.keys():
+            results.loc[len(results)] = {
+                "fasta_header": sample_fasta_header,
+                "sample_name": sample_sample_name,
+                "hsn": sample_hsn,
+                "nextclade": sample_json_data["clade"],
+                "total_nucleotide_mutations": sample_json_data["totalSubstitutions"],
+                "total_nucleotide_deletions": sample_json_data["totalDeletions"],
+                "total_nucleotide_insertions": sample_json_data["totalInsertions"],
+                "total_AA_substitutions": sample_json_data["totalAminoacidSubstitutions"],
+                "total_AA_deletions": sample_json_data["totalAminoacidDeletions"]
+            }
+
+    return results
+
+
+def get_variant_summary(json_data: str) -> pd.DataFrame:
+    """
+    Gets the variant summary from the nextclade json data.
+
+    :param json_data: the nextclade json data
+    :returns: the variant summary
+    """
+    variant_summary = pd.DataFrame({
+        "fasta_header": [],
+        "sample_name": [],
+        "hsn": [],
+        "variant_name": [],
+        "gene": [],
+        "codon_position": [],
+        "refAA": [],
+        "altAA": [],
+        "start_nuc_pos": [],
+        "end_nuc_pos": []
+    })
+
+    logger.info("Processing variant summary for %s samples.",
+                len(json_data['results']))
+
+    for i in range(len(json_data["results"])):
+        sample_json_data = json_data["results"][i]
+        sample_fasta_header = sample_json_data["seqName"]
+        sample_sample_name = extract_sample_name(sample_fasta_header)
+        sample_hsn = extract_hsn(sample_sample_name)
+
+        logger.debug("Processing sample %s.", sample_fasta_header)
+
+        if "aaDeletions" in sample_json_data.keys():
+            for aa_deletion in sample_json_data["aaDeletions"]:
+                # Get info required for variant_name
+                gene = aa_deletion["gene"]
+                ref_aa = aa_deletion["refAA"]
+                alt_aa = "del"
+                codon_position = aa_deletion["codon"] + 1
+
+                # Compose variant_name
+                variant_name = f"{gene}_{ref_aa}{codon_position}{alt_aa}"
+
+                # Append to running summary
+                variant_summary.loc[len(variant_summary)] = {
+                    "fasta_header": sample_fasta_header,
+                    "sample_name": sample_sample_name,
+                    "hsn": sample_hsn,
+                    "variant_name": variant_name,
+                    "gene": gene,
+                    "codon_position": codon_position,
+                    "refAA": ref_aa,
+                    "altAA": alt_aa,
+                    "start_nuc_pos": aa_deletion["codonNucRange"]["begin"],
+                    "end_nuc_pos": aa_deletion["codonNucRange"]["end"]
+                }
+
+        if "insertions" in sample_json_data.keys():
+            for insertion in sample_json_data["insertions"]:
+                # Get info required for variant_name
+                gene = ""
+                ref_aa = "ins"
+                alt_aa = insertion["ins"]
+                codon_position = insertion["pos"] + 1
+
+                # Compose variant_name
+                variant_name = f"{gene}_{ref_aa}{codon_position}{alt_aa}"
+
+                # Append to running summary
+                variant_summary.loc[len(variant_summary)] = {
+                    "fasta_header": sample_fasta_header,
+                    "sample_name": sample_sample_name,
+                    "hsn": sample_hsn,
+                    "variant_name": variant_name,
+                    "gene": gene,
+                    "codon_position": codon_position,
+                    "refAA": ref_aa,
+                    "altAA": alt_aa,
+                    "start_nuc_pos": insertion["pos"] + 1,
+                    "end_nuc_pos": insertion["pos"] + 1 + len(insertion["ins"])
+                }
+
+        if "aaSubstitutions" in sample_json_data.keys():
+            for aa_sub in sample_json_data["aaSubstitutions"]:
+                # Get info required for variant_name
+                gene = aa_sub["gene"]
+                ref_aa = aa_sub["refAA"]
+                if aa_sub["queryAA"] == "*":
+                    alt_aa = "stop"
                 else:
-                    altAA = item['queryAA']     
-                
-                pos = item['codon'] + 1
-                nuc_start = item['codonNucRange']['begin']
-                nuc_end = item['codonNucRange']['end']
+                    alt_aa = aa_sub["queryAA"]
+                codon_position = aa_sub["codon"] + 1
 
-                mutation = '%s_%s%d%s' % (gene, refAA, pos, altAA)
-                sample_name_list.append(data['results'][i]['seqName'])
-                mutation_list.append(mutation)
-                gene_list.append(gene)
-                refAA_list.append(refAA)
-                altAA_list.append(altAA)
-                codon_pos_list.append(pos)
-                nuc_start_list.append(nuc_start)
-                nuc_end_list.append(nuc_end)
+                # Compose variant_name
+                variant_name = f"{gene}_{ref_aa}{codon_position}{alt_aa}"
 
-    print(sample_name_list)
-    print('')
-    df['fasta_header'] = sample_name_list
-    print(df)
-    df['sample_name'] = df.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
-    print('')
-    print(df)
-    df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
-    df['variant_name'] = mutation_list
-    df['gene'] = gene_list
-    df['codon_position'] = codon_pos_list
-    df['refAA'] = refAA_list
-    df['altAA'] = altAA_list
-    df['start_nuc_pos'] = nuc_start_list
-    df['end_nuc_pos'] = nuc_end_list
+                # Append to running summary
+                variant_summary.loc[len(variant_summary)] = {
+                    "fasta_header": sample_fasta_header,
+                    "sample_name": sample_sample_name,
+                    "hsn": sample_hsn,
+                    "variant_name": variant_name,
+                    "gene": gene,
+                    "codon_position": codon_position,
+                    "refAA": ref_aa,
+                    "altAA": alt_aa,
+                    "start_nuc_pos": aa_sub["codonNucRange"]["begin"],
+                    "end_nuc_pos": aa_sub["codonNucRange"]["end"]
+                }
 
-    # save df    
-    path = f'{project_name}_nextclade_variant_summary_{workflow_version}.csv' 
-    df.to_csv(path, index=False)
-    
-    
-def get_nextclade(json_path, project_name, workflow_version):
+    return variant_summary
 
-    # create pd data frame to fill
-    sample_name_list = []
-    clade_list = []
-    totalSubstitutions_list = []
-    totalDeletions_list = []
-    totalInsertions_list = []
-    totalAASubstitutions_list = []
-    totalAADeletions_list = []
-    df = pd.DataFrame()
 
-    with open(json_path) as f:
-        data = json.load(f)
+def main(options: argparse.Namespace):
+    """
+    The main function.
 
-    for i in range(len(data['results'])):
-        if 'clade' in data['results'][i].keys():
-            sample_name_list.append(data['results'][i]['seqName'])
-            clade_list.append(data['results'][i]['clade'])
-            totalSubstitutions_list.append(data['results'][i]['totalSubstitutions'])
-            totalDeletions_list.append(data['results'][i]['totalDeletions'])
-            totalInsertions_list.append(data['results'][i]['totalInsertions'])
-            totalAASubstitutions_list.append(data['results'][i]['totalAminoacidSubstitutions'])
-            totalAADeletions_list.append(data['results'][i]['totalAminoacidDeletions'])
-            
+    :param options: the options from the command line
+    """
+    setup_logging(log_level=options.log_level)
 
-    df['fasta_header'] = sample_name_list
-    df['sample_name'] = df.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
-    df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
-    df['nextclade'] = clade_list
-    df['total_nucleotide_mutations'] = totalSubstitutions_list
-    df['total_nucleotide_deletions'] = totalDeletions_list
-    df['total_nucleotide_insertions'] = totalInsertions_list
-    df['total_AA_substitutions'] = totalAASubstitutions_list
-    df['total_AA_deletions'] = totalAADeletions_list
-    
-    # save df to file
-    path = f'{project_name}_nextclade_results_{workflow_version}.csv' 
-    df.to_csv(path, index = False)
+    # Open json file to read data
+    nextclade_json_data = None
+    try:
+        with open(options.nextclade_json, encoding="utf-8") as json_file:
+            nextclade_json_data = json.load(json_file)
+    except FileNotFoundError as e:
+        logger.exception(e)
+        sys.exit(1)
+    except json.decoder.JSONDecodeError as e:
+        logger.exception(e)
+        sys.exit(1)
 
-    
-if __name__ == '__main__':
-    
-    options = getOptions()
-    nextclade_json = options.nextclade_json
-    project_name = options.project_name
-    workflow_version = options.workflow_version
+    nextclade_results = get_results(json_data=nextclade_json_data)
+    nextclade_results.to_csv(
+        path_or_buf=f"{options.project_name}_nextclade_results_"
+        f"{options.workflow_version}.csv",
+        index=False,
+    )
 
-    get_nextclade(json_path = nextclade_json, project_name = project_name, workflow_version = workflow_version)
-    extract_variant_list(json_path = nextclade_json, project_name = project_name, workflow_version  = workflow_version)
-        
+    nextclade_variant_summary = get_variant_summary(
+        json_data=nextclade_json_data)
+    nextclade_variant_summary.to_csv(
+        path_or_buf=f"{options.project_name}_nextclade_variant_summary_"
+        f"{options.workflow_version}.csv",
+        index=False,
+    )
+
+
+if __name__ == "__main__":
+    # Get options from command line args
+    cli_options = parse_args(args=sys.argv[1:])
+
+    # Inject options and run main
+    main(options=cli_options)
