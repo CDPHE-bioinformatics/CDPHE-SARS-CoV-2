@@ -31,7 +31,7 @@ task hostile {
       hostile clean \
         --fastq1 ~{fastq1} \
         --aligner "minimap2" \
-        --threads ~{cpu} \
+        --threads ~{cpu - 1} \
         --index ~{genome_index} | tee decontamination-log.json
       # rename scrubbed fastq
       mv ./*.clean.fastq.gz "~{fastq1_scrubbed_name}"
