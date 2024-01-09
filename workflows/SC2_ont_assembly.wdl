@@ -43,7 +43,7 @@ workflow SC2_ont_assembly {
                 fastq1 = fastq_file,
                 seq_method = "OXFORD_NANOPORE",
                 genome_index = genome_index,
-                cpu = 4,  # limit CPU for each FASTQ to avoid quickly hitting quota limit
+                cpu = 2,  # limit CPU for each FASTQ to avoid quickly hitting quota limit
                 mem = 16,
         }
     }
