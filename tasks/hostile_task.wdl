@@ -13,7 +13,6 @@ task hostile {
     String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
     Int disk_size = 100
     Int cpu = 4
-    Int mem = 16
   }
 
   String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
@@ -31,7 +30,7 @@ task hostile {
       hostile clean \
         --fastq1 ~{fastq1} \
         --aligner "minimap2" \
-        --threads ~{cpu - 1} \
+        --threads ~{cpu} \
         --index ~{genome_index} | tee decontamination-log.json
       # rename scrubbed fastq
       mv ./*.clean.fastq.gz "~{fastq1_scrubbed_name}"
@@ -62,11 +61,12 @@ task hostile {
   }
   runtime {
       docker: docker
-      memory: "~{mem} GB"
+      memory: 8 * cpu  # N2 types can have at most 8 GB per CPU 
       cpu: cpu
       disks:  "local-disk " + disk_size + " SSD"
       disk: disk_size + " GB" # TES
       preemptible: 0
       maxRetries: 3
+      cpuPlatform: "Intel Cascade Lake"
   }
 }

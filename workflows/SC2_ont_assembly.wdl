@@ -44,7 +44,6 @@ workflow SC2_ont_assembly {
                 seq_method = "OXFORD_NANOPORE",
                 genome_index = genome_index,
                 cpu = 2,  # limit CPU for each FASTQ to avoid quickly hitting quota limit
-                mem = 8,
         }
     }
     call sum_task.sum as sum_human_reads_removed {
