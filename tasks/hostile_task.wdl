@@ -16,8 +16,8 @@ task hostile {
     Int mem = 16
   }
 
-  if 
-  String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
+  String extension = if sub(basename(fastq1), "\.fastq$", "") == basename(fastq1) then ".fastq" else ".fastq.gz"
+  String fastq1_scrubbed_name = basename(fastq1, extension) + "_scrubbed.fastq.gz"
   String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
 
   command <<<
