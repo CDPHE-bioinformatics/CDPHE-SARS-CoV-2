@@ -3,7 +3,6 @@ version 1.0
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
 import "../tasks/hostile_task.wdl" as hostile_task
-import "../tasks/sum_task.wdl" as sum_task
 
 workflow SC2_ont_assembly {
 
@@ -37,26 +36,20 @@ workflow SC2_ont_assembly {
             fastq_files = ListFastqFiles.fastq_files,
             index_1_id = index_1_id
     }
-    scatter (fastq_file in Demultiplex.guppy_demux_fastq) {
-        call hostile_task.hostile as hostile {
-            input:
-                fastq1 = fastq_file,
-                seq_method = "OXFORD_NANOPORE",
-                genome_index = genome_index,
-                cpu = 2,  # limit CPU for each FASTQ to avoid quickly hitting quota limit
-        }
-    }
-    call sum_task.sum as sum_human_reads_removed {
+    call concatenate_fastqs {
         input:
-            nums = hostile.human_reads_removed
+            sample_name = sample_name,
+            fastq_files = Demultiplex.guppy_demux_fastq
     }
-    call sum_task.sum as sum_human_reads_removed_proportion {
+    call hostile_task.hostile as hostile {
         input:
-            nums = hostile.human_reads_removed_proportion
+            fastq1 = concatenate_fastqs.concatenated_fastq,
+            seq_method = "OXFORD_NANOPORE",
+            genome_index = genome_index,
     }
     call Read_Filtering {
         input:
-            fastq_files = hostile.fastq1_scrubbed,
+            fastq_files = [hostile.fastq1_scrubbed],
             index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
@@ -128,8 +121,7 @@ workflow SC2_ont_assembly {
     call transfer {
         input:
         outdirpath = outdirpath,
-        sample_name = sample_name,
-        fastq_files_scrubbed = hostile.fastq1_scrubbed,
+        fastq_scrubbed = hostile.fastq1_scrubbed,
         trimsort_bam = Medaka.trimsort_bam,
         trimsort_bai = Medaka.trimsort_bai,
         flagstat_out = Bam_stats.flagstat_out,
@@ -148,11 +140,11 @@ workflow SC2_ont_assembly {
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
-        Array[File] fastq_files_scrubbed = hostile.fastq1_scrubbed
-        Int human_reads_removed = sum_human_reads_removed.total
-        Float human_reads_removed_proportion = sum_human_reads_removed_proportion.total
-        String hostile_version = hostile.hostile_version[0]
-        String hostile_docker = hostile.hostile_docker[0]
+        File fastq_files_scrubbed = hostile.fastq1_scrubbed
+        Int human_reads_removed = hostile.human_reads_removed
+        Float human_reads_removed_proportion = hostile.human_reads_removed_proportion
+        String hostile_version = hostile.hostile_version
+        String hostile_docker = hostile.hostile_docker
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam
@@ -233,6 +225,26 @@ task Demultiplex {
         preemptible:    0
         maxRetries:    3
         docker:    "genomicpariscentre/guppy:latest"
+    }
+}
+
+task concatenate_fastqs {
+    input {
+        String sample_name
+        Array[File] fastq_files
+    }
+
+    command <<<
+        cat ~{sep=" " fastq_files} > ~{sample_name}.fastq
+    >>>
+
+    output {
+        File concatenated_fastq = "~{sample_name}.fastq"
+    }
+
+    runtime {
+        cpu: 1
+        memory: "6 GB"
     }
 }
 
@@ -570,11 +582,7 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
-        String sample_name
-
-        # TODO remove in final version
-        Array[File] fastq_files_scrubbed
-
+        File fastq_scrubbed
         File trimsort_bam
         File trimsort_bai
         File flagstat_out
@@ -594,7 +602,7 @@ task transfer {
     command <<<
 
         # TODO remove in final version
-        gsutil -m cp ~{sep=' ' fastq_files_scrubbed} ~{outdirpath}/fastq_scrubbed/~{sample_name}
+        gsutil -m cp ~{fastq_scrubbed} ~{outdirpath}/fastq_scrubbed/
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
         gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/
         gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/

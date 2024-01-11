@@ -23,8 +23,6 @@ task hostile {
     date | tee DATE
     hostile --version | tee VERSION
 
-    echo "CPU ~{cpu}"
-
     # dehost reads based on sequencing method
     if [[ "~{seq_method}" == "OXFORD_NANOPORE" ]]; then
       hostile clean \
