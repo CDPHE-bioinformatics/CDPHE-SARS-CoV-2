@@ -13,8 +13,10 @@ task hostile {
     String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
     Int disk_size = 100
     Int cpu = 4
+    Int mem = 16
   }
 
+  if 
   String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
   String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
 
@@ -59,12 +61,11 @@ task hostile {
   }
   runtime {
       docker: docker
-      memory: 8 * cpu  # N2 types can have at most 8 GB per CPU 
+      memory: mem
       cpu: cpu
       disks:  "local-disk " + disk_size + " SSD"
       disk: disk_size + " GB" # TES
       preemptible: 0
       maxRetries: 3
-      cpuPlatform: "Intel Cascade Lake"
   }
 }
