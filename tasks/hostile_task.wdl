@@ -41,7 +41,7 @@ task hostile {
         --fastq2 ~{fastq2} \
         --aligner "bowtie2" \
         --threads ~{cpu} \
-        # get path to index files without extensions
+        # get path to index files without extensions \
         --index ~{sub(genome_index[0], ".1.bt2", "")} \
       | tee decontamination-log.json
       # rename scrubbed fastqs
