@@ -61,7 +61,7 @@ task hostile {
   }
   runtime {
       docker: docker
-      memory: mem
+      memory: "~{mem} GB"
       cpu: cpu
       disks:  "local-disk " + disk_size + " SSD"
       disk: disk_size + " GB" # TES
