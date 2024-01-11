@@ -21,9 +21,6 @@ task hostile {
   String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
 
   command <<<
-    echo ~{extension}
-    echo ~{fastq1_scrubbed_name}
-    echo ~{sub(basename(fastq1), "\.fastq$", "")}
     # date and version control
     date | tee DATE
     hostile --version | tee VERSION
