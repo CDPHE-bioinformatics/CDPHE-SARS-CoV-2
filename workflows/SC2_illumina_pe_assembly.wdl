@@ -15,7 +15,7 @@ workflow SC2_illumina_pe_assembly {
         File    adapters_and_contaminants
         File    covid_genome
         File    covid_gff
-        File genome_index
+        Array[File] genome_index
         String  project_name
         String out_dir
 

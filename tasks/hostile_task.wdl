@@ -8,7 +8,7 @@ task hostile {
     File fastq1
     File? fastq2
     String seq_method
-    File genome_index
+    Array[File] genome_index
 
     String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
     Int disk_size = 100
@@ -31,11 +31,10 @@ task hostile {
         --fastq1 ~{fastq1} \
         --aligner "minimap2" \
         --threads ~{cpu} \
-        --index ~{genome_index} | tee decontamination-log.json
+        --index ~{genome_index[0]} | tee decontamination-log.json
       # rename scrubbed fastq
       mv ./*.clean.fastq.gz "~{fastq1_scrubbed_name}"
     else
-      tar xvf ~{genome_index}
       hostile clean \
         --fastq1 ~{fastq1} \
         --fastq2 ~{fastq2} \

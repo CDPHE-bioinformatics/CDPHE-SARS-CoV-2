@@ -45,7 +45,7 @@ workflow SC2_ont_assembly {
         input:
             fastq1 = concatenate_fastqs.concatenated_fastq,
             seq_method = "OXFORD_NANOPORE",
-            genome_index = genome_index,
+            genome_index = [genome_index],
     }
     call Read_Filtering {
         input:
