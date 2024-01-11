@@ -1,4 +1,4 @@
-# Taken from pull request from Theiagen's PHB repo:
+# Adapted from pull request from Theiagen's PHB repo:
 # https://github.com/theiagen/public_health_bioinformatics/pull/256/files
 
 version 1.0
@@ -31,7 +31,8 @@ task hostile {
         --fastq1 ~{fastq1} \
         --aligner "minimap2" \
         --threads ~{cpu} \
-        --index ~{genome_index[0]} | tee decontamination-log.json
+        --index ~{genome_index[0]} \
+      | tee decontamination-log.json
       # rename scrubbed fastq
       mv ./*.clean.fastq.gz "~{fastq1_scrubbed_name}"
     else
@@ -40,7 +41,9 @@ task hostile {
         --fastq2 ~{fastq2} \
         --aligner "bowtie2" \
         --threads ~{cpu} \
-        --index ~{basename(genome_index[0], ".1.bt2")} | tee decontamination-log.json
+        # get path to index files without extensions
+        --index ~{sub(genome_index[0], ".1.bt2", "")} \
+      | tee decontamination-log.json
       # rename scrubbed fastqs
       mv ./*.clean_1.fastq.gz "~{fastq1_scrubbed_name}"
       mv ./*.clean_2.fastq.gz "~{fastq2_scrubbed_name}"
