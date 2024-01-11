@@ -245,6 +245,7 @@ task concatenate_fastqs {
     runtime {
         cpu: 1
         memory: "6 GB"
+        docker: "ubuntu:jammy"
     }
 }
 
