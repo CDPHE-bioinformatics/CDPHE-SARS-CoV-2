@@ -59,8 +59,8 @@ task ncbi_scrub_se {
     Int cpu = 4
   }
 
-  String extension = sub(fastq1, "^(.*)(?=\.(fastq|fq)(\.gz)?$)", "")
-  String fastq1_scrubbed_name = basename(fastq1, extension) + "_scrubbed.fastq.gz"
+  String base_name = basename(basename(basename(fastq1, ".gz"), ".fastq"), ".fq")
+  String fastq1_scrubbed_name = base_name + "_scrubbed.fastq.gz"
 
   command <<<
     # date and version control
