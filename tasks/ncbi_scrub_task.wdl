@@ -1,4 +1,4 @@
-# This file copied from Thieagen's Public Health Bioinformatics (PHB) repo
+# This file adapted from Thieagen's Public Health Bioinformatics (PHB) repo
 # https://github.com/theiagen/public_health_bioinformatics/blob/e4cf6083c53757f6df972ab7503c1a3a08c008a2/tasks/quality_control/task_ncbi_scrub.wdl
 
 version 1.0
@@ -12,7 +12,10 @@ task ncbi_scrub_pe {
     Int cpu = 4
   }
 
-  String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
+  String extension = sub(fastq1, "^(.*)(?=\.(fastq|fq)(\.gz)?$)", "")
+  String fastq1_scrubbed_name = basename(fastq1, extension) + "_scrubbed.fastq.gz"
+
+  # workaround since can't use basename() on an optional file
   String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
 
   command <<<
@@ -56,7 +59,8 @@ task ncbi_scrub_se {
     Int cpu = 4
   }
 
-  String fastq1_scrubbed_name = select_first([basename(fastq1, ".fastq.gz"), basename(fastq1, ".fastq")]) + "_scrubbed.fastq.gz"
+  String extension = sub(fastq1, "^(.*)(?=\.(fastq|fq)(\.gz)?$)", "")
+  String fastq1_scrubbed_name = basename(fastq1, extension) + "_scrubbed.fastq.gz"
 
   command <<<
     # date and version control
