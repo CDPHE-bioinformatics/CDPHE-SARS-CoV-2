@@ -12,11 +12,10 @@ task ncbi_scrub_pe {
     Int cpu = 4
   }
 
-  String base_name = basename(basename(basename(fastq1, ".gz"), ".fastq"), ".fq")
-  String fastq1_scrubbed_name = base_name + "_scrubbed.fastq.gz"
-
-  # workaround since can't use basename() on an optional file
-  String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
+  String basename1 = basename(basename(basename(fastq1, ".gz"), ".fastq"), ".fq")
+  String basename2 = basename(basename(basename(fastq2, ".gz"), ".fastq"), ".fq")
+  String fastq1_scrubbed_name = basename1 + "_scrubbed.fastq.gz"
+  String fastq2_scrubbed_name = basename2 + "_scrubbed.fastq.gz"
 
   command <<<
     # date and version control
