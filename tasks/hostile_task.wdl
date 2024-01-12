@@ -8,6 +8,8 @@ task hostile {
     File fastq1
     File? fastq2
     String seq_method
+
+    # genome index may be multiple files like for bowtie2
     Array[File] genome_index
 
     String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
@@ -16,8 +18,10 @@ task hostile {
     Int mem = 16
   }
 
-  String extension = if sub(basename(fastq1), "\.fastq$", "") == basename(fastq1, ".fastq") then ".fastq" else ".fastq.gz"
+  String extension = sub(fastq1, "^(.*)(?=\.(fastq|fq)(\.gz)?$)", "")
   String fastq1_scrubbed_name = basename(fastq1, extension) + "_scrubbed.fastq.gz"
+
+  # workaround since can't use basename() on an optional file
   String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
 
   command <<<
