@@ -18,8 +18,8 @@ task hostile {
     Int mem = 16
   }
 
-  String extension = sub(fastq1, "^(.*)(?=\.(fastq|fq)(\.gz)?$)", "")
-  String fastq1_scrubbed_name = basename(fastq1, extension) + "_scrubbed.fastq.gz"
+  String base_name = basename(basename(basename(fastq1, ".gz"), ".fastq"), ".fq")
+  String fastq1_scrubbed_name = base_name + "_scrubbed.fastq.gz"
 
   # workaround since can't use basename() on an optional file
   String fastq2_scrubbed_name = sub(fastq1_scrubbed_name, "1(?=_scrubbed)", "2")
