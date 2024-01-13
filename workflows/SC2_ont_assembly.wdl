@@ -100,7 +100,7 @@ workflow SC2_ont_assembly {
             project_name = project_name, 
             guppy_version = Demultiplex.guppy_version,
             artic_version = Medaka.artic_version,
-            medaka_version = Medaka.nanopolish_version,
+            medaka_version = Medaka.medaka_version,
             samtools_version = Bam_stats.samtools_version,
             pyScaf_version = Scaffold.pyScaf_version,
             bcftools_version = get_primer_site_variants.bcftools_version,
@@ -258,9 +258,9 @@ task Medaka {
         wget -q -O primer-schemes.zip https://github.com/artic-network/primer-schemes/archive/e6ddb7c4a21a65e1e4ae3c21129f9d08c2cac12f.zip
         unzip primer-schemes.zip && mv primer-schemes-* primer-schemes
 
-        artic minion --normalise 20000 --threads 8 --read-file ~{filtered_reads} --scheme-directory primer-schemes --scheme-version 5.3.2 nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion --medaka --medaka-model r941_min_hac_g507 --strict --normalise 20000 --threads 8 --read-file ~{filtered_reads} --scheme-directory primer-schemes --scheme-version 5.3.2 nCoV-2019 ~{sample_name}_~{index_1_id}
         artic -v > VERSION_artic
-        nanopolish --version | tee VERSION_nanopolish
+        medaka --version | tee VERSION_medaka
 
     >>>
 
@@ -272,7 +272,7 @@ task Medaka {
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String artic_version = read_string("VERSION_artic")
-        String nanopolish_version = read_string("VERSION_nanopolish")
+        String medaka_version = read_string("VERSION_medaka")
     }
 
     runtime {
@@ -503,7 +503,7 @@ task create_version_capture_file {
         String project_name
         String guppy_version
         String artic_version
-        String nanopolish_version
+        String medaka_version
         String samtools_version
         String pyScaf_version
         String bcftools_version
@@ -517,7 +517,7 @@ task create_version_capture_file {
         --project_name "~{project_name}" \
         --guppy_version "~{guppy_version}" \
         --artic_version "~{artic_version}" \
-        --nanopolish_version "~{nanopolish_version}" \
+        --medaka_version "~{medaka_version}" \
         --samtools_version "~{samtools_version}" \
         --pyScaf_version "~{pyScaf_version}" \
         --bcftools_version "~{bcftools_version}" \
