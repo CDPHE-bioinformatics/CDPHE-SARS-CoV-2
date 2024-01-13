@@ -44,17 +44,42 @@ workflow SC2_ont_assembly {
             primer_set = primer_set
     }
 
-    call Medaka {
+    call Medaka as medaka_normal {
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
             sample_name = sample_name,
-            index_1_id = index_1_id
+            index_1_id = index_1_id,
+            strict = false
     }
+
+    Boolean consensus_defined = defined(medaka_normal.consensus)
+    if (consensus_defined) {
+        Int consensus_size = size(medaka_normal.consensus)
+        Boolean empty_fasta = if (consensus_size < 30) then true else false
+
+        if (empty_fasta) {
+            call Medaka as medaka_strict {
+                input:
+                    filtered_reads = Read_Filtering.guppyplex_fastq,
+                    sample_name = sample_name,
+                    index_1_id = index_1_id,
+                    strict = true
+            }
+        }
+    }
+
+    File trimsort_bam = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam])
+    File trimsort_bai = select_first([medaka_strict.trimsort_bai, medaka_normal.trimsort_bai])
+    File consensus = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam])
+    File variants = select_first([medaka_strict.variants, medaka_normal.variants])
+    File variants_index = select_first([medaka_strict.variants_index, medaka_normal.variants_index])
+    File sorted_bam = select_first([medaka_strict.sorted_bam, medaka_normal.sorted_bam])
+
 
     call Bam_stats {
         input:
-            bam = Medaka.trimsort_bam,
-            bai = Medaka.trimsort_bai,
+            bam = trimsort_bam,
+            bai = trimsort_bai,
             sample_name = sample_name,
             index_1_id = index_1_id,
             s_gene_amplicons = s_gene_amplicons,
@@ -67,7 +92,7 @@ workflow SC2_ont_assembly {
             sample_name = sample_name,
             index_1_id = index_1_id,
             ref = covid_genome,
-            fasta = Medaka.consensus
+            fasta = consensus
     }
 
     call rename_fasta {
@@ -85,8 +110,8 @@ workflow SC2_ont_assembly {
 
     call get_primer_site_variants {
         input:
-            variants = Medaka.variants,
-            variants_index = Medaka.variants_index,
+            variants = variants,
+            variants_index = variants_index,
             sample_name = sample_name,
             s_gene_primer_bed = s_gene_primer_bed
     }
@@ -99,8 +124,8 @@ workflow SC2_ont_assembly {
         input:
             project_name = project_name, 
             guppy_version = Demultiplex.guppy_version,
-            artic_version = Medaka.artic_version,
-            medaka_version = Medaka.medaka_version,
+            artic_version = medaka_normal.artic_version,
+            medaka_version = medaka_normal.medaka_version,
             samtools_version = Bam_stats.samtools_version,
             pyScaf_version = Scaffold.pyScaf_version,
             bcftools_version = get_primer_site_variants.bcftools_version,
@@ -112,8 +137,8 @@ workflow SC2_ont_assembly {
     call transfer {
         input:
         outdirpath = outdirpath, 
-        trimsort_bam = Medaka.trimsort_bam,
-        trimsort_bai = Medaka.trimsort_bai,
+        trimsort_bam = trimsort_bam,
+        trimsort_bai = trimsort_bai,
         flagstat_out = Bam_stats.flagstat_out,
         samstats_out = Bam_stats.stats_out,
         covhist_out = Bam_stats.covhist_out,
@@ -121,7 +146,7 @@ workflow SC2_ont_assembly {
         depth_out = Bam_stats.depth_out,
         cov_s_gene_out = Bam_stats.cov_s_gene_out,
         cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
-        variants = Medaka.variants,
+        variants = variants,
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
         version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
@@ -131,9 +156,9 @@ workflow SC2_ont_assembly {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
         File filtered_fastq = Read_Filtering.guppyplex_fastq
-        File sorted_bam = Medaka.sorted_bam
-        File trimsort_bam = Medaka.trimsort_bam
-        File trimsort_bai = Medaka.trimsort_bai
+        File sorted_bam = sorted_bam
+        File trimsort_bam = trimsort_bam
+        File trimsort_bai = trimsort_bai
         File flagstat_out = Bam_stats.flagstat_out
         File samstats_out = Bam_stats.stats_out
         File covhist_out = Bam_stats.covhist_out
@@ -141,8 +166,8 @@ workflow SC2_ont_assembly {
         File depth_out = Bam_stats.depth_out
         File cov_s_gene_out = Bam_stats.cov_s_gene_out
         File cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out
-        File variants = Medaka.variants
-        File consensus = Medaka.consensus
+        File variants = variants
+        File consensus = consensus
         File scaffold_consensus = Scaffold.scaffold_consensus
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
@@ -251,6 +276,7 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
+        Boolean strict
     }
 
     command <<<
@@ -258,7 +284,8 @@ task Medaka {
         wget -q -O primer-schemes.zip https://github.com/artic-network/primer-schemes/archive/e6ddb7c4a21a65e1e4ae3c21129f9d08c2cac12f.zip
         unzip primer-schemes.zip && mv primer-schemes-* primer-schemes
 
-        artic minion --medaka --medaka-model r941_min_hac_g507 --strict --normalise 20000 --threads 8 --read-file ~{filtered_reads} --scheme-directory primer-schemes --scheme-version 5.3.2 nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion --medaka --medaka-model r941_min_hac_g507 "~{true='--strict' false='' strict}" --normalise 20000 --threads 8 --read-file ~{filtered_reads} --scheme-directory primer-schemes --scheme-version 5.3.2 nCoV-2019 ~{sample_name}_~{index_1_id}
+        
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
 
