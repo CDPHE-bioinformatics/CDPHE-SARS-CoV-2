@@ -145,7 +145,6 @@ workflow SC2_ont_assembly {
             raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1]),
             raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2]),
             raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged]),
-            vcf_report = select_first([medaka_strict.vcf_report, medaka_normal.vcf_report])
 
     }
 
@@ -176,7 +175,6 @@ workflow SC2_ont_assembly {
         File raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1])
         File raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2])
         File raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged])
-        File vcf_report = select_first([medaka_strict.vcf_report, medaka_normal.vcf_report])
     }
 }
 
@@ -302,7 +300,6 @@ task Medaka {
         File raw_variants_rg1 = "${sample_name}_${index_1_id}.1.vcf"
         File raw_variants_rg2 = "${sample_name}_${index_1_id}.2.vcf"
         File raw_variants_merged = "${sample_name}_${index_1_id}.merged.vcf"
-        File vcf_report = "${sample_name}_${index_1_id}.vcfreport.txt"
     }
 
     runtime {
@@ -590,8 +587,6 @@ task transfer {
         File raw_variants_rg1
         File raw_variants_rg2
         File raw_variants_merged
-        File vcf_report
-
     }
 
     command <<<
@@ -617,7 +612,6 @@ task transfer {
         gsutil -m cp ~{raw_variants_rg1} ~{outdirpath}/alignments/
         gsutil -m cp ~{raw_variants_rg2} ~{outdirpath}/alignments/
         gsutil -m cp ~{raw_variants_merged} ~{outdirpath}/alignments/
-        gsutil -m cp ~{vcf_report} ~{outdirpath}/alignments/
 
     >>>
 
