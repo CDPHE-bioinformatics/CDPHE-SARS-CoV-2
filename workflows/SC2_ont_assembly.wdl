@@ -128,24 +128,24 @@ workflow SC2_ont_assembly {
 
     call transfer {
         input:
-        outdirpath = outdirpath,
-        trimsort_bam = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam]),
-        trimsort_bai = select_first([medaka_strict.trimsort_bai, medaka_normal.trimsort_bai]),
-        flagstat_out = Bam_stats.flagstat_out,
-        samstats_out = Bam_stats.stats_out,
-        covhist_out = Bam_stats.covhist_out,
-        cov_out = Bam_stats.cov_out,
-        depth_out = Bam_stats.depth_out,
-        cov_s_gene_out = Bam_stats.cov_s_gene_out,
-        cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
-        variants = select_first([medaka_strict.variants, medaka_normal.variants]),
-        renamed_consensus = rename_fasta.renamed_consensus,
-        primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly,
-        raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1]),
-        raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2]),
-        raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged]),
-        vcf_report = select_first([medaka_strict.vcf_report, medaka_normal.vcf_report])
+            outdirpath = outdirpath,
+            trimsort_bam = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam]),
+            trimsort_bai = select_first([medaka_strict.trimsort_bai, medaka_normal.trimsort_bai]),
+            flagstat_out = Bam_stats.flagstat_out,
+            samstats_out = Bam_stats.stats_out,
+            covhist_out = Bam_stats.covhist_out,
+            cov_out = Bam_stats.cov_out,
+            depth_out = Bam_stats.depth_out,
+            cov_s_gene_out = Bam_stats.cov_s_gene_out,
+            cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
+            variants = select_first([medaka_strict.variants, medaka_normal.variants]),
+            renamed_consensus = rename_fasta.renamed_consensus,
+            primer_site_variants = get_primer_site_variants.primer_site_variants,
+            version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly,
+            raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1]),
+            raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2]),
+            raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged]),
+            vcf_report = select_first([medaka_strict.vcf_report, medaka_normal.vcf_report])
 
     }
 
@@ -283,7 +283,7 @@ task Medaka {
 
     command <<<
 
-       artic minion --medaka --medaka-model r941_min_hac_g507 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion --medaka --medaka-model r941_min_hac_g507 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
@@ -587,6 +587,10 @@ task transfer {
         File renamed_consensus
         File primer_site_variants
         File version_capture_ont_assembly
+        File raw_variants_rg1
+        File raw_variants_rg2
+        File raw_variants_merged
+        File vcf_report
 
     }
 
