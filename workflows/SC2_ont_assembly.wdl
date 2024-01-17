@@ -299,10 +299,10 @@ task Medaka {
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String artic_version = read_string("VERSION_artic")
         String medaka_version = read_string("VERSION_medaka")
-        File raw_variants_rg1 = "${sample_name}.1.vcf"
-        File raw_variants_rg2 = "${sample_name}.2.vcf"
-        File raw_variants_merged = "${sample_name}.merged.vcf"
-        File vcf_report = "${sample_name}.vcfreport.txt"
+        File raw_variants_rg1 = "${sample_name}_${index_1_id}.1.vcf"
+        File raw_variants_rg2 = "${sample_name}_${index_1_id}.2.vcf"
+        File raw_variants_merged = "${sample_name}_${index_1_id}.merged.vcf"
+        File vcf_report = "${sample_name}_${index_1_id}.vcfreport.txt"
     }
 
     runtime {
