@@ -273,7 +273,7 @@ task Medaka {
 
     command <<<
 
-       artic minion --medaka --medaka-model r941_min_high_g360 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} ~{sample_name}_~{index_1_id}
+       artic minion --medaka --medaka-model r941_min_high_g360 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
