@@ -142,7 +142,6 @@ workflow SC2_ont_assembly {
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
         version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly,
-
         raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1]),
         raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2]),
         raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged]),
