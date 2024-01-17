@@ -141,7 +141,13 @@ workflow SC2_ont_assembly {
         variants = select_first([medaka_strict.variants, medaka_normal.variants]),
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly,
+
+        raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1]),
+        raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2]),
+        raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged]),
+        vcf_report = select_first([medaka_strict.vcf_report, medaka_normal.vcf_report])
+
     }
 
     output {
@@ -167,6 +173,11 @@ workflow SC2_ont_assembly {
 
         File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
         String transfer_date_assembly = transfer.transfer_date_assembly
+
+        File raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1])
+        File raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2])
+        File raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged])
+        File vcf_report = select_first([medaka_strict.vcf_report, medaka_normal.vcf_report])
     }
 }
 
@@ -273,7 +284,7 @@ task Medaka {
 
     command <<<
 
-       artic minion --medaka --medaka-model r941_min_high_g360 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+       artic minion --medaka --medaka-model r941_min_hac_g507 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
@@ -289,6 +300,10 @@ task Medaka {
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String artic_version = read_string("VERSION_artic")
         String medaka_version = read_string("VERSION_medaka")
+        File raw_variants_rg1 = "${sample_name}.1.vcf"
+        File raw_variants_rg2 = "${sample_name}.2.vcf"
+        File raw_variants_merged = "${sample_name}.merged.vcf"
+        File vcf_report = "${sample_name}.vcfreport.txt"
     }
 
     runtime {
@@ -595,6 +610,11 @@ task transfer {
 
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
+
+        gsutil -m cp ~{raw_variants_rg1} ~{outdirpath}/alignments/
+        gsutil -m cp ~{raw_variants_rg2} ~{outdirpath}/alignments/
+        gsutil -m cp ~{raw_variants_merged} ~{outdirpath}/alignments/
+        gsutil -m cp ~{vcf_report} ~{outdirpath}/alignments/
 
     >>>
 
