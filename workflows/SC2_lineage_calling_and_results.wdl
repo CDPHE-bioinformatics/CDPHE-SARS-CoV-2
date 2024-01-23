@@ -188,7 +188,7 @@ task nextclade {
     command <<<
 
         nextclade --version | awk '/nextclade/ {print $2}' > VERSION
-        nextclade dataset get --name='nextstrain/sars-cov-2/wuhan-hu-1/proteins' --output-dir='data/sars-cov-2'
+        nextclade dataset get --name='sars-cov-2' --reference='MN908947' --output-dir='data/sars-cov-2'
         nextclade run --input-dataset data/sars-cov-2 --output-json nextclade.json --output-csv nextclade.csv ~{multifasta}
 
     >>>
@@ -200,7 +200,7 @@ task nextclade {
     }
 
     runtime {
-        docker: "nextstrain/nextclade"
+        docker: "nextstrain/nextclade:2.14.0"
         memory: "16 GB"
         cpu: 4
         disks: "local-disk 50 HDD"
