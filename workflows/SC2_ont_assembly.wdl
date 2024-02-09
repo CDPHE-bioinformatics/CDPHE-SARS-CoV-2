@@ -16,7 +16,6 @@ workflow SC2_ont_assembly {
         File    s_gene_amplicons
         String  project_name
         String  out_dir
-        String barcode_kit
 
         # python scripts
         File    calc_percent_coverage_py
@@ -30,15 +29,10 @@ workflow SC2_ont_assembly {
         input:
             gcs_fastq_dir = gcs_fastq_dir
     }
-    call Demultiplex {
-        input:
-            fastq_files = ListFastqFiles.fastq_files,
-            index_1_id = index_1_id,
-            barcode_kit = barcode_kit
-    }
+
     call Read_Filtering {
         input:
-            fastq_files = Demultiplex.guppy_demux_fastq,
+            fastq_files = ListFastqFiles.fastq_files,
             index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
@@ -96,7 +90,6 @@ workflow SC2_ont_assembly {
     call create_version_capture_file {
         input:
             project_name = project_name, 
-            guppy_version = Demultiplex.guppy_version,
             artic_version = Medaka.artic_version,
             medaka_version = Medaka.medaka_version,
             samtools_version = Bam_stats.samtools_version,
@@ -126,8 +119,6 @@ workflow SC2_ont_assembly {
     }
 
     output {
-        File index_1_id_summary = Demultiplex.index_1_id_summary
-        Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam
@@ -174,41 +165,6 @@ task ListFastqFiles {
         preemptible:    0
         maxRetries:    0
         docker:    "us.gcr.io/broad-dsp-lrma/lr-utils:0.1.6"
-    }
-}
-
-task Demultiplex {
-    input {
-        Array[File] fastq_files
-        String index_1_id
-        String barcode_kit
-    }
-
-    Int disk_size = 3 * ceil(size(fastq_files, "GB"))
-
-    command <<<
-        guppy_barcoder -v | awk '/Version/ {print $13}' | tee VERSION
-        set -e
-        mkdir fastq_files
-        ln -s ~{sep=' ' fastq_files} fastq_files
-        ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --enable_trim_barcodes --barcode_kits ~{barcode_kit} --fastq_out -i fastq_files -s demux_fastq
-        ls -alF demux_fastq
-    >>>
-
-    output {
-        Array[File] guppy_demux_fastq = glob("demux_fastq/${index_1_id}/*.fastq")
-        File index_1_id_summary = "demux_fastq/barcoding_summary.txt"
-        String guppy_version = read_string("VERSION")
-    }
-
-    runtime {
-        cpu:    8
-        memory:    "16 GB"
-        disks:    "local-disk 100 SSD"
-        preemptible:    0
-        maxRetries:    3
-        docker:    "genomicpariscentre/guppy:6.4.6"
     }
 }
 
@@ -503,7 +459,7 @@ task create_version_capture_file {
     input {
         File version_capture_ont_assembly_py
         String project_name
-        String guppy_version
+        String guppy_version = 'NONE'
         String artic_version
         String medaka_version
         String samtools_version
