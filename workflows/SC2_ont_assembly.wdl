@@ -16,6 +16,7 @@ workflow SC2_ont_assembly {
         File    s_gene_amplicons
         String  project_name
         String  out_dir
+        String barcode_kit
 
         # python scripts
         File    calc_percent_coverage_py
@@ -32,7 +33,8 @@ workflow SC2_ont_assembly {
     call Demultiplex {
         input:
             fastq_files = ListFastqFiles.fastq_files,
-            index_1_id = index_1_id
+            index_1_id = index_1_id,
+            barcode_kit = barcode_kit
     }
     call Read_Filtering {
         input:
@@ -179,6 +181,7 @@ task Demultiplex {
     input {
         Array[File] fastq_files
         String index_1_id
+        String barcode_kit
     }
 
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
@@ -189,7 +192,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
+        guppy_barcoder --require_barcodes_both_ends --barcode_kits ~{barcode_kit} --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
