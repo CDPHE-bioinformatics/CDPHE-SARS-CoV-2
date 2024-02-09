@@ -218,7 +218,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
+        guppy_barcoder --require_barcodes_both_ends --barcode_kits "SQK-NBD114-96" --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
@@ -234,7 +234,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:latest"
+        docker:    "genomicpariscentre/guppy:6.4.6"
     }
 }
 
