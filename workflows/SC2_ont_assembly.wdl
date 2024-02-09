@@ -122,7 +122,11 @@ workflow SC2_ont_assembly {
         variants = Medaka.variants,
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly,
+        raw_variants_rg1 = Medaka.raw_variants_rg1,
+        raw_variants_rg2 = Medaka.raw_variants_rg2,
+        raw_variants_merged = Medaka.raw_variants_merged
+
     }
 
     output {
@@ -148,6 +152,10 @@ workflow SC2_ont_assembly {
 
         File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
         String transfer_date_assembly = transfer.transfer_date_assembly
+
+        File raw_variants_rg1 = Medaka.raw_variants_rg1
+        File raw_variants_rg2 = Medaka.raw_variants_rg2
+        File raw_variants_merged = Medaka.raw_variants_merged
     }
 }
 
@@ -275,6 +283,9 @@ task Medaka {
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String artic_version = read_string("VERSION_artic")
         String medaka_version = read_string("VERSION_medaka")
+        File raw_variants_rg1 = "${sample_name}_${index_1_id}.1.vcf"
+        File raw_variants_rg2 = "${sample_name}_${index_1_id}.2.vcf"
+        File raw_variants_merged = "${sample_name}_${index_1_id}.merged.vcf"
     }
 
     runtime {
@@ -559,7 +570,9 @@ task transfer {
         File renamed_consensus
         File primer_site_variants
         File version_capture_ont_assembly
-
+        File raw_variants_rg1
+        File raw_variants_rg2
+        File raw_variants_merged
     }
 
     command <<<
@@ -581,6 +594,10 @@ task transfer {
 
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
+
+        gsutil -m cp ~{raw_variants_rg1} ~{outdirpath}/alignments/
+        gsutil -m cp ~{raw_variants_rg2} ~{outdirpath}/alignments/
+        gsutil -m cp ~{raw_variants_merged} ~{outdirpath}/alignments/
 
     >>>
 
