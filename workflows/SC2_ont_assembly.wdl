@@ -192,7 +192,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits ~{barcode_kit} --fastq_out -i fastq_files -s demux_fastq
+        guppy_barcoder --require_barcodes_both_ends --enable_trim_barcodes --barcode_kits ~{barcode_kit} --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
