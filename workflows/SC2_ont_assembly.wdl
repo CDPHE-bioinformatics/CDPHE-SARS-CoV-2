@@ -16,7 +16,7 @@ workflow SC2_ont_assembly {
         File    s_gene_amplicons
         String  project_name
         String  out_dir
-        Bool trim_barcodes
+        Boolean trim_barcodes
         String barcode_kit
 
         # python scripts
@@ -213,7 +213,7 @@ task Demultiplex {
         Array[File] fastq_files
         String index_1_id
         String barcode_kit
-        Bool trim_barcodes
+        Boolean trim_barcodes
     }
 
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
