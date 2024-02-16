@@ -16,15 +16,13 @@ workflow SC2_ont_assembly {
         File    s_gene_amplicons
         String  project_name
         String  out_dir
-        Boolean trim_barcodes
-        String barcode_kit
 
         # python scripts
         File    calc_percent_coverage_py
         File    version_capture_ont_assembly_py
     }
 
-    # secrete variables
+    # secret variables
     String outdirpath = sub(out_dir, "/$", "")
 
     call ListFastqFiles {
@@ -35,9 +33,7 @@ workflow SC2_ont_assembly {
     call Demultiplex {
         input:
             fastq_files = ListFastqFiles.fastq_files,
-            index_1_id = index_1_id,
-            barcode_kit = barcode_kit,
-            trim_barcodes = trim_barcodes
+            index_1_id = index_1_id
     }
 
     call Read_Filtering {
@@ -48,34 +44,27 @@ workflow SC2_ont_assembly {
             primer_set = primer_set
     }
 
-    call Medaka as medaka_normal {
+    call Medaka{
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
             sample_name = sample_name,
-            index_1_id = index_1_id,
-            strict = false
+            index_1_id = index_1_id
     }
 
-    Boolean consensus_defined = defined(medaka_normal.consensus)
+    Boolean consensus_defined = defined(Medaka.consensus)
     if (consensus_defined) {
-        Float consensus_size = size(medaka_normal.consensus)
+        Float consensus_size = size(Medaka.consensus)
         Boolean empty_fasta = if (consensus_size < 30) then true else false
 
         if (empty_fasta) {
-            call Medaka as medaka_strict {
-                input:
-                    filtered_reads = Read_Filtering.guppyplex_fastq,
-                    sample_name = sample_name,
-                    index_1_id = index_1_id,
-                    strict = true
-            }
+            # Figure out what to put here
         }
     }
 
     call Bam_stats {
         input:
-            bam = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam]),
-            bai = select_first([medaka_strict.trimsort_bai, medaka_normal.trimsort_bai]),
+            bam = Medaka.trimsort_bam,
+            bai = Medaka.trimsort_bai,
             sample_name = sample_name,
             index_1_id = index_1_id,
             s_gene_amplicons = s_gene_amplicons,
@@ -88,7 +77,7 @@ workflow SC2_ont_assembly {
             sample_name = sample_name,
             index_1_id = index_1_id,
             ref = covid_genome,
-            fasta = select_first([medaka_strict.consensus, medaka_normal.consensus])
+            fasta = Medaka.consensus
     }
 
     call rename_fasta {
@@ -106,8 +95,8 @@ workflow SC2_ont_assembly {
 
     call get_primer_site_variants {
         input:
-            variants = select_first([medaka_strict.variants, medaka_normal.variants]),
-            variants_index = select_first([medaka_strict.variants_index, medaka_normal.variants_index]),
+            variants = Medaka.variants,
+            variants_index = Medaka.variants_index,
             sample_name = sample_name,
             s_gene_primer_bed = s_gene_primer_bed
     }
@@ -120,8 +109,8 @@ workflow SC2_ont_assembly {
         input:
             project_name = project_name,
             guppy_version = Demultiplex.guppy_version,
-            artic_version = medaka_normal.artic_version,
-            medaka_version = medaka_normal.medaka_version,
+            artic_version = Medaka.artic_version,
+            medaka_version = Medaka.medaka_version,
             samtools_version = Bam_stats.samtools_version,
             pyScaf_version = Scaffold.pyScaf_version,
             bcftools_version = get_primer_site_variants.bcftools_version,
@@ -133,8 +122,8 @@ workflow SC2_ont_assembly {
     call transfer {
         input:
             outdirpath = outdirpath,
-            trimsort_bam = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam]),
-            trimsort_bai = select_first([medaka_strict.trimsort_bai, medaka_normal.trimsort_bai]),
+            trimsort_bam = Medaka.trimsort_bam,
+            trimsort_bai = Medaka.trimsort_bai,
             flagstat_out = Bam_stats.flagstat_out,
             samstats_out = Bam_stats.stats_out,
             covhist_out = Bam_stats.covhist_out,
@@ -142,23 +131,19 @@ workflow SC2_ont_assembly {
             depth_out = Bam_stats.depth_out,
             cov_s_gene_out = Bam_stats.cov_s_gene_out,
             cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
-            variants = select_first([medaka_strict.variants, medaka_normal.variants]),
+            variants = Medaka.variants,
             renamed_consensus = rename_fasta.renamed_consensus,
             primer_site_variants = get_primer_site_variants.primer_site_variants,
-            version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly,
-            raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1]),
-            raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2]),
-            raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged]),
-
+            version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
     }
 
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
         File filtered_fastq = Read_Filtering.guppyplex_fastq
-        File sorted_bam = select_first([medaka_strict.sorted_bam, medaka_normal.sorted_bam])
-        File trimsort_bam = select_first([medaka_strict.trimsort_bam, medaka_normal.trimsort_bam])
-        File trimsort_bai = select_first([medaka_strict.trimsort_bai, medaka_normal.trimsort_bai])
+        File sorted_bam = Medaka.sorted_bam
+        File trimsort_bam = Medaka.trimsort_bam
+        File trimsort_bai = Medaka.trimsort_bai
         File flagstat_out = Bam_stats.flagstat_out
         File samstats_out = Bam_stats.stats_out
         File covhist_out = Bam_stats.covhist_out
@@ -166,8 +151,8 @@ workflow SC2_ont_assembly {
         File depth_out = Bam_stats.depth_out
         File cov_s_gene_out = Bam_stats.cov_s_gene_out
         File cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out
-        File variants = select_first([medaka_strict.variants, medaka_normal.variants])
-        File consensus = select_first([medaka_strict.consensus, medaka_normal.consensus])
+        File variants = Medaka.variants
+        File consensus = Medaka.consensus
         File scaffold_consensus = Scaffold.scaffold_consensus
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
@@ -175,10 +160,6 @@ workflow SC2_ont_assembly {
 
         File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
         String transfer_date_assembly = transfer.transfer_date_assembly
-
-        File raw_variants_rg1 = select_first([medaka_strict.raw_variants_rg1, medaka_normal.raw_variants_rg1])
-        File raw_variants_rg2 = select_first([medaka_strict.raw_variants_rg2, medaka_normal.raw_variants_rg2])
-        File raw_variants_merged = select_first([medaka_strict.raw_variants_merged, medaka_normal.raw_variants_merged])
     }
 }
 
@@ -212,8 +193,6 @@ task Demultiplex {
     input {
         Array[File] fastq_files
         String index_1_id
-        String barcode_kit
-        Boolean trim_barcodes
     }
 
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
@@ -224,7 +203,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits ~{barcode_kit} --fastq_out -i fastq_files -s demux_fastq  ~{true='--enable_trim_barcodes' false='' trim_barcodes}
+        guppy_barcoder --require_barcodes_both_ends --barcode_kits "SQK-NBD114-96" --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
@@ -282,12 +261,11 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
-        Boolean strict
     }
 
     command <<<
 
-        artic minion --medaka --medaka-model r1041_e82_400bps_hac_v4.2.0 ~{true='--strict' false='' strict} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion --medaka --medaka-model r1041_e82_400bps_hac_v4.2.0--normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
@@ -303,9 +281,6 @@ task Medaka {
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String artic_version = read_string("VERSION_artic")
         String medaka_version = read_string("VERSION_medaka")
-        File raw_variants_rg1 = "${sample_name}_${index_1_id}.1.vcf"
-        File raw_variants_rg2 = "${sample_name}_${index_1_id}.2.vcf"
-        File raw_variants_merged = "${sample_name}_${index_1_id}.merged.vcf"
     }
 
     runtime {
@@ -590,9 +565,6 @@ task transfer {
         File renamed_consensus
         File primer_site_variants
         File version_capture_ont_assembly
-        File raw_variants_rg1
-        File raw_variants_rg2
-        File raw_variants_merged
     }
 
     command <<<
@@ -614,10 +586,6 @@ task transfer {
 
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
-
-        gsutil -m cp ~{raw_variants_rg1} ~{outdirpath}/alignments/
-        gsutil -m cp ~{raw_variants_rg2} ~{outdirpath}/alignments/
-        gsutil -m cp ~{raw_variants_merged} ~{outdirpath}/alignments/
 
     >>>
 
