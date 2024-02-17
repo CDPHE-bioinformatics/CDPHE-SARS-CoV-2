@@ -299,6 +299,7 @@ task exit_wdl {
 
     runtime {
         return_codes: 0
+        container: "ubuntu:latest"
     }
 }
 
