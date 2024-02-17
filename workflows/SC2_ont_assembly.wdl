@@ -285,7 +285,6 @@ task Medaka {
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
         String artic_version = read_string("VERSION_artic")
         String medaka_version = read_string("VERSION_medaka")
-        String throw_error =
     }
 
     runtime {
