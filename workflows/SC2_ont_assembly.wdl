@@ -51,6 +51,16 @@ workflow SC2_ont_assembly {
             index_1_id = index_1_id
     }
 
+    Boolean consensus_defined = defined(Medaka.consensus)
+    if (consensus_defined) {
+        Float consensus_size = size(Medaka.consensus)
+        Boolean empty_fasta = if (consensus_size < 30) then true else false
+
+        if (empty_fasta) {
+            call exit_wdl
+        }
+    }
+
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
@@ -262,20 +272,6 @@ task Medaka {
 
     >>>
 
-    # Return error if empty fasta file generated
-    File check_consensus = "${sample_name}_${index_1_id}.consensus.fasta"
-    if defined(check_consensus) {
-        Float consensus_size = size(check_consensus)
-        Boolean empty_fasta = if (consensus_size < 30) then true else false
-
-        if not (empty_fasta) {
-            exit 0
-        }
-        if (empty_fasta) {
-            exit 1
-        }
-    }
-    
     output {
         File consensus = "${sample_name}_${index_1_id}.consensus.fasta"
         File sorted_bam = "${sample_name}_${index_1_id}.trimmed.rg.sorted.bam"
@@ -288,12 +284,21 @@ task Medaka {
     }
 
     runtime {
-        return_codes: 0
         docker: "staphb/artic:1.2.4-1.11.1"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
         preemptible: 0
+    }
+}
+
+task exit_wdl {
+    command <<<
+        exit 1
+    >>>
+
+    runtime {
+        return_codes: 0
     }
 }
 
