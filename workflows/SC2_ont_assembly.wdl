@@ -57,7 +57,11 @@ workflow SC2_ont_assembly {
         Boolean empty_fasta = if (consensus_size < 30) then true else false
 
         if (empty_fasta) {
-            call exit_wdl
+            String exit_reason = "Empty fasta"
+            call exit_wdl {
+                input:
+                    exit_reason = exit_reason
+            }
         }
     }
 
@@ -293,7 +297,12 @@ task Medaka {
 }
 
 task exit_wdl {
+    input {
+        String exit_reason
+    }
+    
     command <<<
+        echo "~{exit_reason}"
         exit 1
     >>>
 
