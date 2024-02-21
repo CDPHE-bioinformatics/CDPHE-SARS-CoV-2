@@ -22,18 +22,20 @@ workflow SC2_ont_assembly {
         File    version_capture_ont_assembly_py
     }
 
-    # secrete variables
+    # secret variables
     String outdirpath = sub(out_dir, "/$", "")
-    
+
     call ListFastqFiles {
         input:
             gcs_fastq_dir = gcs_fastq_dir
     }
+
     call Demultiplex {
         input:
             fastq_files = ListFastqFiles.fastq_files,
             index_1_id = index_1_id
     }
+
     call Read_Filtering {
         input:
             fastq_files = Demultiplex.guppy_demux_fastq,
@@ -41,13 +43,28 @@ workflow SC2_ont_assembly {
             sample_name = sample_name,
             primer_set = primer_set
     }
-    call Medaka {
+
+    call Medaka{
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
             sample_name = sample_name,
-            index_1_id = index_1_id,
-            primer_bed = primer_bed
+            index_1_id = index_1_id
     }
+
+    Boolean consensus_defined = defined(Medaka.consensus)
+    if (consensus_defined) {
+        Float consensus_size = size(Medaka.consensus)
+        Boolean empty_fasta = if (consensus_size < 30) then true else false
+
+        if (empty_fasta) {
+            String exit_reason = "Empty fasta"
+            call exit_wdl {
+                input:
+                    exit_reason = exit_reason
+            }
+        }
+    }
+
     call Bam_stats {
         input:
             bam = Medaka.trimsort_bam,
@@ -56,8 +73,9 @@ workflow SC2_ont_assembly {
             index_1_id = index_1_id,
             s_gene_amplicons = s_gene_amplicons,
             primer_bed = primer_bed
-            
+
     }
+
     call Scaffold {
         input:
             sample_name = sample_name,
@@ -93,7 +111,7 @@ workflow SC2_ont_assembly {
 
     call create_version_capture_file {
         input:
-            project_name = project_name, 
+            project_name = project_name,
             guppy_version = Demultiplex.guppy_version,
             artic_version = Medaka.artic_version,
             medaka_version = Medaka.medaka_version,
@@ -102,25 +120,25 @@ workflow SC2_ont_assembly {
             bcftools_version = get_primer_site_variants.bcftools_version,
             analysis_date = workflow_version_capture.analysis_date,
             workflow_version = workflow_version_capture.workflow_version,
-            version_capture_ont_assembly_py = version_capture_ont_assembly_py 
+            version_capture_ont_assembly_py = version_capture_ont_assembly_py
     }
 
     call transfer {
         input:
-        outdirpath = outdirpath, 
-        trimsort_bam = Medaka.trimsort_bam,
-        trimsort_bai = Medaka.trimsort_bai,
-        flagstat_out = Bam_stats.flagstat_out,
-        samstats_out = Bam_stats.stats_out,
-        covhist_out = Bam_stats.covhist_out,
-        cov_out = Bam_stats.cov_out,
-        depth_out = Bam_stats.depth_out,
-        cov_s_gene_out = Bam_stats.cov_s_gene_out,
-        cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
-        variants = Medaka.variants,
-        renamed_consensus = rename_fasta.renamed_consensus,
-        primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+            outdirpath = outdirpath,
+            trimsort_bam = Medaka.trimsort_bam,
+            trimsort_bai = Medaka.trimsort_bai,
+            flagstat_out = Bam_stats.flagstat_out,
+            samstats_out = Bam_stats.stats_out,
+            covhist_out = Bam_stats.covhist_out,
+            cov_out = Bam_stats.cov_out,
+            depth_out = Bam_stats.depth_out,
+            cov_s_gene_out = Bam_stats.cov_s_gene_out,
+            cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
+            variants = Medaka.variants,
+            renamed_consensus = rename_fasta.renamed_consensus,
+            primer_site_variants = get_primer_site_variants.primer_site_variants,
+            version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
     }
 
     output {
@@ -189,7 +207,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits "EXP-NBD196" --fastq_out -i fastq_files -s demux_fastq
+        guppy_barcoder --require_barcodes_both_ends --barcode_kits "SQK-NBD114-96" --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
@@ -205,13 +223,13 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:latest"
+        docker:    "genomicpariscentre/guppy:6.4.6"
     }
 }
 
 task Read_Filtering {
     input {
-        Array[File] fastq_files 
+        Array[File] fastq_files
         String index_1_id
         String sample_name
         String primer_set
@@ -224,7 +242,7 @@ task Read_Filtering {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        
+
         artic guppyplex --min-length 400 --max-length ~{max_length} --directory fastq_files --output ~{sample_name}_~{index_1_id}.fastq
 
     >>>
@@ -247,19 +265,14 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
-        File primer_bed
     }
 
     command <<<
-    
-        mkdir -p ./primer-schemes/nCoV-2019/Vuser
-        cp /primer-schemes/nCoV-2019/V3/nCoV-2019.reference.fasta ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.reference.fasta
-        cp ~{primer_bed} ./primer-schemes/nCoV-2019/Vuser/nCoV-2019.scheme.bed
-        
+
+        artic minion --medaka --medaka-model r1041_e82_400bps_hac_v4.2.0 --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
-
-        artic minion --medaka --medaka-model r941_min_high_g360 --normalise 20000 --threads 8 --scheme-directory ./primer-schemes --read-file ~{filtered_reads} nCoV-2019/Vuser ~{sample_name}_~{index_1_id}
 
     >>>
 
@@ -275,11 +288,27 @@ task Medaka {
     }
 
     runtime {
-        docker: "quay.io/staphb/artic-ncov2019:1.3.0"
+        docker: "staphb/artic:1.2.4-1.11.1"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
         preemptible: 0
+    }
+}
+
+task exit_wdl {
+    input {
+        String exit_reason
+    }
+    
+    command <<<
+        echo "~{exit_reason}"
+        exit 1
+    >>>
+
+    runtime {
+        return_codes: 0
+        docker: "ubuntu:latest"
     }
 }
 
@@ -310,7 +339,7 @@ task Bam_stats {
         samtools coverage -o ~{sample_name}_~{index_1_id}_coverage.txt ~{bam}
 
         samtools depth -a -o ~{sample_name}_~{index_1_id}_depth.txt ~{bam}
-       
+
 
         # Calculate depth of coverage over entire S gene
         echo "Calculating overall S gene depth"
@@ -375,7 +404,7 @@ task Scaffold {
     Int disk_size = 3 * ceil(size(fasta, "GB"))
 
     command <<<
-        
+
         # grab version
         pyScaf.py --version > VERSION 2>&1 # writes version to stderr instead of stdout
 
@@ -521,7 +550,7 @@ task create_version_capture_file {
         --pyScaf_version "~{pyScaf_version}" \
         --bcftools_version "~{bcftools_version}" \
         --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}" 
+        --workflow_version "~{workflow_version}"
 
 
     >>>
@@ -556,7 +585,6 @@ task transfer {
         File renamed_consensus
         File primer_site_variants
         File version_capture_ont_assembly
-
     }
 
     command <<<
@@ -593,4 +621,3 @@ task transfer {
         disks: "local-disk 100 SSD"
     }
 }
-
