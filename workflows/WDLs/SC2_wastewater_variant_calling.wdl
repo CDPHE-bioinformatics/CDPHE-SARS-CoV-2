@@ -9,7 +9,6 @@ workflow SC2_wastewater_variant_calling {
 
         Array[File] trimsort_bam
         Array[String] sample_name
-        Array[String] out_dir_array
         Array[String] project_name_array
 
         # reference files/workspace data
@@ -22,8 +21,6 @@ workflow SC2_wastewater_variant_calling {
     }
     # secret variables
     String project_name = project_name_array[0]
-    String out_dir = out_dir_array[0]
-    String outdirpath = sub(out_dir, "/$", "")
 
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
