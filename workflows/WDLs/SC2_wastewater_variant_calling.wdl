@@ -1,8 +1,5 @@
 version 1.0
 
-# import workflow version capture task
-import "../tasks/version_capture_task.wdl" as version_capture
-
 workflow SC2_wastewater_variant_calling {
 
     input {
@@ -14,9 +11,6 @@ workflow SC2_wastewater_variant_calling {
         # reference files/workspace data
         File covid_genome
         File covid_gff
-
-        # python scripts
-        File version_capture_wwt_variant_calling_py
 
     }
     # secret variables
@@ -63,22 +57,6 @@ workflow SC2_wastewater_variant_calling {
         input:
             mutations_tsv = mutations_tsv.mutations_tsv
     }
-    
-    call version_capture.workflow_version_capture as workflow_version_capture {
-        input:
-    }
-    
-    call create_version_capture_file {
-        input:
-            version_capture_wwt_variant_calling_py = version_capture_wwt_variant_calling_py,
-            project_name = project_name,
-            samtools_version_staphb = select_all(add_RG.samtools_version_staphb)[0],
-            samtools_version_andersenlabapps = select_all(variant_calling.samtools_version_andersenlabapps)[0],
-            ivar_version = select_all(variant_calling.ivar_version)[0],
-            freyja_version = select_all(freyja_demix.freyja_version)[0],
-            analysis_date = workflow_version_capture.analysis_date,
-            workflow_version = workflow_version_capture.workflow_version
-    }
 
     output {
         Array[File] addrg_bam = add_RG.rgbam
@@ -87,7 +65,6 @@ workflow SC2_wastewater_variant_calling {
         Array[File] demix = freyja_demix.demix
         File demix_aggregated = freyja_aggregate.demix_aggregated
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
-        File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
     }
 }
 
@@ -267,44 +244,5 @@ task combine_mutations_tsv {
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 500 HDD"
-    }
-}
-
-task create_version_capture_file {
-    input {
-        File version_capture_wwt_variant_calling_py
-        String project_name
-        String samtools_version_staphb
-        String samtools_version_andersenlabapps
-        String ivar_version
-        String freyja_version
-        String analysis_date
-        String workflow_version
-    }
-
-    command <<<
-    
-        python ~{version_capture_wwt_variant_calling_py} \
-        --project_name "~{project_name}" \
-        --samtools_version_staphb "~{samtools_version_staphb}" \
-        --samtools_version_andersenlabapps "~{samtools_version_andersenlabapps}" \
-        --ivar_version "~{ivar_version}" \
-        --freyja_version "~{freyja_version}" \
-        --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}"
-
-    >>>
-
-    output {
-        File version_capture_wwt_variant_calling = 'version_capture_wastewater_variant_calling_~{project_name}_~{workflow_version}.csv'
-    }
-
-    runtime {
-
-      docker: "mchether/py3-bio:v4"
-      memory: "1 GB"
-      cpu: 4
-      disks: "local-disk 10 SSD"
-
     }
 }
