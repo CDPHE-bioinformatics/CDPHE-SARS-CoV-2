@@ -8,7 +8,7 @@ task workflow_version_capture {
     description: "capture version release"
   }
   command <<<
-    Workflow_Version="wip-hostile"
+    Workflow_Version="v2-1-2"
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
     echo "$Workflow_Version" > WORKFLOW_VERSION
