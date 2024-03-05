@@ -11,12 +11,13 @@ task hostile {
 
     # genome index may be multiple files like for bowtie2
     Array[File] genome_index
-
-    String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
-    Int disk_size = 100
-    Int cpu = 4
-    Int mem = 16
   }
+
+  # make these variables private and constant for now but may move to input to allow customization
+  String docker = "quay.io/biocontainers/hostile:0.3.0--pyhdfd78af_0"
+  Int disk_size = 100
+  Int cpu = 4
+  Int mem = 16
 
   String base_name = basename(basename(basename(fastq1, ".gz"), ".fastq"), ".fq")
   String fastq1_scrubbed_name = base_name + "_scrubbed.fastq.gz"
