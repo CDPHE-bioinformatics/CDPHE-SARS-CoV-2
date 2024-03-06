@@ -11,6 +11,8 @@ workflow SC2_ont_assembly {
         String    sample_name
         String    index_1_id
         String    primer_set
+        String    barcode_kit
+        String    medaka_model
         File    genome_index
         File    covid_genome
         File    primer_bed
@@ -35,7 +37,8 @@ workflow SC2_ont_assembly {
     call Demultiplex {
         input:
             fastq_files = ListFastqFiles.fastq_files,
-            index_1_id = index_1_id
+            index_1_id = index_1_id,
+            barcode_kit = barcode_kit
     }
     call concatenate_fastqs {
         input:
@@ -60,7 +63,8 @@ workflow SC2_ont_assembly {
         input:
             filtered_reads = Read_Filtering.guppyplex_fastq,
             sample_name = sample_name,
-            index_1_id = index_1_id
+            index_1_id = index_1_id,
+            medaka_model = medaka_model
     }
 
     Boolean consensus_defined = defined(Medaka.consensus)
@@ -215,6 +219,7 @@ task Demultiplex {
     input {
         Array[File] fastq_files
         String index_1_id
+        String barcode_kit
     }
 
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
@@ -225,7 +230,7 @@ task Demultiplex {
         mkdir fastq_files
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
-        guppy_barcoder --require_barcodes_both_ends --barcode_kits "SQK-NBD114-96" --fastq_out -i fastq_files -s demux_fastq
+        guppy_barcoder --require_barcodes_both_ends --barcode_kits ~{barcode_kit} --fastq_out -i fastq_files -s demux_fastq
         ls -alF demux_fastq
     >>>
 
@@ -305,11 +310,12 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
+        String medaka_model
     }
 
     command <<<
 
-        artic minion --medaka --medaka-model r1041_e82_400bps_hac_v4.2.0 --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion --medaka --medaka-model ~{medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
