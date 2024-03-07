@@ -10,7 +10,7 @@ task hostile {
     String seq_method
 
     # genome index may be multiple files like for bowtie2
-    Array[File?] genome_index
+    Array[File] genome_index
   }
 
   # make these variables private and constant for now but may move to input to allow customization
