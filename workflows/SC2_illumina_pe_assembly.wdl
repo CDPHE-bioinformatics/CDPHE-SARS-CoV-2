@@ -16,7 +16,7 @@ workflow SC2_illumina_pe_assembly {
         File    covid_genome
         File    covid_gff
         Boolean scrub_reads
-        Array[File?] scrub_genome_index
+        Array[File]? scrub_genome_index
         String  project_name
         String out_dir
 
@@ -34,7 +34,7 @@ workflow SC2_illumina_pe_assembly {
             input:
                 fastq1 = fastq_1,
                 fastq2 = fastq_2,
-                genome_index = select_all(scrub_genome_index),
+                genome_index = select_first([scrub_genome_index]),
                 seq_method = "ILLUMINA"
         }
     }
