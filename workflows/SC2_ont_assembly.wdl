@@ -138,19 +138,25 @@ workflow SC2_ont_assembly {
         input:
     }
 
-    call create_version_capture_file {
+    Array[VersionInfo] version_array = [
+        Demultiplex.guppy_version_info,
+        Medaka.artic_version_info,
+        Medaka.medaka_version_info,
+        Bam_stats.samtools_version_info,
+        Scaffold.pyscaf_version_info,
+        get_primer_site_variants.bcftools_version_info,
+    ]
+    if (scrub_reads) {
+        Array[VersionInfo] version_array_with_hostile = flatten([version_array, select_all([hostile.hostile_version_info])])
+    }
+    call  version_capture.task_version_capture as task_version_capture {
         input:
-            project_name = project_name,
-            guppy_version = Demultiplex.guppy_version,
-            artic_version = Medaka.artic_version,
-            medaka_version = Medaka.medaka_version,
-            samtools_version = Bam_stats.samtools_version,
-            pyScaf_version = Scaffold.pyScaf_version,
-            bcftools_version = get_primer_site_variants.bcftools_version,
-            hostile_version = hostile.hostile_version,
-            analysis_date = workflow_version_capture.analysis_date,
+            version_array = select_first([version_array_with_hostile, version_array]),
+            workflow_name = "SC2_ont_assembly",
             workflow_version = workflow_version_capture.workflow_version,
-            version_capture_ont_assembly_py = version_capture_ont_assembly_py
+            project_name = project_name,
+            analysis_date = workflow_version_capture.analysis_date,
+            version_capture_py = version_capture_ont_assembly_py
     }
 
     call transfer {
@@ -169,7 +175,7 @@ workflow SC2_ont_assembly {
         variants = Medaka.variants,
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        version_capture_ont_assembly = task_version_capture.version_capture_file
     }
 
     output {
@@ -195,8 +201,7 @@ workflow SC2_ont_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
-
-        File version_capture_ont_assembly = create_version_capture_file.version_capture_ont_assembly
+        File version_capture_ont_assembly = task_version_capture.version_capture_file
         String transfer_date_assembly = transfer.transfer_date_assembly
     }
 }
@@ -234,6 +239,7 @@ task Demultiplex {
         String barcode_kit
     }
 
+    String docker = "genomicpariscentre/guppy:6.4.6"
     Int disk_size = 3 * ceil(size(fastq_files, "GB"))
 
     command <<<
@@ -249,7 +255,12 @@ task Demultiplex {
     output {
         Array[File] guppy_demux_fastq = glob("demux_fastq/${index_1_id}/*.fastq")
         File index_1_id_summary = "demux_fastq/barcoding_summary.txt"
-        String guppy_version = read_string("VERSION")
+
+        VersionInfo guppy_version_info = object {
+            software: "guppy",
+            docker: docker,
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
@@ -258,7 +269,7 @@ task Demultiplex {
         disks:    "local-disk 100 SSD"
         preemptible:    0
         maxRetries:    3
-        docker:    "genomicpariscentre/guppy:6.4.6"
+        docker:    docker
     }
 }
 
@@ -325,6 +336,8 @@ task Medaka {
         String medaka_model
     }
 
+    String docker = "staphb/artic:1.2.4-1.11.1"
+
     command <<<
 
         artic minion --medaka --medaka-model ~{medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
@@ -341,12 +354,22 @@ task Medaka {
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
         File variants_index = "${sample_name}_${index_1_id}.pass.vcf.gz.tbi"
-        String artic_version = read_string("VERSION_artic")
-        String medaka_version = read_string("VERSION_medaka")
+        
+        VersionInfo artic_version_info = object {
+            software: "artic",
+            docker: docker,
+            version: read_string("VERSION_artic")
+        }
+
+        VersionInfo medaka_version_info = object {
+            software: "medaka",
+            docker: docker,
+            version: read_string("VERSION_medaka")
+        }
     }
 
     runtime {
-        docker: "staphb/artic:1.2.4-1.11.1"
+        docker: docker
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
@@ -380,6 +403,7 @@ task Bam_stats {
         File primer_bed
     }
 
+    String docker = "staphb/samtools:1.16"
     Int disk_size = 3 * ceil(size(bam, "GB"))
 
     command <<<
@@ -437,7 +461,12 @@ task Bam_stats {
         File depth_out = "${sample_name}_${index_1_id}_depth.txt"
         File cov_s_gene_out = "${sample_name}_${index_1_id}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
-        String samtools_version = read_string("VERSION")
+        
+        VersionInfo samtools_version_info = object {
+            software: "samtools",
+            docker: docker,
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
@@ -447,7 +476,7 @@ task Bam_stats {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.16"
+        docker:    docker
     }
 }
 
@@ -459,6 +488,7 @@ task Scaffold {
         File ref
     }
 
+    String docker = "chrishah/pyscaf-docker"
     Int disk_size = 3 * ceil(size(fasta, "GB"))
 
     command <<<
@@ -472,7 +502,12 @@ task Scaffold {
 
     output {
         File scaffold_consensus = "${sample_name}_${index_1_id}_consensus_scaffold.fa"
-        String pyScaf_version = read_string("VERSION")
+
+        VersionInfo pyscaf_version_info = object {
+            software: "pyScaf",
+            docker: docker,
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
@@ -482,7 +517,7 @@ task Scaffold {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "chrishah/pyscaf-docker"
+        docker:    docker
     }
 }
 
@@ -558,6 +593,8 @@ task get_primer_site_variants {
         File s_gene_primer_bed
     }
 
+    String docker = "staphb/bcftools:1.16"
+
     command <<<
 
         # grab version
@@ -571,60 +608,19 @@ task get_primer_site_variants {
     output {
         File primer_site_variants = "${sample_name}_S_gene_primer_variants.txt"
         String bcftools_version = read_string("VERSION")
+
+        VersionInfo bcftools_version_info = object {
+            software: "bcftools",
+            docker: docker,
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
-        docker: "staphb/bcftools:1.16"
+        docker: docker
         memory: "1 GB"
         cpu: 1
         disks: "local-disk 10 SSD"
-    }
-}
-
-task create_version_capture_file {
-
-
-    input {
-        File version_capture_ont_assembly_py
-        String project_name
-        String guppy_version
-        String artic_version
-        String medaka_version
-        String samtools_version
-        String pyScaf_version
-        String bcftools_version
-        String? hostile_version
-        String analysis_date
-        String workflow_version
-    }
-
-    command <<<
-
-        python ~{version_capture_ont_assembly_py} \
-        --project_name "~{project_name}" \
-        --guppy_version "~{guppy_version}" \
-        --artic_version "~{artic_version}" \
-        --medaka_version "~{medaka_version}" \
-        --samtools_version "~{samtools_version}" \
-        --pyScaf_version "~{pyScaf_version}" \
-        --bcftools_version "~{bcftools_version}" \
-        --hostile_version = "~{hostile_version}" \
-        --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}"
-
-    >>>
-
-    output {
-        File version_capture_ont_assembly = 'version_capture_ont_asembly_~{project_name}_~{workflow_version}.csv'
-    }
-
-    runtime {
-
-      docker: "mchether/py3-bio:v4"
-      memory: "1 GB"
-      cpu: 4
-      disks: "local-disk 10 SSD"
-
     }
 }
 

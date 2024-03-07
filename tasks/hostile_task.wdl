@@ -3,6 +3,8 @@
 
 version 1.0
 
+import "../tasks/version_capture_task.wdl"
+
 task hostile {
   input {
     File fastq1
@@ -58,12 +60,17 @@ task hostile {
     grep '"reads_removed_proportion":' ./decontamination-log.json | awk -F': ' '{print $2}' | awk -F',' '{print $1}' > HUMANREADS_PROP
   >>>
   output {
-    String hostile_version = read_string("VERSION")
     File fastq1_scrubbed = "${fastq1_scrubbed_name}"
     File? fastq2_scrubbed = "${fastq2_scrubbed_name}"
     String human_reads_removed = read_string("HUMANREADS")
     String human_reads_removed_proportion = read_string("HUMANREADS_PROP")
     String hostile_docker = docker
+
+    VersionInfo hostile_version_info = object {
+      software: "hostile",
+      docker: docker,
+      version: read_string("VERSION")
+    }
   }
   runtime {
       docker: docker
