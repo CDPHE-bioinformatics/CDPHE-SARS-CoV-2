@@ -53,19 +53,28 @@ workflow SC2_ont_assembly {
                 seq_method = "OXFORD_NANOPORE",
                 genome_index = select_all([scrub_genome_index]),
         }
+        call Read_Filtering as Scrubbed_Read_Filtering {
+            input:
+                fastq_files = [hostile.fastq1_scrubbed],
+                index_1_id = index_1_id,
+                sample_name = sample_name,
+                primer_set = primer_set
+        }
     }
 
-    call Read_Filtering {
-        input:
-            fastq_files = select_first([select_all([hostile.fastq1_scrubbed]), Demultiplex.guppy_demux_fastq]),
-            index_1_id = index_1_id,
-            sample_name = sample_name,
-            primer_set = primer_set
+    if (!scrub_reads) { # no 'else' in WDL yet
+        call Read_Filtering {
+            input:
+                fastq_files = Demultiplex.guppy_demux_fastq,
+                index_1_id = index_1_id,
+                sample_name = sample_name,
+                primer_set = primer_set
+        }
     }
 
     call Medaka{
         input:
-            filtered_reads = Read_Filtering.guppyplex_fastq,
+            filtered_reads = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq]),
             sample_name = sample_name,
             index_1_id = index_1_id,
             medaka_model = medaka_model
@@ -169,7 +178,7 @@ workflow SC2_ont_assembly {
         File? fastq_files_scrubbed = hostile.fastq1_scrubbed
         Int? human_reads_removed = hostile.human_reads_removed
         Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
-        File filtered_fastq = Read_Filtering.guppyplex_fastq
+        File filtered_fastq = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq])
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam
         File trimsort_bai = Medaka.trimsort_bai
