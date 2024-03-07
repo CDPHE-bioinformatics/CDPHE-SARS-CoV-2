@@ -137,7 +137,7 @@ workflow SC2_illumina_pe_assembly {
         input:
             outdirpath = outdirpath,
             fastq1_scrubbed = hostile.fastq1_scrubbed,
-            fastq2_scrubbed = select_first([hostile.fastq2_scrubbed]),
+            fastq2_scrubbed = hostile.fastq2_scrubbed,
             seqyclean_summary = seqyclean.seqyclean_summary,
             fastqc_raw1_html = fastqc_raw.fastqc1_html,
             fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
@@ -165,7 +165,7 @@ workflow SC2_illumina_pe_assembly {
         Int? human_reads_removed = hostile.human_reads_removed
         Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
         File? fastq1_scrubbed = hostile.fastq1_scrubbed
-        File fastq2_scrubbed = select_first([hostile.fastq2_scrubbed])
+        File? fastq2_scrubbed = hostile.fastq2_scrubbed
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
         File seqyclean_summary = seqyclean.seqyclean_summary
