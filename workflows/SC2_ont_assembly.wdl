@@ -138,6 +138,7 @@ workflow SC2_ont_assembly {
             samtools_version = Bam_stats.samtools_version,
             pyScaf_version = Scaffold.pyScaf_version,
             bcftools_version = get_primer_site_variants.bcftools_version,
+            hostile_version = hostile.hostile_version,
             analysis_date = workflow_version_capture.analysis_date,
             workflow_version = workflow_version_capture.workflow_version,
             version_capture_ont_assembly_py = version_capture_ont_assembly_py
@@ -168,8 +169,6 @@ workflow SC2_ont_assembly {
         File? fastq_files_scrubbed = hostile.fastq1_scrubbed
         Int? human_reads_removed = hostile.human_reads_removed
         Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
-        String? hostile_version = hostile.hostile_version
-        String? hostile_docker = hostile.hostile_docker
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam

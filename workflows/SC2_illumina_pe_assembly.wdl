@@ -127,6 +127,7 @@ workflow SC2_illumina_pe_assembly {
             ivar_version = ivar_consensus.ivar_version,
             samtools_version_andersenlabapps = ivar_consensus.samtools_version_andersenlabapps,
             samtools_version_staphb = bam_stats.samtools_version_staphb,
+            hostile_version = hostile.hostile_version,
             analysis_date = workflow_version_capture.analysis_date,
             workflow_version = workflow_version_capture.workflow_version
 
