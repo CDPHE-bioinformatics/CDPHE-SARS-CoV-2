@@ -24,7 +24,7 @@ workflow SC2_ont_assembly {
 
         # python scripts
         File    calc_percent_coverage_py
-        File    version_capture_ont_assembly_py
+        File    version_capture_py
     }
 
     # secret variables
@@ -156,7 +156,7 @@ workflow SC2_ont_assembly {
             workflow_version = workflow_version_capture.workflow_version,
             project_name = project_name,
             analysis_date = workflow_version_capture.analysis_date,
-            version_capture_py = version_capture_ont_assembly_py
+            version_capture_py = version_capture_py
     }
 
     call transfer {
