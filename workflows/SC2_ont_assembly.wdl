@@ -149,6 +149,7 @@ workflow SC2_ont_assembly {
     if (scrub_reads) {
         Array[VersionInfo] version_array_with_hostile = flatten([version_array, select_all([hostile.hostile_version_info])])
     }
+
     call  version_capture.task_version_capture as task_version_capture {
         input:
             version_array = select_first([version_array_with_hostile, version_array]),
