@@ -57,7 +57,7 @@ workflow SC2_ont_assembly {
 
     call Read_Filtering {
         input:
-            fastq_files = select_first([hostile.fastq1_scrubbed, Demultiplex.guppy_demux_fastq]),
+            fastq_files = select_first([select_all([hostile.fastq1_scrubbed]), Demultiplex.guppy_demux_fastq]),
             index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
