@@ -15,7 +15,8 @@ workflow SC2_illumina_pe_assembly {
         File    adapters_and_contaminants
         File    covid_genome
         File    covid_gff
-        Array[File] genome_index
+        Boolean scrub_reads
+        Array[File?] scrub_genome_index
         String  project_name
         String out_dir
 
@@ -25,23 +26,25 @@ workflow SC2_illumina_pe_assembly {
         File    version_capture_illumina_pe_assembly_py
     }
 
-    # secrete variables
+    # secret variables
     String outdirpath = sub(out_dir, "/$", "")
 
-    call hostile_task.hostile as hostile {
-        input:
-            fastq1 = fastq_1,
-            fastq2 = fastq_2,
-            genome_index = genome_index,
-            seq_method = "ILLUMINA"
+    if (scrub_reads) {
+        call hostile_task.hostile as hostile {
+            input:
+                fastq1 = fastq_1,
+                fastq2 = fastq_2,
+                genome_index = genome_index,
+                seq_method = "ILLUMINA"
+        }
     }
 
     call seqyclean {
         input:
             contam = adapters_and_contaminants,
             sample_name = sample_name,
-            fastq_1 = hostile.fastq1_scrubbed,
-            fastq_2 = select_first([hostile.fastq2_scrubbed])
+            fastq_1 = select_first([hostile.fastq1_scrubbed, fastq_1]),
+            fastq_2 = select_first([hostile.fastq2_scrubbed, fastq_2])
     }
 
     call fastqc as fastqc_raw {
@@ -580,6 +583,7 @@ task create_version_capture_file {
         String ivar_version
         String samtools_version_andersenlabapps
         String samtools_version_staphb
+        String? hostile_version
         String analysis_date
         String workflow_version
 
@@ -596,6 +600,7 @@ task create_version_capture_file {
         --ivar_version "~{ivar_version}" \
         --samtools_version_andersenlabapps "~{samtools_version_andersenlabapps}" \
         --samtools_version_staphb "~{samtools_version_staphb}" \
+        --hostile_version = "~{hostile_version}" \
         --analysis_date "~{analysis_date}" \
         --workflow_version "~{workflow_version}" \
 
@@ -618,8 +623,8 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
-        File fastq1_scrubbed
-        File fastq2_scrubbed
+        File? fastq1_scrubbed
+        File? fastq2_scrubbed
         File seqyclean_summary 
         File fastqc_raw1_html
         File fastqc_raw1_zip

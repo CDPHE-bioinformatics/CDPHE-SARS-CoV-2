@@ -13,7 +13,8 @@ workflow SC2_ont_assembly {
         String    primer_set
         String    barcode_kit
         String    medaka_model
-        File    genome_index
+        Boolean  scrub_reads
+        File?    scrub_genome_index
         File    covid_genome
         File    primer_bed
         File    s_gene_primer_bed
@@ -40,20 +41,23 @@ workflow SC2_ont_assembly {
             index_1_id = index_1_id,
             barcode_kit = barcode_kit
     }
-    call concatenate_fastqs {
-        input:
-            sample_name = sample_name,
-            fastq_files = Demultiplex.guppy_demux_fastq
+    if (scrub_reads) {
+        call concatenate_fastqs {
+            input:
+                sample_name = sample_name,
+                fastq_files = Demultiplex.guppy_demux_fastq
+        }
+        call hostile_task.hostile as hostile {
+            input:
+                fastq1 = concatenate_fastqs.concatenated_fastq,
+                seq_method = "OXFORD_NANOPORE",
+                genome_index = [hostile_genome_index],
+        }
     }
-    call hostile_task.hostile as hostile {
-        input:
-            fastq1 = concatenate_fastqs.concatenated_fastq,
-            seq_method = "OXFORD_NANOPORE",
-            genome_index = [genome_index],
-    }
+
     call Read_Filtering {
         input:
-            fastq_files = [hostile.fastq1_scrubbed],
+            fastq_files = select_first([hostile.fastq1_scrubbed], Demultiplex.guppy_demux_fastq),
             index_1_id = index_1_id,
             sample_name = sample_name,
             primer_set = primer_set
@@ -164,8 +168,8 @@ workflow SC2_ont_assembly {
         File fastq_files_scrubbed = hostile.fastq1_scrubbed
         Int human_reads_removed = hostile.human_reads_removed
         Float human_reads_removed_proportion = hostile.human_reads_removed_proportion
-        String hostile_version = hostile.hostile_version
-        String hostile_docker = hostile.hostile_docker
+        String? hostile_version = hostile.hostile_version
+        String? hostile_docker = hostile.hostile_docker
         File filtered_fastq = Read_Filtering.guppyplex_fastq
         File sorted_bam = Medaka.sorted_bam
         File trimsort_bam = Medaka.trimsort_bam
@@ -581,6 +585,7 @@ task create_version_capture_file {
         String samtools_version
         String pyScaf_version
         String bcftools_version
+        String? hostile_version
         String analysis_date
         String workflow_version
     }
@@ -595,9 +600,9 @@ task create_version_capture_file {
         --samtools_version "~{samtools_version}" \
         --pyScaf_version "~{pyScaf_version}" \
         --bcftools_version "~{bcftools_version}" \
+        --hostile_version = "~{hostile_version}" \
         --analysis_date "~{analysis_date}" \
         --workflow_version "~{workflow_version}"
-
 
     >>>
 
@@ -618,7 +623,7 @@ task create_version_capture_file {
 task transfer {
     input {
         String outdirpath
-        File fastq_scrubbed
+        File? fastq_scrubbed
         File trimsort_bam
         File trimsort_bai
         File flagstat_out
@@ -636,7 +641,6 @@ task transfer {
 
     command <<<
 
-        # TODO remove in final version
         gsutil -m cp ~{fastq_scrubbed} ~{outdirpath}/fastq_scrubbed/
         gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
         gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/

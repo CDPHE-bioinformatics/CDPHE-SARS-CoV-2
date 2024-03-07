@@ -15,6 +15,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument("--samtools_version",  help= "")
     parser.add_argument("--pyScaf_version",  help= "")
     parser.add_argument("--bcftools_version",  help= "")
+    parser.add_argument("--hostile_version")
     parser.add_argument("--analysis_date",  help= "")
     parser.add_argument("--workflow_version",  help= "")
     options = parser.parse_args(args)
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     samtools_version = options.samtools_version
     pyScaf_version = options.pyScaf_version
     bcftools_version = options.bcftools_version
+    hostile_version = options.hostile_version
     analysis_date = options.analysis_date
     workflow_version = options.workflow_version
 
@@ -64,6 +66,10 @@ if __name__ == '__main__':
     df.at[6, 'software'] = 'bcftools'
     df.at[6, 'associated_docker_container'] = 'staphb/bcftools'
     df.at[6, 'version'] = bcftools_version
+
+    df.at[7, 'software'] = 'hostile'
+    df.at[7, 'associated_docker_container'] = 'quay.io/biocontainers/hostile'
+    df.at[7, 'version'] = hostile_version
 
   
     # add project name and anaysis date

@@ -16,6 +16,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument("--ivar_version",  help= "")
     parser.add_argument("--samtools_version_andersenlabapps",  help= "")
     parser.add_argument("--samtools_version_staphb",  help= "")
+    parser.add_argument("--hostile_version")
     parser.add_argument("--analysis_date",  help= "")
     parser.add_argument('--workflow_version', help = '')
     options = parser.parse_args(args)
@@ -33,6 +34,7 @@ if __name__ == '__main__':
     ivar_version = options.ivar_version
     samtools_version_andersenlabapps = options.samtools_version_andersenlabapps
     samtools_version_staphb = options.samtools_version_staphb
+    hostile_version = options.hostile_version
     analysis_date = options.analysis_date
     workflow_version = options.workflow_version
 
@@ -70,6 +72,10 @@ if __name__ == '__main__':
     df.at[7, 'software'] = 'samtools'
     df.at[7, 'associated_docker_container'] = 'staphb/samtools'
     df.at[7, 'version'] = samtools_version_staphb
+
+    df.at[8, 'software'] = 'hostile'
+    df.at[8, 'associated_docker_container'] = 'quay.io/biocontainers/hostile'
+    df.at[8, 'version'] = hostile_version
 
     # add project name and anaysis date
     df['project_name'] = project_name
