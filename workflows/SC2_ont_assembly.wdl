@@ -51,7 +51,7 @@ workflow SC2_ont_assembly {
             input:
                 fastq1 = concatenate_fastqs.concatenated_fastq,
                 seq_method = "OXFORD_NANOPORE",
-                genome_index = [scrub_genome_index],
+                genome_index = select_all([scrub_genome_index]),
         }
     }
 
@@ -165,9 +165,9 @@ workflow SC2_ont_assembly {
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
         Array[File] guppy_demux_fastq = Demultiplex.guppy_demux_fastq
-        File fastq_files_scrubbed = hostile.fastq1_scrubbed
-        Int human_reads_removed = hostile.human_reads_removed
-        Float human_reads_removed_proportion = hostile.human_reads_removed_proportion
+        File? fastq_files_scrubbed = hostile.fastq1_scrubbed
+        Int? human_reads_removed = hostile.human_reads_removed
+        Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
         String? hostile_version = hostile.hostile_version
         String? hostile_docker = hostile.hostile_docker
         File filtered_fastq = Read_Filtering.guppyplex_fastq

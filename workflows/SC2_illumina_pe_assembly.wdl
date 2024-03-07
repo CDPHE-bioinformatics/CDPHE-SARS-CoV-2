@@ -34,7 +34,7 @@ workflow SC2_illumina_pe_assembly {
             input:
                 fastq1 = fastq_1,
                 fastq2 = fastq_2,
-                genome_index = genome_index,
+                genome_index = select_all(scrub_genome_index),
                 seq_method = "ILLUMINA"
         }
     }
@@ -161,9 +161,9 @@ workflow SC2_illumina_pe_assembly {
     }
 
     output {
-        Int human_reads_removed = hostile.human_reads_removed
-        Float human_reads_removed_proportion = hostile.human_reads_removed_proportion
-        File fastq1_scrubbed = hostile.fastq1_scrubbed
+        Int? human_reads_removed = hostile.human_reads_removed
+        Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
+        File? fastq1_scrubbed = hostile.fastq1_scrubbed
         File fastq2_scrubbed = select_first([hostile.fastq2_scrubbed])
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
