@@ -51,7 +51,7 @@ workflow SC2_ont_assembly {
             input:
                 fastq1 = concatenate_fastqs.concatenated_fastq,
                 seq_method = "OXFORD_NANOPORE",
-                genome_index = [hostile_genome_index],
+                genome_index = [scrub_genome_index],
         }
     }
 
