@@ -50,7 +50,6 @@ workflow SC2_ont_assembly {
         call hostile_task.hostile as hostile {
             input:
                 fastq1 = concatenate_fastqs.concatenated_fastq,
-                fastq2 = "",
                 seq_method = "OXFORD_NANOPORE",
                 genome_index = select_all([scrub_genome_index]),
         }
