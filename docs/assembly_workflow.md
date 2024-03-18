@@ -8,18 +8,19 @@ File: SC2_illumina_pe_assembly.wdl
 
 This workflow was developed for the assembly of Illumina 150 bp paired-end read data using the Illumina Nextera XT library prep protocol. The workflow accepts "sample" as the root entity type. The workflow will:
 
-1. Use Seqyclean to quality filter and trim raw fastq files
+1. Perform human read scrubbing on the fastq files using [hostile](https://github.com/bede/hostile) if `scrub_reads` is set to true.
+2. Use Seqyclean to quality filter and trim raw fastq files
     - Seqyclean parameters include a minimum read length set to 70 bp and quality trimming set to a minimum Phred quality score of 30.
-2. Run FastQC on both the raw and cleaned reads
-3. Align reads to the reference genome using bwa and then sort the bam by coordinates using Samtools
-4. Use iVar trim to trim primer regions and then sort the trimmed bam by coordinates using Samtools
-5. Use iVar variants to call variants from the trimmed and sorted bam
-    - iVar variants parameters include a minimum quality score set to 20, a minimum variant base frequency set to 0.6 and a minimum read depth set to 10.
-6. Use iVar consensus to call the consensus genome sequence from the trimmed and sorted bam
-    - iVar consensus parameters include a minimum quality score set to 20, a minimum variant base frequency set to 0.6 and a minimum read depth set to 10.
-7. Use Samtools flagstat, stats, and coverage to output statistics from the bam
-8. Rename the fasta header of consensus sequences in the GISAID-acceptable format: CO-CDPHE-{sample_id}
-9. Calculate the percent coverage using the `calc_percent_coverage.py` script available in the [python_scripts](https://github.com/CDPHE-bioinformatics/CDPHE-SARS-CoV-2/tree/main/workflows/python_scripts) directory of this repo.
+3. Run FastQC on both the raw and cleaned reads
+4. Align reads to the reference genome using bwa and then sort the bam by coordinates using Samtools
+5. Use iVar trim to trim primer regions and then sort the trimmed bam by coordinates using Samtools
+6. Use iVar variants to call variants from the trimmed and sorted bam
+   - iVar variants parameters include a minimum quality score set to 20, a minimum variant base frequency set to 0.6 and a minimum read depth set to 10.
+7. Use iVar consensus to call the consensus genome sequence from the trimmed and sorted bam
+   - iVar consensus parameters include a minimum quality score set to 20, a minimum variant base frequency set to 0.6 and a minimum read depth set to 10.
+8. Use Samtools flagstat, stats, and coverage to output statistics from the bam
+9. Rename the fasta header of consensus sequences in the GISAID-acceptable format: CO-CDPHE-{sample_id}
+10. Calculate the percent coverage using the `calc_percent_coverage.py` script available in the [python_scripts](https://github.com/CDPHE-bioinformatics/CDPHE-SARS-CoV-2/tree/main/workflows/python_scripts) directory of this repo.
 
 ![SC2_illumina_pe_assembly.wdl workflow diagram](img/SC2_illumina_pe_assembly.png)
 
@@ -57,11 +58,19 @@ For setting up the workflow inputs, use the `SC2_illumina_pe_assembly-input.json
 | `primer_bed`                | workspace.artic_v4-1_bed                 |
 | `s_gene_amplicons`          | workspace.artic_v4-1_s_gene_amplicons    |
 | `sample_name`               | this.{entity_name}\_id                   |
+| `scrub_reads`               | `true` or `false`                        |
+| `scrub_genome_index`        | workspace.hostile_human_t2t_hla_bt2 (if using read scrubbing)  |
+| `version_capture_py`        | workspace.version_capture_py             |
+
 
 ### Outputs
 
 | WDL task name            | software/program                           | variable name                | description                                                                                                             |
 | ------------------------ | ------------------------------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| hostile                  | hostile                                    | `human_reads_removed`      | integer                                                                                                                   |
+| hostile                  | hostile                                    | `human_reads_removed_proportion` | floating-point number                                                                                               |
+| hostile                  | hostile                                    | `fastq1_scrubbed`          | file
+| hostile                  | hostile                                    | `fastq2_scrubbed`          | file
 | seqyclean                | seqyclean                                  | `filtered_reads_1`         | file                                                                                                                    |
 | seqyclean                | seqyclean                                  | `filtered_reads_2`         | file                                                                                                                    |
 | seqyclean                | seqyclean                                  | `seqyclean_summary`        | file                                                                                                                    |
@@ -75,7 +84,6 @@ For setting up the workflow inputs, use the `SC2_illumina_pe_assembly-input.json
 | fastqc as fastqc_cleaned | fastqc                                     | `fastqc_clean2_zip`        | file                                                                                                                    |
 | align_reads              | bwa and samtools                           | `out_bam`                  | file                                                                                                                    |
 | align_reads              | bwa and samtools                           | `out_bamindex`             | file                                                                                                                    |
-| align_reads              | bwa and samtools                           | `assembler_version`        | string recording the version for bwa, this information is used later for submitting to public repositories.             |
 | ivar trim                | ivar trim and samtools                     | `trim_bam`                 | file                                                                                                                    |
 | ivar trim                | ivar trim and samtools                     | `trimsort_bam`             | file                                                                                                                    |
 | ivar trim                | ivar trim and samtools                     | `trimsort_bamindex`        | file                                                                                                                    |
@@ -84,11 +92,14 @@ For setting up the workflow inputs, use the `SC2_illumina_pe_assembly-input.json
 | bam_stats                | samtools flagstat, stats, percent_coverage | `flagstat_out`             | file                                                                                                                    |
 | bam_stats                | samtools flagstat, stats, percent_coverage | `stats_out`                | file                                                                                                                    |
 | bam_stats                | samtools flagstat, stats, percent_coverage | `covhist_out`              | file                                                                                                                    |
+| bam_stats                | samtools flagstat, stats, percent_coverage | `depth_out`                | file
 | bam_stats                | samtools flagstat, stats, percent_coverage | `cov_out`                  | file                                                                                                                    |
 | bam_stats                | samtools flagstat, stats, percent_coverage | `cov_s_gene_amplicons_out` | file                                                                                                                    |
 | bam_stats                | samtools flagstat, stats, percent_coverage | `cov_s_gene_out`           | file                                                                                                                    |
 | rename_fasta             | N/A                                        | `renamed_consensus`        | fasta file; consensus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_name}                        |
 | calc_percent_cvg         | calc_percent_coverage.py                   | `percent_cvg_csv`          | csv file, see calc_percent_cvg.py script readme for details found in the ./python_scripts directory of this repository. |
+| version_capture          | version_capture.py                         | `version_capture_illumina_pe_assembly` | csv file                                                                                                    |
+| transfer                 | gsutil                                     | `transfer_date_assembly`   | String                                                                                                                  |
 
 ## Illumina SE
 
@@ -215,17 +226,18 @@ File: SC2_ont_assembly.wdl
 
 This workflow was developed for the assembly of Oxford Nanopore Technology (ONT) read data following the ARTIC SARS-CoV-2 sequencing protocol and using the ONT native barcoding kit. This workflow assumes that base calling and conversion of fast5 files into fastq has already occurred (e.g. using MinKNOW). The workflow accepts "sample" as the root entity type. The workflow will:
 
-1. Demuliplex basecalled fastq files using guppy_barcoder
-2. Perform quality filtering using guppyplex
+1. Perform human read scrubbing on concatenated fastq files using [hostile](https://github.com/bede/hostile) if `scrub_reads` is set to true.
+2. Demuliplex basecalled fastq files using guppy_barcoder
+3. Perform quality filtering using guppyplex
     - guppyplex includes a min length parameter set to 400 and a max length set to 700 for Artic primers and a min length set ot 400 and a max length set to 1500 for midnight primers.
-3. Run artic minion --medaka for variant calling and to generate a consensus flagstat_out
+4. Run artic minion --medaka for variant calling and to generate a consensus flagstat_out
     - medaka uses minimap2 by default to align reads to the SARS-CoV-2 reference genome
     - the default parameter in medaka for base calling is 20x depth and at least 60% of reads containing the base call
-4. Scaffold assembly with pyScaf
+5. Scaffold assembly with pyScaf
     - this step ensures a single continuous consensus sequence with only one sequence in the consensus fasta file
-5. Rename consensus to CO-CDPHE-{sample_id}
-6. Generate bam quality statistics using samtools
-7. Calculates percent coverage using the `calc_percent_coverage.py` script
+6. Rename consensus to CO-CDPHE-{sample_id}
+7. Generate bam quality statistics using samtools
+8. Calculates percent coverage using the `calc_percent_coverage.py` script
 
 ![SC2_ont_assembly.wdl workflow diagram](img/SC2_ont_assembly.png)
 
@@ -263,6 +275,11 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | `s_gene_amplicons`         | workspace.artic_v4-1_s_gene_amplicons    |
 | `s_gene_primer_bed`        | workspace.artic_v4-1_s_gene_primer_bed   |
 | `sample_name`              | this.{entity_name}\_id                   |
+| `scrub_reads`              | `true` or `false`                        |
+| `scrub_genome_index`       | workspace.hostile_human_t2t_hla_fa_gz (if using read scrubbing) |
+| `medaka_model`             | example: "r1041_e82_400bps_hac_v4.2.0"   |
+| `barcode_kit`              | example: "SQK-NBD114-96"                 |
+| `version_capture_py`       | workspace.version_capture_py             |
 
 ### Outputs
 
@@ -270,7 +287,10 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | --------------------------- | ------------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Demultiplex                 | guppy_barcoder                             | `barcode_summary`      | file                                                                                                                    |
 | Demultiplex                 | guppy_barcoder                             | `guppy_dmux_fastq`     | file                                                                                                                    |
-| guppyplex quality filtering | `filtered_fastq`                           | file                   |                                                                                                                         |
+| Read_Filtering              | guppyplex quality filtering                | `filtered_fastq`       | file                                                                                                                    |
+| hostile                     | hostile                                    | `fastq_files_scrubbed` | file                                                                                                                    |
+| hostile                     | hostile                                    | `human_reads_removed`  | integer                                                                                                                 |
+| hostile                     | hostile                                    | `human_reads_removed_porportion` | floating-point number                                                                                         |
 | Medaka                      | medaka and minimap2                        | `sorted_bam`           | file                                                                                                                    |
 | Medaka                      | medaka and minimap2                        | `trim_sort_bam`        | file                                                                                                                    |
 | Medaka                      | medaka and minimap2                        | `trimsort_bai`         | file                                                                                                                    |
@@ -285,3 +305,5 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | rename_fasta                | N/A                                        | `renamed_consensus`    | fasta file; consensus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_name}                        |
 | calc_percent_cvg            | calc_percent_coverage.py                   | `percent_cvg_csv`      | csv file, see calc_percent_cvg.py script readme for details found in the ./python_scripts directory of this repository. |
 | get_primer_site_variants    | bcftools                                   | `primer_site_variants` | file                                                                                                                    |
+| version_capture             | version_capture.py                         | `version_capture_ont_assembly` | csv file                                                                                                    |
+| transfer                    | gsutil                                     | `transfer_date_assembly`   | String                                                                                                                  |

@@ -5,11 +5,11 @@ import sys
 
 def get_options(args=sys.argv[1:]):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--versions_json')
-    parser.add_argument('--workflow_name')
-    parser.add_argument('--workflow_version')
-    parser.add_argument('--project_name')
-    parser.add_argument('--analysis_date')
+    parser.add_argument('--versions_json', help='JSON file with an array of version_info objects (keys should be "software", "docker", and "version")')
+    parser.add_argument('--workflow_name', help='workflow name (e.g. SC2_ont_assembly)')
+    parser.add_argument('--workflow_version', help='workflow version with dashes (e.g. v2-2-0)')
+    parser.add_argument('--project_name', help='project name of batch being analyzed (e.g. cov_2022_grid)')
+    parser.add_argument('--analysis_date', help='date to add to the analysis_date column in the output CSV')
     options = parser.parse_args(args)
     return options
 

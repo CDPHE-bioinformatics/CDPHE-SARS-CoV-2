@@ -39,11 +39,12 @@ To add data to the terra workspace data:
 | `covid_calc_per_cov_py` | `SC2_illumina_pe_assembly`, `SC2_ont_assembly` |calc_percent_coverage.py | see detailed description in the readme file found in `./python_scripts/` repo directory|
 | `covid_nextclade_json_parser_py` | `SC2_lineage_calling_and_results` | nextclade_json_parser.py | see detailed description in the readme file found in `./python_scripts/` repo directory|
 | `covid_concat_results_py` | `SC2_lineage_calling_and_results` | concat_seq_metrics_and_lineages_results.py | see detailed description in the readme file found in `./python_scripts` repo directory |
-| `covid_novel_mutations_append_py` | `SC2_novel_mutations` | novel_mutations_append.py | see detailed description in the readme file found in `./python_scripts/` repo directory |
-| `covid_version_capture_illumina_pe_assembly_py` | `SC2_illumina_pe_assembly` | version_capture_illumina_pe_assembly.py| generates version capture output file for software versions used in the SC2_illumina_pe_assembly workflow|
-| `covid_version_capture_ont_assembly_py` | `SC2_ont_assembly` | version_capture_ont_assembly.py| generates version capture output file for software versions used in the SC2_ont_assembly workflow|
+| `covid_novel_mutations_append_py` | `SC2_novel_mutations` | novel_mutations_append.py | see detailed description in the readme file found in `./python_scripts/` repo directory 
 | `covid_version_capture_lineage_calling_py` | `SC2_lineage_calling_and_results` | version_capture_lineage_calling_and_results.py| generates version capture output file for software versions used in the SC2_lineage_calling_and_results workflow|
 | `covid_version_capture_wastewater_variant_calling_py` | `SC2_wastewater_variant_calling` | version_capture_wastewater_variant_calling.py| generates version capture output file for software versions used in the SC2_wastewater_variant_calling workflow|
 | `covid_version_capture_multifasta_lineage_calling_py` | `SC2_multifasta_lineage_calling` | version_capture_multifasta_lineage_calling.py| generates version capture output file for software versions used in the SC2_multifasta_lineage_calling workflow|
 | `novel_mutations_historical_full` | `SC2_novel_mutations` | novel_mutations.py | for wastewater only. See detailed description in the readme file found in `./python_scripts/` repo directory |
 | `novel_mutations_historical_unique` | `SC2_novel_mutations` | novel_mutations.py | for wastewater only. See detailed description in the readme file found in `./python_scripts/` repo directory |
+| `hostile_human_t2t_hla_bt2` | `SC2_illumina_pe_assembly` | human-t2t-hla.1.bt2, human-t2t-hla.2.bt2, ... | hostile read scrubbing bowtie2 default reference genome index |
+| `hostile_human_t2t_hla_fa_gz` | `SC2_ont_assembly` | human-t2t-hla.fa.gz | hostile read scrubbing minimap2 default reference genome |
+| `version_capture_py` | `SC2_ont_assembly`, `SC2_illumina_pe_assembly` | version_capture.py | general script for creating version capture CSV file |
