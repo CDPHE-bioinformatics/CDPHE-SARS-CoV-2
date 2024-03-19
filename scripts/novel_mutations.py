@@ -34,25 +34,23 @@ def parse_arguments(args = sys.argv[1:]):
 
 
 def read_reference_files(historical_full, historical_unique, metadata, gff):
-   
-    df_historical_full = pd.read_csv(historical_full, sep = '\t', 
-                         parse_dates = ['collection_date'], 
-                         dtype = {'sample_name' : 'category', 
-                                  'sample_name_base' : 'category'})
-    df_historical_unique = pd.read_csv(historical_unique, sep = '\t', 
-                           parse_dates = ['date_first_detected', 'date_last_detected'])
     df_metadata = pd.read_csv(metadata, sep = '\t', parse_dates = ['collection_date'])
     df_gff = pd.read_csv(gff, sep = '\t')
     
-    # Change some columns to categorical to decrease memory usage
-    hist_category_cols = ['ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', 
-                          'gff_feature', 'site_id']
-    df_historical_full[hist_category_cols] = df_historical_full[hist_category_cols].astype('category')
+    # Read in some columns as categorical to decrease memory usage
+    hist_category_cols = ['sample_name', 'sample_name_base', 'ref_nucl', 
+                          'alt_nucl', 'ref_aa', 'alt_aa', 'gff_feature', 'site_id']
+    df_historical_full = pd.read_csv(historical_full, sep = '\t', 
+                         parse_dates = ['collection_date'], 
+                         dtype = dict.fromkeys(hist_category_cols, 'category'))
     
-    hist_category_cols = hist_category_cols[:-1]
+
+    hist_category_cols = hist_category_cols[2:-1]
     hist_category_cols.extend(['mutation_type', 'id_return', 'parent_id', 'parent', 
                                'parent_start', 'parent_end', 'indel_length'])
-    df_historical_unique[hist_category_cols] = df_historical_unique[hist_category_cols].astype('category')
+    df_historical_unique = pd.read_csv(historical_unique, sep = '\t', 
+                           parse_dates = ['date_first_detected', 'date_last_detected'],
+                           dtype = dict.fromkeys(hist_category_cols, 'category'))
         
     return df_historical_full, df_historical_unique, df_metadata, df_gff
 
