@@ -24,10 +24,9 @@ def parse_arguments(args = sys.argv[1:]):
     parser.add_argument('--metadata', help = 'workspace reference for \
                         wastewater metadata')
     parser.add_argument('--gff', help = 'workspace reference for formatted gff file')
-    parser.add_argument('--today', help = 'today\'s date in %m-%d-%Y format')
+    parser.add_argument('--today', help = 'today\'s date in %YYYY-%mm-%dd format')
     parser.add_argument('--sites_to_drop', nargs = '*', help = 'space-separated \
                         list of any wastewater facility site ids to not include')
-
 
     parsed_args = parser.parse_args(args)
     
@@ -37,7 +36,9 @@ def parse_arguments(args = sys.argv[1:]):
 def read_reference_files(historical_full, historical_unique, metadata, gff):
    
     df_historical_full = pd.read_csv(historical_full, sep = '\t', 
-                         parse_dates = ['collection_date'])
+                         parse_dates = ['collection_date'], 
+                         dtype = {'sample_name' : 'category', 
+                                  'sample_name_base' : 'category'})
     df_historical_unique = pd.read_csv(historical_unique, sep = '\t', 
                            parse_dates = ['date_first_detected', 'date_last_detected'])
     df_metadata = pd.read_csv(metadata, sep = '\t', parse_dates = ['collection_date'])
@@ -94,13 +95,23 @@ def get_mutation_type(alt_nuc):
     return mut_type
 
 
-def get_parent(feature):
+def get_parent(position, feature):
     """ Lambda function to get parent based off gff feature """
     
-    parent_info = df_gff[df_gff.id == feature][['id_return', 'parent_id', 'parent']].squeeze()
-    parent_data = df_gff[df_gff.id == parent_info.parent_id][['start', 'end']].squeeze()
-    parent = pd.concat([parent_info, parent_data], ignore_index = True)
-    
+    # Return other info for ORF1ab since outbreak.info separates them into 
+    # ORF1a and ORF1b instead of ensembl's ORF1ab and ORF1a
+    if feature == 'cds-YP_009725295.1' or feature == 'cds-YP_009724389.1': #ORF1a
+        if position <= 13468:
+            d = ['ORF1a polyprotein', 'gene-GU280_gp01', 'ORF1a', 266, 13468]
+        else:
+            d = ['ORF1b polyprotein', 'gene-GU280_gp01', 'ORF1b', 13468, 21555]
+        parent = pd.Series(data = d)
+
+    else:
+        parent_info = df_gff[df_gff.id == feature][['id_return', 'parent_id', 'parent']].squeeze()
+        parent_data = df_gff[df_gff.id == parent_info.parent_id][['start', 'end']].squeeze()
+        parent = pd.concat([parent_info, parent_data], ignore_index = True)
+
     return parent
 
 
@@ -122,7 +133,7 @@ def get_gff_id(position):
 def assign_gene_coordinates(row):
     """
     Convert genomic coordinate to gene coordinate. Formula is as follows:
-        floor(position - parent start) / 3) + 1
+        floor((position - parent start) / 3) + 1
         ex: Mutation S:A67V genomic coordinates: 21,761-21,763
             Spike position: 21,563-25,384
             ((21761-21563) / 3) + 1 = 67
@@ -146,8 +157,7 @@ def assign_gene_coordinates(row):
         Calculated gene coordinate
 
     """
-    # Indels start at position after reference position given
-    # Declare this variable for 
+    # Indels start at position after reference position given by IGV
     if row.mutation_type == 'insertion' or row.mutation_type == 'deletion':
         position = row.position + 1
     else:
@@ -168,7 +178,6 @@ def assign_gene_coordinates(row):
                 gene_coordinate = f'{row.parent}:{row.ref_aa}{gene_coordinate_str}{row.alt_aa}'
                 
         case 'insertion':
-            # Translation to aa? Complicated
             gene_coordinate = f'{row.parent}:ins{gene_coordinate_str}'
             
         case 'deletion':
@@ -277,12 +286,12 @@ def parse_project_mutations(project_dict, df_metadata):
     df_list = []
     mut_cols = ['sample_name', 'position', 'ref_nucl', 'alt_nucl', 'ref_aa', 
                 'alt_aa', 'pass', 'gff_feature']
-    mut_category_cols = mut_cols[2:]
+    mut_category_cols = mut_cols[:1] + mut_cols[2:6] + mut_cols[-1:]
     
     for project in project_dict:
         path = project_dict[project]
-        df = pd.read_csv(path, delim_whitespace = True, usecols = mut_cols)
-        df[mut_category_cols] = df[mut_category_cols].astype('category')
+        df = pd.read_csv(path, delim_whitespace = True, usecols = mut_cols,
+                         dtype = dict.fromkeys(mut_category_cols, 'category'))
         
         # Drop freyja failures
         df = df[df['pass'] == True]
@@ -290,12 +299,12 @@ def parse_project_mutations(project_dict, df_metadata):
         # Merge with metadata for collection date and site id and check that all 
         # samples have this info. Drop controls and verification samples
         df = df.merge(df_metadata, on = 'sample_name', how = 'left')
-        
-        # Drop specified site ids if any
-        if len(sites_to_drop) > 1:
-            df = df[~df['site_id'].isin(sites_to_drop)]
-            
         df = df[df.sample_type == 'sample']
+
+        # Drop specified utility site ids if any
+        if len(sites_to_drop) > 0:
+            df = df[~df['site_id'].isin(sites_to_drop)]
+              
         df = check_collection_date_exists(df, project)
         
         df = df.drop(columns = ['pass', 'sample_type'])
@@ -401,7 +410,7 @@ def add_features_new_mutations(df, df_new_full, cols):
     
     # Get parent gene info for those with gff_features
     parent_cols = ['id_return', 'parent_id', 'parent', 'parent_start', 'parent_end']
-    df[parent_cols] = df.apply(lambda x: get_parent(x.gff_feature) 
+    df[parent_cols] = df.apply(lambda x: get_parent(x.position, x.gff_feature) 
                                if(np.all(pd.notnull(x['gff_feature']))) else np.nan, axis = 1)
     
     # Get gene and nuc coordinates
@@ -496,11 +505,9 @@ def update_unique_data(df_new_unique, df_new_full, df_historical_unique):
                       'date_last_detected_new', 'times_detected_new', 'length_of_time_seen_new']
     needs_features = df_temp[df_temp.nuc_coordinate.isna()][filled_in_cols]
     
-    
     # Update/fill in features of new mutations. Output files of novel and recurrent mutations
     df_new_updated_features = update_features_prev_seen_mutations(has_features, cols)
     df_new_filled_features = add_features_new_mutations(needs_features, df_new_full, cols)
-    
     
     # Update historical file, first with updated mutations and then with new mutations
     static_cols = ['position', 'ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', 
@@ -532,6 +539,7 @@ def main():
     
     # Append full data to historical
     df_full = pd.concat([df_historical_full, df_new_full], ignore_index = True)
+    
     # Check for duplicates again in case samples were re-run
     df_full = df_full.drop_duplicates(subset = ['position', 'ref_nucl', 'alt_nucl', 
                                 'collection_date', 'site_id']).reset_index(drop = True)
