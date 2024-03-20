@@ -98,7 +98,7 @@ def get_parent(position, feature):
     
     # Return other info for ORF1ab since outbreak.info separates them into 
     # ORF1a and ORF1b instead of ensembl's ORF1ab and ORF1a
-    if feature == 'cds-YP_009725295.1' or feature == 'cds-YP_009724389.1': #ORF1a
+    if feature == 'cds-YP_009725295.1' or feature == 'cds-YP_009724389.1':
         if position <= 13468:
             d = ['ORF1a polyprotein', 'gene-GU280_gp01', 'ORF1a', 266, 13468]
         else:
