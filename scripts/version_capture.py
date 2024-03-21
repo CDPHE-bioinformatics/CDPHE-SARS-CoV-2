@@ -24,11 +24,10 @@ def create_version_df(options):
     }
 
     records.insert(0, workflow_record)
-    df = (pd.DataFrame(records)
-        .insert(0, 'project_name', options.project_name)
-        .insert(1, 'analysis_date', options.analysis_date)
-        .rename(columns={'docker': 'associated_docker_container'})  # backwards-compat naming
-    )
+    df = pd.DataFrame(records)
+    df.insert(0, 'project_name', options.project_name)
+    df.insert(1, 'analysis_date', options.analysis_date)
+    df = df.rename(columns={'docker': 'associated_docker_container'})  # backwards-compat naming
     return df
 
 if __name__ == '__main__':
