@@ -2,7 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
-
+import "../tasks/hostile_task.wdl" as hostile_task
 
 
 workflow SC2_illumina_pe_assembly {
@@ -15,24 +15,36 @@ workflow SC2_illumina_pe_assembly {
         File    adapters_and_contaminants
         File    covid_genome
         File    covid_gff
+        Boolean scrub_reads
+        Array[File]? scrub_genome_index
         String  project_name
         String out_dir
 
         # python scripts
         File    calc_percent_coverage_py
         File    s_gene_amplicons
-        File    version_capture_illumina_pe_assembly_py
+        File    version_capture_py
     }
 
-    # secrete variables
+    # secret variables
     String outdirpath = sub(out_dir, "/$", "")
+
+    if (scrub_reads) {
+        call hostile_task.hostile as hostile {
+            input:
+                fastq1 = fastq_1,
+                fastq2 = fastq_2,
+                genome_index = select_first([scrub_genome_index]),
+                seq_method = "ILLUMINA"
+        }
+    }
 
     call seqyclean {
         input:
             contam = adapters_and_contaminants,
             sample_name = sample_name,
-            fastq_1 = fastq_1,
-            fastq_2 = fastq_2
+            fastq_1 = select_first([hostile.fastq1_scrubbed, fastq_1]),
+            fastq_2 = select_first([hostile.fastq2_scrubbed, fastq_2])
     }
 
     call fastqc as fastqc_raw {
@@ -101,28 +113,34 @@ workflow SC2_illumina_pe_assembly {
 
     call version_capture.workflow_version_capture  as workflow_version_capture{
         input:
-
     }
 
-    call create_version_capture_file {
+    Array[VersionInfo] version_array = [
+        seqyclean.seqyclean_version_info,
+        fastqc_cleaned.fastqc_version_info,
+        align_reads.bwa_version_info,
+        align_reads.samtools_version_info,
+        ivar_consensus.ivar_version_info,
+        ivar_consensus.samtools_version_info,
+        bam_stats.samtools_version_info
+    ]
+    if (scrub_reads) {
+        Array[VersionInfo] version_array_with_hostile = flatten([version_array, select_all([hostile.hostile_version_info])])
+    }
+    call version_capture.task_version_capture as task_version_capture {
         input:
-            version_capture_illumina_pe_assembly_py = version_capture_illumina_pe_assembly_py,
+            version_array = select_first([version_array_with_hostile, version_array]),
+            workflow_name = "SC2_illumina_pe_assembly",
+            workflow_version = workflow_version_capture.workflow_version,
             project_name = project_name,
-            seqyclean_version = seqyclean.seqyclean_version,
-            fastqc_version = fastqc_raw.fastqc_version,
-            bwa_version = align_reads.bwa_version,
-            samtools_version_broadinstitute = align_reads.samtools_version_broadinstitute,
-            ivar_version = ivar_consensus.ivar_version,
-            samtools_version_andersenlabapps = ivar_consensus.samtools_version_andersenlabapps,
-            samtools_version_staphb = bam_stats.samtools_version_staphb,
             analysis_date = workflow_version_capture.analysis_date,
-            workflow_version = workflow_version_capture.workflow_version
-
-            
+            version_capture_py = version_capture_py
     }
     call transfer {
         input:
             outdirpath = outdirpath,
+            fastq1_scrubbed = hostile.fastq1_scrubbed,
+            fastq2_scrubbed = hostile.fastq2_scrubbed,
             seqyclean_summary = seqyclean.seqyclean_summary,
             fastqc_raw1_html = fastqc_raw.fastqc1_html,
             fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
@@ -143,10 +161,14 @@ workflow SC2_illumina_pe_assembly {
             cov_s_gene_out = bam_stats.cov_s_gene_out,
             cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out,
             renamed_consensus = rename_fasta.renamed_consensus,
-            version_capture_illumina_pe_assembly = create_version_capture_file.version_capture_illumina_pe_assembly
+            version_capture_illumina_pe_assembly = task_version_capture.version_capture_file
     }
 
     output {
+        Int? human_reads_removed = hostile.human_reads_removed
+        Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
+        File? fastq1_scrubbed = hostile.fastq1_scrubbed
+        File? fastq2_scrubbed = hostile.fastq2_scrubbed
         File filtered_reads_1 = seqyclean.cleaned_1
         File filtered_reads_2 = seqyclean.cleaned_2
         File seqyclean_summary = seqyclean.seqyclean_summary
@@ -175,7 +197,7 @@ workflow SC2_illumina_pe_assembly {
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
 
-        File version_capture_illumina_pe_assembly = create_version_capture_file.version_capture_illumina_pe_assembly
+        File version_capture_illumina_pe_assembly = task_version_capture.version_capture_file
         String transfer_date_assembly = transfer.transfer_date_assembly
 
     }
@@ -188,6 +210,8 @@ task seqyclean {
         File fastq_1
         File fastq_2
     }
+
+    String docker = "staphb/seqyclean:1.10.09"
 
     command <<<
 
@@ -202,8 +226,12 @@ task seqyclean {
         File cleaned_1 = "${sample_name}_clean_PE1.fastq.gz"
         File cleaned_2 = "${sample_name}_clean_PE2.fastq.gz"
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
-        String seqyclean_version = read_string("VERSION")
-
+        
+        VersionInfo seqyclean_version_info = object {
+            software: "seqyclean",
+            docker: docker,
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
@@ -213,7 +241,7 @@ task seqyclean {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/seqyclean:1.10.09"
+        docker:    docker
     }
 }
 
@@ -226,6 +254,8 @@ task fastqc {
 
     String fastq1_name = basename(basename(basename(fastq_1, ".gz"), ".fastq"), ".fq")
     String fastq2_name = basename(basename(basename(fastq_2, ".gz"), ".fastq"), ".fq")
+
+    String docker = "staphb/fastqc:0.11.9"
 
     command <<<
 
@@ -242,8 +272,12 @@ task fastqc {
         File fastqc1_zip = "${fastq1_name}_fastqc.zip"
         File fastqc2_html = "${fastq2_name}_fastqc.html"
         File fastqc2_zip = "${fastq2_name}_fastqc.zip"
-        String fastqc_version = read_string("VERSION")
 
+        VersionInfo fastqc_version_info = object {
+            software: "fastqc",
+            docker: docker,
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
@@ -253,7 +287,7 @@ task fastqc {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/fastqc:0.11.9"
+        docker:    docker
     }
 }
 
@@ -266,6 +300,8 @@ task align_reads {
         File ref
         String sample_name
     }
+
+    String docker = "quay.io/broadinstitute/viral-core:2.2.3"
 
     command <<<
 
@@ -286,9 +322,18 @@ task align_reads {
 
         File out_bam = "${sample_name}_aln.sorted.bam"
         File out_bamindex = "${sample_name}_aln.sorted.bam.bai"
-        String bwa_version = read_string("VERSION_bwa")
-        String samtools_version_broadinstitute = read_string("VERSION_samtools")
 
+        VersionInfo bwa_version_info = object {
+            software: "bwa",
+            docker: docker,
+            version: read_string("VERSION_bwa")
+        }
+
+        VersionInfo samtools_version_info = object {
+            software: "samtools",
+            docker: docker,
+            version: read_string("VERSION_samtools")
+        }
     }
 
     runtime {
@@ -298,7 +343,7 @@ task align_reads {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "quay.io/broadinstitute/viral-core:2.2.3"
+        docker:    docker
     }
 }
 
@@ -310,6 +355,8 @@ task ivar_trim {
         File bam
         String sample_name
     }
+
+    String docker = "andersenlabapps/ivar:1.3.1"
 
     command <<<
 
@@ -334,7 +381,7 @@ task ivar_trim {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "andersenlabapps/ivar:1.3.1"
+        docker:    docker
     }
 }
 
@@ -347,6 +394,8 @@ task ivar_var {
         File gff
         File bam
     }
+
+    String docker = "andersenlabapps/ivar:1.3.1"
 
     command <<<
 
@@ -369,7 +418,7 @@ task ivar_var {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "andersenlabapps/ivar:1.3.1"
+        docker:    docker
     }
 }
 
@@ -381,6 +430,8 @@ task ivar_consensus {
         File ref
         File bam
     }
+
+    String docker = "andersenlabapps/ivar:1.3.1"
 
     command <<<
 
@@ -397,9 +448,18 @@ task ivar_consensus {
     output {
 
         File consensus_out = "${sample_name}_consensus.fa"
-        String ivar_version = read_string("VERSION_ivar")
-        String samtools_version_andersenlabapps = read_string("VERSION_samtools")
 
+        VersionInfo ivar_version_info = object {
+            software: "ivar",
+            docker: docker,
+            version: read_string("VERSION_ivar")
+        }
+
+        VersionInfo samtools_version_info = object {
+            software: "samtools",
+            docker: docker,
+            version: read_string ("VERSION_samtools")
+        }
     }
 
     runtime {
@@ -409,7 +469,7 @@ task ivar_consensus {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "andersenlabapps/ivar:1.3.1"
+        docker:    docker
     }
 }
 
@@ -423,6 +483,8 @@ task bam_stats {
         File s_gene_amplicons
         File primer_bed
     }
+
+    String docker = "staphb/samtools:1.16"
 
     command <<<
 
@@ -474,7 +536,12 @@ task bam_stats {
         File depth_out = "${sample_name}_depth.txt"
         File cov_s_gene_out = "${sample_name}_S_gene_coverage.txt"
         File cov_s_gene_amplicons_out = "${sample_name}_S_gene_depths.tsv"
-        String samtools_version_staphb = read_string("VERSION")
+
+        VersionInfo samtools_version_info = object {
+            software: "samtools",
+            docker: docker,
+            version: read_string("VERSION")
+        }
 
     }
 
@@ -485,7 +552,7 @@ task bam_stats {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.16"
+        docker:    docker
     }
 }
 
@@ -550,59 +617,11 @@ task calc_percent_cvg {
 
 }
 
-task create_version_capture_file {
-    meta {
-        description: "generate version capture file for workflow"
-    }
-
-    input {
-        File version_capture_illumina_pe_assembly_py
-        String project_name
-        String seqyclean_version
-        String fastqc_version
-        String bwa_version
-        String samtools_version_broadinstitute
-        String ivar_version
-        String samtools_version_andersenlabapps
-        String samtools_version_staphb
-        String analysis_date
-        String workflow_version
-
-    }
-
-    command <<<
-
-        python ~{version_capture_illumina_pe_assembly_py} \
-        --project_name "~{project_name}" \
-        --seqyclean_version "~{seqyclean_version}" \
-        --fastqc_version "~{fastqc_version}" \
-        --bwa_version "~{bwa_version}" \
-        --samtools_version_broadinstitute "~{samtools_version_broadinstitute}" \
-        --ivar_version "~{ivar_version}" \
-        --samtools_version_andersenlabapps "~{samtools_version_andersenlabapps}" \
-        --samtools_version_staphb "~{samtools_version_staphb}" \
-        --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}" \
-
-    >>>
-
-    output {
-        File version_capture_illumina_pe_assembly = "version_capture_illumina_pe_asembly_~{project_name}_~{workflow_version}.csv"
-    }
-
-    runtime {
-
-      docker: "mchether/py3-bio:v4"
-      memory: "1 GB"
-      cpu: 4
-      disks: "local-disk 10 SSD"
-
-    }
-}
-
 task transfer {
     input {
         String outdirpath
+        File? fastq1_scrubbed
+        File? fastq2_scrubbed
         File seqyclean_summary 
         File fastqc_raw1_html
         File fastqc_raw1_zip
@@ -629,6 +648,8 @@ task transfer {
 
     command <<<
 
+        gsutil -m cp ~{fastq1_scrubbed} ~{outdirpath}/scrubbed_fastq/
+        gsutil -m cp ~{fastq2_scrubbed} ~{outdirpath}/scrubbed_fastq/
         gsutil -m cp ~{seqyclean_summary} ~{outdirpath}/seqyclean/
         gsutil -m cp ~{fastqc_raw1_html} ~{outdirpath}/fastqc/
         gsutil -m cp ~{fastqc_raw1_zip} ~{outdirpath}/fastqc/

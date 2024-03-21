@@ -3,11 +3,12 @@
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [calc_percent_coverage-py](#calc-percent-coverage-py)
-3. [nextclade_json_parser.py](#nextclade-json-parser-py)
-4. [concat-seq-metrics-and-lineage-results-py](#concat-seq-metrics-and-lineage-results-py)
-5. [novel_mutations.py](novel-mutations-py)
-6. [details about working with sample sets](#details-about-working-with-sample-sets)
+2. [calc_percent_coverage.py](#calc_percent_coveragepy)
+3. [nextclade_json_parser.py](#nextclade_json_parserpy)
+4. [concat_seq_metrics_and_lineage_results.py](#concat_seq_metrics_and_lineage_resultspy)
+5. [novel_mutations.py](#novel_mutationspy)
+6. [version_capture.py](#version_capturepy)
+7. [details about working with sample sets](#details-about-working-with-sample-sets)
 
 ## Introduction
 
@@ -19,7 +20,7 @@ This repo contains four custom python scripts called in our SC2 wdl workflows. T
 - `novel_mutations.py` is called in `SC2_novel_mutations.wdl`.
 
 
-## calc-percent-coverage-py
+## calc_percent_coverage.py
 
 ### Overview
 
@@ -52,7 +53,7 @@ The script also records the number of aligned bases, the number of ambiguous bas
 
 There is an example output in the example data directory within this repo.
 
-## nextclade-json-parser-py
+## nextclade_json_parser.py
 
 ### Overview
 
@@ -94,7 +95,7 @@ There are two outputs from this script, each accomplished from a separate functi
     | `total_AA_substitutions`      | number of AA substitutions in the consensus sequence |
     | `total_AA_deletions`          | number of AA deletions in the consensus sequence   |
 
-## concat-seq-metrics-and-lineage-results-py
+## concat_seq_metrics_and_lineage_results.py
 
 ### Overview
 
@@ -181,7 +182,7 @@ There are three outputs from this script. Example outputs can be found in the ex
     | `pangoLEARN_version` | this column is also not used but must be kept       |
 
 
-## novel-mutations-py
+## novel_mutations.py
 
 ### Overview
 
@@ -299,6 +300,39 @@ There is one optional output for this script that will result in an error for th
     | `times_detected_historical`       | number of times seen within historical data                                                                              |
     | `days_between`                    | in days: date_first_detected_new - date_last_detected_historical                                                         |
 
+## version_capture.py
+This script is used to create a CSV file with version information: the workflow version, Docker image versions, and specific tool versions. It is used by  `version_capture_task.wdl`. As of v2.2.0, it is run in the `SC2_ont_assembly.wdl` and `SC2_illumina_pe_assembly.wdl` workflows, with plans to use for all workflows instead of workflow-specific version capture scripts.
+
+### Inputs
+| option                | description                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------|
+| `--versions_json`     | JSON file with an array of VersionInfo objects (keys should be "software", "docker", and "version")                         |
+| `--workflow_name`     | workflow name (e.g. SC2_ont_assembly)                                                                                       |
+| `--workflow_version`  | workflow version with dashes (e.g. v2-2-0)                                                                                  |
+| `--project_name`      | project name of batch being analyzed (e.g. cov_2022_grid)                                                                   |
+| `--analysis_date`     | date to add to the analysis_date column in the output CSV                                                                   |
+
+### Output
+CSV file with the following columns:
+
+- project_name
+- analysis_date
+- software
+- associated_docker_container
+- version
+
+The file will be named "version_capture_{workflow_name}_{project_name}_{workflow_version}.csv".
+
+Example:
+```
+project_name,analysis_date,software,associated_docker_container,version
+cov_2094_grid,2024-01-04,SC2_ont_assembly,,wip-version-capture-refactor
+cov_2094_grid,2024-01-04,medaka,quay.io/staphb/artic-ncov2019:1.3.0,medaka 1.0.3
+cov_2094_grid,2024-01-04,artic,quay.io/staphb/artic-ncov2019:1.3.0,artic 1.2.1
+cov_2094_grid,2024-01-04,samtools,staphb/samtools:1.16,1.16
+```
+
+Note that "associated_docker_container" is blank for the workflow version since there is not a single Docker container associated with a workflow.
 
 ## Details About Working with Sample Sets
 
@@ -316,6 +350,6 @@ with open(plate_name_file_list) as f:
 In some cases, instead of string variables being stored in a column within the terra data table, file paths are stored (ie. the data type is a `File` or `Array[File]` in the case of sample sets). For example, in the `concat_seq_metrics_and_lineage_results.py`, there is the input flag `--percent_cvg_file_list`. As input for this flag I use `${write_lines(percent_cvg_csv_non_empty)}`, where the percent_cvg_csv_non_empty variable corresponds to the column percent_cvg_csv. (note the non-empty part just means that the variable may be empty for some samples in the terra data table. To set the variable as input at the beginning of the wdl I use: `Array[File?] percent_cvg_csv`). Similar to above, the script will create a list of file paths from the text file. The script can then loop through the list of file paths, open each file, extract the data from that file, and store it in a list or other data frame to be written out.
 
 ## Changelog
-
+- updated 2024-03-18 to add version capture script
 - updated 2023-12-12 to add novel mutations script
 - updated 2023-03-09 to sync with universal naming switch over
