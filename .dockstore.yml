@@ -18,4 +18,7 @@ workflows:
  - name: SC2_multifasta_lineage_calling
    subclass: WDL
    primaryDescriptorPath: /workflows/SC2_multifasta_lineage_calling.wdl
+ - name: SC2_novel_mutations
+   subclass: WDL
+   primaryDescriptorPath: /workflows/SC2_novel_mutations.wdl
  

@@ -250,8 +250,15 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
     # read in terra_data_table
     terra_data_table = pd.read_csv(terra_data_table_path, sep = '\t', dtype = terra_data_table_data_types)
-    drop_col = terra_data_table.columns.tolist()[0]
-    terra_data_table = terra_data_table.drop(columns = drop_col)
+    entity_col = terra_data_table.columns.tolist()[0]
+
+    # Subsitute the sample_name column with sample names in the entity column
+    # (first column) of the Terra data table. This is to fix issues caused by
+    # renaming the controls when creating the concatenated input data tables.
+    # For example, POS becomes POS-cov_2050_grid.
+    terra_data_table['sample_name'] = terra_data_table[entity_col]
+
+    terra_data_table = terra_data_table.drop(columns = entity_col)
     terra_data_table = terra_data_table.set_index('sample_name')
 
     # read in panlogin results
