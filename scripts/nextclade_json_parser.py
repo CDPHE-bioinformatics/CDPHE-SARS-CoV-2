@@ -1,45 +1,56 @@
-"""
-Parses a nextclade json file and outputs nextclade results and variant summary.
+"""Parses a nextclade json file and outputs nextclade results and variant
+summary.
 """
 
 import argparse
-import json
 import logging
 import re
 import sys
 
 import pandas as pd
 
+__version__ = "0.3.0"
+__author__ = "CDPHE"
+__copyright__ = "State of Colorado"
+__license__ = "GPL-3.0-or-later"
 
-logger = logging.getLogger(__name__)
+
+log = logging.getLogger(__name__)
 
 
 def parse_args(args: list) -> argparse.Namespace:
-    """
-    Parses the command line arguments.
-
-    :param args: the command line arguments
-    :returns: the parsed arguments
-    """
-    parser = argparse.ArgumentParser(description="Parses command.")
+    """Parses the command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="A tool to convert Nextclade JSON to CSV."
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"cdphe-nextclade-json-parser {__version__}",
+    )
     parser.add_argument(
         "--log_level",
         help="the level to log at",
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
         default="INFO",
     )
-    parser.add_argument("--nextclade_json", help="the nextclade json file path")
-    parser.add_argument("--project_name", help="the project name")
-    parser.add_argument("--workflow_version", help="the workflow version")
+    parser.add_argument(
+        "--nextclade_json",
+        help="the nextclade json file path",
+    )
+    parser.add_argument(
+        "--project_name",
+        help="the project name",
+    )
+    parser.add_argument(
+        "--workflow_version",
+        help="the workflow version",
+    )
     return parser.parse_args(args)
 
 
-def setup_logging(log_level: str):
-    """
-    Sets up the logging.
-
-    :param log_level: the log level
-    """
+def setup_logging(log_level: str) -> None:
+    """Sets up the logging."""
     log_format = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
     logging.basicConfig(
         level=log_level,
@@ -50,12 +61,8 @@ def setup_logging(log_level: str):
 
 
 def extract_hsn(sample_name: str) -> str:
-    """
-    Gets the hsn from the sample name. The hsn is the first 10 digits of the
-    sample name and begins with 2.
-
-    :param sample_name: the sample name
-    :returns: the hsn
+    """Extracts the hsn from the sample name.
+    The hsn is the first 10 digits of the sample name and begins with 2.
     """
     hsn = ""
     if sample_name:
@@ -66,12 +73,8 @@ def extract_hsn(sample_name: str) -> str:
 
 
 def extract_sample_name(fasta_header: str) -> str:
-    """
-    Parses a fasta header to get the sample name. The fasta header is expected
-    to have the format: >CO-CDPHE-<sample_name>
-
-    :param fasta_header: the fasta header
-    :returns: the sample name
+    """Extracts the sample name from the fasta header.
+    The fasta header is expected to have the format: >CO-CDPHE-<sample_name>
     """
     sample_name = ""
     if fasta_header:
@@ -83,202 +86,233 @@ def extract_sample_name(fasta_header: str) -> str:
     return sample_name
 
 
-def get_results(json_data: str) -> pd.DataFrame:
-    """
-    Gets the results from the nextclade json data.
+def parse_results_summary(json_results: list) -> pd.DataFrame:
+    """Parses the results summary from the nextclade json file."""
+    # Normalize nextclade json results
+    normalized_results = pd.json_normalize(json_results)
 
-    :param json_data: the nextclade json data
-    :returns: the results
-    """
-    logger.info("Processing results for %s samples.", len(json_data['results']))
-
-    results = pd.DataFrame({
-        "fasta_header": [],
-        "sample_name": [],
-        "hsn": [],
-        "nextclade": [],
-        "total_nucleotide_mutations": [],
-        "total_nucleotide_deletions": [],
-        "total_nucleotide_insertions": [],
-        "total_AA_substitutions": [],
-        "total_AA_deletions": []
-    })
-
-    for i in range(len(json_data["results"])):
-        sample_json_data = json_data["results"][i]
-        sample_fasta_header = sample_json_data["seqName"]
-        sample_sample_name = extract_sample_name(sample_fasta_header)
-        sample_hsn = extract_hsn(sample_sample_name)
-
-        logger.debug("Processing sample %s.", sample_fasta_header)
-
-        if "clade" in sample_json_data.keys():
-            results.loc[len(results)] = {
-                "fasta_header": sample_fasta_header,
-                "sample_name": sample_sample_name,
-                "hsn": sample_hsn,
-                "nextclade": sample_json_data["clade"],
-                "total_nucleotide_mutations": sample_json_data["totalSubstitutions"],
-                "total_nucleotide_deletions": sample_json_data["totalDeletions"],
-                "total_nucleotide_insertions": sample_json_data["totalInsertions"],
-                "total_AA_substitutions": sample_json_data["totalAminoacidSubstitutions"],
-                "total_AA_deletions": sample_json_data["totalAminoacidDeletions"]
-            }
-
-    return results
-
-
-def get_variant_summary(json_data: str) -> pd.DataFrame:
-    """
-    Gets the variant summary from the nextclade json data.
-
-    :param json_data: the nextclade json data
-    :returns: the variant summary
-    """
-    variant_summary = pd.DataFrame({
-        "fasta_header": [],
-        "sample_name": [],
-        "hsn": [],
-        "variant_name": [],
-        "gene": [],
-        "codon_position": [],
-        "refAA": [],
-        "altAA": [],
-        "start_nuc_pos": [],
-        "end_nuc_pos": []
-    })
-
-    logger.info("Processing variant summary for %s samples.",
-                len(json_data['results']))
-
-    for i in range(len(json_data["results"])):
-        sample_json_data = json_data["results"][i]
-        sample_fasta_header = sample_json_data["seqName"]
-        sample_sample_name = extract_sample_name(sample_fasta_header)
-        sample_hsn = extract_hsn(sample_sample_name)
-
-        logger.debug("Processing sample %s.", sample_fasta_header)
-
-        if "aaDeletions" in sample_json_data.keys():
-            for aa_deletion in sample_json_data["aaDeletions"]:
-                # Get info required for variant_name
-                gene = aa_deletion["gene"]
-                ref_aa = aa_deletion["refAA"]
-                alt_aa = "del"
-                codon_position = aa_deletion["codon"] + 1
-
-                # Compose variant_name
-                variant_name = f"{gene}_{ref_aa}{codon_position}{alt_aa}"
-
-                # Append to running summary
-                variant_summary.loc[len(variant_summary)] = {
-                    "fasta_header": sample_fasta_header,
-                    "sample_name": sample_sample_name,
-                    "hsn": sample_hsn,
-                    "variant_name": variant_name,
-                    "gene": gene,
-                    "codon_position": codon_position,
-                    "refAA": ref_aa,
-                    "altAA": alt_aa,
-                    "start_nuc_pos": aa_deletion["codonNucRange"]["begin"],
-                    "end_nuc_pos": aa_deletion["codonNucRange"]["end"]
-                }
-
-        if "insertions" in sample_json_data.keys():
-            for insertion in sample_json_data["insertions"]:
-                # Get info required for variant_name
-                gene = ""
-                ref_aa = "ins"
-                alt_aa = insertion["ins"]
-                codon_position = insertion["pos"] + 1
-
-                # Compose variant_name
-                variant_name = f"{gene}_{ref_aa}{codon_position}{alt_aa}"
-
-                # Append to running summary
-                variant_summary.loc[len(variant_summary)] = {
-                    "fasta_header": sample_fasta_header,
-                    "sample_name": sample_sample_name,
-                    "hsn": sample_hsn,
-                    "variant_name": variant_name,
-                    "gene": gene,
-                    "codon_position": codon_position,
-                    "refAA": ref_aa,
-                    "altAA": alt_aa,
-                    "start_nuc_pos": insertion["pos"] + 1,
-                    "end_nuc_pos": insertion["pos"] + 1 + len(insertion["ins"])
-                }
-
-        if "aaSubstitutions" in sample_json_data.keys():
-            for aa_sub in sample_json_data["aaSubstitutions"]:
-                # Get info required for variant_name
-                gene = aa_sub["gene"]
-                ref_aa = aa_sub["refAA"]
-                if aa_sub["queryAA"] == "*":
-                    alt_aa = "stop"
-                else:
-                    alt_aa = aa_sub["queryAA"]
-                codon_position = aa_sub["codon"] + 1
-
-                # Compose variant_name
-                variant_name = f"{gene}_{ref_aa}{codon_position}{alt_aa}"
-
-                # Append to running summary
-                variant_summary.loc[len(variant_summary)] = {
-                    "fasta_header": sample_fasta_header,
-                    "sample_name": sample_sample_name,
-                    "hsn": sample_hsn,
-                    "variant_name": variant_name,
-                    "gene": gene,
-                    "codon_position": codon_position,
-                    "refAA": ref_aa,
-                    "altAA": alt_aa,
-                    "start_nuc_pos": aa_sub["codonNucRange"]["begin"],
-                    "end_nuc_pos": aa_sub["codonNucRange"]["end"]
-                }
-
-    return variant_summary
-
-
-def main(options: argparse.Namespace):
-    """
-    The main function.
-
-    :param options: the options from the command line
-    """
-    setup_logging(log_level=options.log_level)
-
-    # Open json file to read data
-    nextclade_json_data = None
-    try:
-        with open(options.nextclade_json, encoding="utf-8") as json_file:
-            nextclade_json_data = json.load(json_file)
-    except FileNotFoundError as e:
-        logger.exception(e)
-        sys.exit(1)
-    except json.decoder.JSONDecodeError as e:
-        logger.exception(e)
-        sys.exit(1)
-
-    nextclade_results = get_results(json_data=nextclade_json_data)
-    nextclade_results.to_csv(
-        path_or_buf=f"{options.project_name}_nextclade_results_"
-        f"{options.workflow_version}.csv",
-        index=False,
+    # Rename columns and rearrange columns
+    results_summary = normalized_results.copy().rename(
+        columns={
+            "seqName": "fasta_header",
+            "sample_name": "sample_name",
+            "clade": "nextclade",
+            "totalSubstitutions": "total_nucleotide_mutations",
+            "totalDeletions": "total_nucleotide_deletions",
+            "totalInsertions": "total_nucleotide_insertions",
+            "totalAminoacidSubstitutions": "total_AA_substitutions",
+            "totalAminoacidDeletions": "total_AA_deletions",
+        }
     )
 
-    nextclade_variant_summary = get_variant_summary(
-        json_data=nextclade_json_data)
-    nextclade_variant_summary.to_csv(
-        path_or_buf=f"{options.project_name}_nextclade_variant_summary_"
-        f"{options.workflow_version}.csv",
+    # Get hsn and sample_name
+    results_summary["hsn"] = results_summary["fasta_header"].apply(extract_hsn)
+    results_summary["sample_name"] = results_summary["fasta_header"].apply(
+        extract_sample_name
+    )
+
+    # Reorganize columns and return
+    return results_summary[
+        [
+            "fasta_header",
+            "sample_name",
+            "hsn",
+            "nextclade",
+            "total_nucleotide_mutations",
+            "total_nucleotide_deletions",
+            "total_nucleotide_insertions",
+            "total_AA_substitutions",
+            "total_AA_deletions",
+        ]
+    ].sort_values(by=["fasta_header"])
+
+
+def extract_variant_components(row: pd.Series, mutation_type: str) -> pd.Series:
+    """Extracts the values required to create a variant summary."""
+    components = pd.Series(
+        {
+            "fasta_header": None,
+            "sample_name": None,
+            "hsn": None,
+            "variant_name": None,
+            "gene": None,
+            "codon_position": None,
+            "refAA": None,
+            "altAA": None,
+            "start_nuc_pos": None,
+            "end_nuc_pos": None,
+        }
+    )
+
+    # Extract common components
+    components["fasta_header"] = row["seqName"]
+    components["sample_name"] = extract_sample_name(row["seqName"])
+    components["hsn"] = extract_hsn(row["seqName"])
+
+    # Extract components that need special logic
+    if mutation_type == "aa_deletion":
+        components["gene"] = row["gene"]
+        components["refAA"] = row["refAA"]
+        components["altAA"] = "del"
+        components["codon_position"] = int(row["codon"]) + 1
+        components["start_nuc_pos"] = row["codonNucRange.begin"]
+        components["end_nuc_pos"] = row["codonNucRange.end"]
+    elif mutation_type == "insertion":
+        components["gene"] = ""
+        components["refAA"] = "ins"
+        components["altAA"] = row["ins"]
+        components["codon_position"] = int(row["pos"]) + 1
+        components["start_nuc_pos"] = int(row["pos"]) + 1
+        components["end_nuc_pos"] = int(row["pos"]) + 1 + len(row["ins"])
+    elif mutation_type == "aa_substitution":
+        components["gene"] = row["gene"]
+        components["refAA"] = row["refAA"]
+        if row["queryAA"] == "*":
+            components["altAA"] = "stop"
+        else:
+            components["altAA"] = row["queryAA"]
+        components["codon_position"] = int(row["codon"]) + 1
+        components["start_nuc_pos"] = row["codonNucRange.begin"]
+        components["end_nuc_pos"] = row["codonNucRange.end"]
+    else:
+        raise ValueError(f"Unknown mutation type: {mutation_type}.")
+
+    # Use extracted components to compose variant name
+    components["variant_name"] = (
+        f"{components['gene']}_{components['refAA']}"
+        f"{components['codon_position']}{components['altAA']}"
+    )
+
+    return components
+
+
+def parse_variant_summary(json_results: list) -> pd.DataFrame:
+    """Parses the variant summary from the nextclade json file."""
+    # Process amino acid deletions
+    aa_deletions = pd.json_normalize(json_results, "aaDeletions", meta=["seqName"])
+    aa_deletions_summary = aa_deletions.apply(
+        extract_variant_components, mutation_type="aa_deletion", axis=1
+    )
+
+    # Process insertions
+    insertions = pd.json_normalize(json_results, "insertions", meta=["seqName"])
+    insertions_summary = insertions.apply(
+        extract_variant_components, mutation_type="insertion", axis=1
+    )
+
+    # Process aa substitutions
+    aa_substitutions = pd.json_normalize(
+        json_results, "aaSubstitutions", meta=["seqName"]
+    )
+    aa_substitutions_summary = aa_substitutions.apply(
+        extract_variant_components, mutation_type="aa_substitution", axis=1
+    )
+
+    # Combine all mutations into one summary
+    variant_summary = pd.concat(
+        [
+            df
+            for df in [
+                aa_deletions_summary,
+                insertions_summary,
+                aa_substitutions_summary,
+            ]
+            if not df.empty
+        ]
+    )
+
+    # Sort and return
+    return variant_summary.sort_values(by=["fasta_header", "start_nuc_pos"])
+
+
+def compose_summary_output_path(
+    project_name: str, workflow_version: str, summary_type: str
+) -> str:
+    """Composes the output path for the nextclade summary file."""
+    prefix = ""
+    if project_name:
+        prefix = f"{project_name}_"
+
+    suffix = ""
+    if workflow_version:
+        suffix = f"_{workflow_version}"
+
+    path = None
+    if summary_type == "result":
+        path = f"{prefix}nextclade_results{suffix}.csv"
+    elif summary_type == "variant":
+        path = f"{prefix}nextclade_variant_summary{suffix}.csv"
+    else:
+        raise ValueError(f"Invalid summary type: {summary_type}")
+
+    return path
+
+
+def handle_summary(
+    json_results: list,
+    project_name: str,
+    workflow_version: str,
+    summary_type: str,
+) -> None:
+    """Handles the nextclade summary by parsing and writing to file."""
+    # Get summary
+    summary = pd.DataFrame()
+    if summary_type == "result":
+        summary = parse_results_summary(json_results)
+    elif summary_type == "variant":
+        summary = parse_variant_summary(json_results)
+    log.info("Nextclade JSON %s summary created: %s rows.", summary_type, len(summary))
+
+    # Get summary output path
+    summary_path = compose_summary_output_path(
+        project_name, workflow_version, summary_type=summary_type
+    )
+
+    # Write summary to csv
+    summary.to_csv(
+        path_or_buf=summary_path,
         index=False,
     )
+    log.info(
+        "Nextclade JSON %s summary written to csv file: %s", summary_type, summary_path
+    )
+
+
+def main(options: dict) -> None:
+    """The main function."""
+    setup_logging(log_level=options["log_level"])
+    log.info("Nextclade JSON Parser Start.")
+
+    # Read nextclade json and capture results
+    nextclade_json = pd.read_json(options["nextclade_json"], orient="index")
+    nextclade_json_results = nextclade_json.loc["results"][0]  # pylint: disable=E1101
+    log.info("Nextclade JSON results loaded: %s rows.", len(nextclade_json_results))
+
+    # Take results, transform them into results_summary, and write to file
+    handle_summary(
+        nextclade_json_results,  # type: ignore
+        project_name=options["project_name"],
+        workflow_version=options["workflow_version"],
+        summary_type="result",
+    )
+    log.info("Handling Nextclade JSON results summary complete.")
+
+    # Take results, transform them into variant_summary, and write to file
+    handle_summary(
+        nextclade_json_results,  # type: ignore
+        project_name=options["project_name"],
+        workflow_version=options["workflow_version"],
+        summary_type="variant",
+    )
+    log.info("Handling Nextclade JSON variant summary complete.")
+
+    log.info("Nextclade JSON Parser End.")
 
 
 if __name__ == "__main__":
     # Get options from command line args
-    cli_options = parse_args(args=sys.argv[1:])
+    cli_args = parse_args(args=sys.argv[1:])
+    cli_options = vars(cli_args)
 
     # Inject options and run main
     main(options=cli_options)
