@@ -9,7 +9,7 @@ import sys
 
 import pandas as pd
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __author__ = "CDPHE"
 __copyright__ = "State of Colorado"
 __license__ = "GPL-3.0-or-later"
@@ -259,6 +259,9 @@ def generate_report(
         report = parse_results(json_results)
     elif report_type == "variant_summary":
         report = parse_variant_summary(json_results)
+    else:
+        raise ValueError(f"Invalid report type: {report_type}")
+
     log.info("Nextclade JSON %s summary created: %s rows.", report_type, len(report))
 
     # Get summary output path
