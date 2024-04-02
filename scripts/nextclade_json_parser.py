@@ -9,7 +9,7 @@ import sys
 
 import pandas as pd
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "CDPHE"
 __copyright__ = "State of Colorado"
 __license__ = "GPL-3.0-or-later"
@@ -86,13 +86,13 @@ def extract_sample_name(fasta_header: str) -> str:
     return sample_name
 
 
-def parse_results_summary(json_results: list) -> pd.DataFrame:
+def parse_results(json_results: list) -> pd.DataFrame:
     """Parses the results summary from the nextclade json file."""
     # Normalize nextclade json results
     normalized_results = pd.json_normalize(json_results)
 
     # Rename columns and rearrange columns
-    results_summary = normalized_results.copy().rename(
+    results = normalized_results.copy().rename(
         columns={
             "seqName": "fasta_header",
             "sample_name": "sample_name",
@@ -106,13 +106,11 @@ def parse_results_summary(json_results: list) -> pd.DataFrame:
     )
 
     # Get hsn and sample_name
-    results_summary["hsn"] = results_summary["fasta_header"].apply(extract_hsn)
-    results_summary["sample_name"] = results_summary["fasta_header"].apply(
-        extract_sample_name
-    )
+    results["hsn"] = results["fasta_header"].apply(extract_hsn)
+    results["sample_name"] = results["fasta_header"].apply(extract_sample_name)
 
     # Reorganize columns and return
-    return results_summary[
+    return results[
         [
             "fasta_header",
             "sample_name",
@@ -225,10 +223,10 @@ def parse_variant_summary(json_results: list) -> pd.DataFrame:
     return variant_summary.sort_values(by=["fasta_header", "start_nuc_pos"])
 
 
-def compose_summary_output_path(
-    project_name: str, workflow_version: str, summary_type: str
+def compose_report_output_path(
+    project_name: str, workflow_version: str, report_type: str
 ) -> str:
-    """Composes the output path for the nextclade summary file."""
+    """Composes the output path for the nextclade report file."""
     prefix = ""
     if project_name:
         prefix = f"{project_name}_"
@@ -238,43 +236,43 @@ def compose_summary_output_path(
         suffix = f"_{workflow_version}"
 
     path = None
-    if summary_type == "result":
+    if report_type == "results":
         path = f"{prefix}nextclade_results{suffix}.csv"
-    elif summary_type == "variant":
+    elif report_type == "variant_summary":
         path = f"{prefix}nextclade_variant_summary{suffix}.csv"
     else:
-        raise ValueError(f"Invalid summary type: {summary_type}")
+        raise ValueError(f"Invalid report type: {report_type}")
 
     return path
 
 
-def handle_summary(
+def generate_report(
     json_results: list,
     project_name: str,
     workflow_version: str,
-    summary_type: str,
+    report_type: str,
 ) -> None:
-    """Handles the nextclade summary by parsing and writing to file."""
+    """Generates the nextclade report by parsing and writing to file."""
     # Get summary
-    summary = pd.DataFrame()
-    if summary_type == "result":
-        summary = parse_results_summary(json_results)
-    elif summary_type == "variant":
-        summary = parse_variant_summary(json_results)
-    log.info("Nextclade JSON %s summary created: %s rows.", summary_type, len(summary))
+    report = pd.DataFrame()
+    if report_type == "result":
+        report = parse_results(json_results)
+    elif report_type == "variant_summary":
+        report = parse_variant_summary(json_results)
+    log.info("Nextclade JSON %s summary created: %s rows.", report_type, len(report))
 
     # Get summary output path
-    summary_path = compose_summary_output_path(
-        project_name, workflow_version, summary_type=summary_type
+    report_path = compose_report_output_path(
+        project_name, workflow_version, report_type=report_type
     )
 
     # Write summary to csv
-    summary.to_csv(
-        path_or_buf=summary_path,
+    report.to_csv(
+        path_or_buf=report_path,
         index=False,
     )
     log.info(
-        "Nextclade JSON %s summary written to csv file: %s", summary_type, summary_path
+        "Nextclade JSON %s report written to csv file: %s", report_type, report_path
     )
 
 
@@ -289,20 +287,20 @@ def main(options: dict) -> None:
     log.info("Nextclade JSON results loaded: %s rows.", len(nextclade_json_results))
 
     # Take results, transform them into results_summary, and write to file
-    handle_summary(
+    generate_report(
         nextclade_json_results,  # type: ignore
         project_name=options["project_name"],
         workflow_version=options["workflow_version"],
-        summary_type="result",
+        report_type="results",
     )
-    log.info("Handling Nextclade JSON results summary complete.")
+    log.info("Handling Nextclade JSON results complete.")
 
     # Take results, transform them into variant_summary, and write to file
-    handle_summary(
+    generate_report(
         nextclade_json_results,  # type: ignore
         project_name=options["project_name"],
         workflow_version=options["workflow_version"],
-        summary_type="variant",
+        report_type="variant_summary",
     )
     log.info("Handling Nextclade JSON variant summary complete.")
 
