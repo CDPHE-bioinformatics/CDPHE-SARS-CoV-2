@@ -9,7 +9,7 @@ import sys
 
 import pandas as pd
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __author__ = "CDPHE"
 __copyright__ = "State of Colorado"
 __license__ = "GPL-3.0-or-later"
@@ -254,8 +254,8 @@ def generate_report(
 ) -> None:
     """Generates the nextclade report by parsing and writing to file."""
     # Get summary
-    report = pd.DataFrame()
-    if report_type == "result":
+    report = None
+    if report_type == "results":
         report = parse_results(json_results)
     elif report_type == "variant_summary":
         report = parse_variant_summary(json_results)
