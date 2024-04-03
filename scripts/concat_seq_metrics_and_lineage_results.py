@@ -1,6 +1,8 @@
 #! /usr/bin/env python
-# update 2022-08-23
-## change data type for pango_version (no big changes)
+
+## aggregate lineage code modified from:
+## https://github.com/CDPHE-bioinformatics/cloud-run-aggregate-lineages/blob/main/src/main.py
+
 
 import argparse
 import sys
@@ -8,7 +10,12 @@ import pandas as pd
 from datetime import date
 import re
 
-# data type dictionaries
+###### URLs ########
+
+CDC_GROUPINGS_URL = 'https://data.cdc.gov/resource/jr58-6ysp.json?$query=SELECT%0A%20%20%60variant%60%2C%0A%20%20count(%60variant%60)%20AS%20%60count_variant%60%2C%0A%20%20min(%60creation_date%60)%20AS%20%60min_creation_date%60%2C%0A%20%20max(%60creation_date%60)%20AS%20%60max_creation_date%60%0AGROUP%20BY%20%60variant%60'
+PANGO_ALIAS_KEY_URL = 'https://raw.githubusercontent.com/cov-lineages/pango-designation/master/pango_designation/alias_key.json'
+
+###### data type dictionaries ######
 cov_out_data_types = {'#rname': object,
 'startpos' : 'Int64',
 'endpos' : 'Int64',
@@ -100,6 +107,85 @@ terra_data_table_data_types = {'index_position': 'Int64',
  'download_date': object}
 
 
+#### Lamda Functions ####
+def get_sample_name(fasta_header):
+    '''
+    drops the CO-CDPHE from the fasta header leaving only the sample 
+    name as the fasta header.
+
+    Returns
+    -------
+    string
+
+    '''
+    sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
+    return sample_name 
+
+def create_fasta_header(sample_name):
+    '''
+    Adds CO-CDPHE to the sample name to create a fasta header
+
+    Returns
+    ------
+    string
+    '''
+    return 'CO-CDPHE-%s' % sample_name
+
+def get_assembly_pass(percent_coverage):
+        
+    '''
+    this function determines if an assembly was generated for a sample.
+    Returns True if the percent coverage > 0 and 
+    returns False if the percnet coverage = 0.
+
+    Returns
+    -------
+    Boolean
+    '''
+    if percent_coverage == 0:
+        return False
+    if percent_coverage > 0:
+        return True      
+
+def get_cdc_grouping(expanded_lineage, cdc_groupings_df):
+
+    '''
+    given an expanded lineage, this function determines the cdc aggregate
+    lineage
+
+    Parameters
+    ----------
+    expanded_lineage: string (from pangolin results df)
+
+    cdc_groupings : json data (from get_json_data function)
+
+    pango_alias_key: json data (from get_json_data function)
+
+    Returns
+    -------
+    string
+    '''
+
+
+    potential_matches = []
+    for cdc_expanded_lineage in cdc_groupings_df['expanded_lineage']:
+        if (expanded_lineage == cdc_expanded_lineage 
+            or expanded_lineage.startswith(cdc_expanded_lineage + '.')
+        ):
+            potential_matches.append(cdc_expanded_lineage)
+
+    # get most specific CDC grouping 
+    # example: if XBB.1.5.2, aggregate to XBB.1.5, not XBB
+    try:
+        lineage_match = max(potential_matches, key=len)
+        aggregated_lineage = cdc_groupings_df.loc[cdc_groupings_df['expanded_lineage'] == lineage_match, 'lineage'].item()
+    except ValueError:
+        if expanded_lineage == 'Unassigned':
+            aggregated_lineage = 'Unassigned'
+        else:
+            aggregated_lineage = 'Other'
+    
+    return aggregated_lineage
 
 
 #### FUNCTIONS #####
@@ -109,7 +195,6 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument("--cov_out_files",  help= "txt file with list of bam file paths")
     parser.add_argument('--percent_cvg_files', help = 'txt file with list of percent cvg file paths')
     parser.add_argument('--pangolin_lineage_csv', help = 'csv output from pangolin')
-    parser.add_argument('--cdc_lineage_groups_json', help = 'json file containing lineage groups for aggregating lineages')
     parser.add_argument('--nextclade_clades_csv', help = 'csv output from nextclade parser')
     parser.add_argument('--nextclade_variants_csv')
     parser.add_argument('--nextclade_version')
@@ -124,6 +209,15 @@ def getOptions(args=sys.argv[1:]):
 
 
 def create_list_from_write_lines_input(write_lines_input):
+
+    '''
+    when the wdl function write_lines() is used, the wdl will write 
+    each line in the declared column as a string in a text file. This
+    function reads in the text file and converts each line (which is
+    typically a file path) to an item in a list. This list can then 
+    be used to read in each file in subsequent functions. 
+    '''
+
     list = []
     with open(write_lines_input, 'r') as f:
         for line in f:
@@ -132,6 +226,24 @@ def create_list_from_write_lines_input(write_lines_input):
 
 
 def concat_cov_out(cov_out_file_list):
+
+    '''
+    cov_out (or coverage_out) files is the {sample_name}_coverage.txt
+    file produced by samtools coverage function. From this file we
+    pull the number of mapped reads, the mean depth, the average 
+    base quality score, and the average mapping score. We loop through
+    the cov_out_file_list, read in the file, pull out the metrics and 
+    then append everything in a dataframe.
+
+    Parameters
+    ----------
+    cov_out_file_list: list of file paths to 
+        {sample_name}_ccoverage.txt for each sample
+
+    Returns
+    -------
+    dataframe
+    '''
 
      # initiate dataframe for concatenation
     df = pd.DataFrame()
@@ -173,6 +285,23 @@ def concat_cov_out(cov_out_file_list):
 
 def concat_percent_cvg(percent_cvg_file_list):
 
+    '''
+    percent_cvg (or percent_coverage) files is the 
+    {sample_name}_consensus_cvg_stats.csv file produced by 
+    the custom python function calc_percent_coverage.py We loop through
+    the percent_cvg_file_list, read in the file, and append the df to
+    a new df.
+
+    Parameters
+    ----------
+    percent_cvg_file_list: list of file paths to 
+        {sample_name}_consensus_cvg_stats.csv for each sample
+
+    Returns
+    -------
+    dataframe
+    '''
+
     df_list = []
     for file in percent_cvg_file_list:
         d = pd.read_csv(file, dtype = percent_cov_data_type)
@@ -184,9 +313,20 @@ def concat_percent_cvg(percent_cvg_file_list):
 
 def get_df_spike_mutations(variants_csv):
 
-    def get_sample_name(fasta_header):
-        sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
-        return sample_name 
+    '''
+    This function creates a string of S gene mutations seperated by ";"
+    for each sample and then concantenates everything into a dataframe. 
+
+    Parameters
+    ----------
+    variants_csv: variants csv file produced from nextclade_json_parser.py
+        Each row contains a single AA change.
+
+    Returns
+    -------
+    dataframe
+
+    '''
     
     # read in variants file
     variants = pd.read_csv(variants_csv, dtype = nextclade_variants_data_types)
@@ -226,20 +366,147 @@ def get_df_spike_mutations(variants_csv):
 
     return df
 
+def get_json_data(url):
+    '''
+    pulls json data from a url
+
+    Returns
+    --------
+    json object
+
+    '''
+    response = requests.get(url)
+    if not response.ok:
+        raise Exception(f'Error downloading JSON data from {url}.')
+    data = json.loads(response.text)
+    return data
+
+def expand_lineage(aliased_lineage, alias_key):
+
+    '''
+    This function takes the short pangoling lineage and using
+    the alias key generates the expanded lineage name.
+    Used to generate the expanded lineage from the cdc aggregated lineages.
+
+    Returns
+    -------
+    string: expanded lineage
+    '''
+    if aliased_lineage == 'Unassigned':
+        return 'Unassigned'
+    if aliased_lineage == 'Other':
+        return 'Other'
+    if pd.isna(aliased_lineage):
+        return ''
+    
+    # expand letter part of alias
+    alias_split = aliased_lineage.split('.')
+    alias_letters = alias_split[0]
+    alias_letters_expanded = alias_key[alias_letters]
+    # ignore "X" lineages or lineages that don't have an alias
+    # examples: XBB (recombinant) and A.1 (doesn't have an alias)
+    if alias_letters.startswith('X') or alias_letters_expanded == '':
+        return aliased_lineage
+    
+    # stitch together expanded name
+    expanded_lineage = alias_letters_expanded + '.' + '.'.join(alias_split[1:])
+    return expanded_lineage
+
+
+def generate_cdc_groupings_df (cdc_groupings, pango_alias_key):
+    
+    '''
+    this function converts the cdc groupings json data into a dataframe,
+    and expands the cdc aggregate linege into it's expanded form 
+    using the pango_alias_key json data
+
+    Parameters
+    ----------
+    cdc_groupings: json data (produced from get_json_data function)
+
+    pangol_alias_key: json data (produced from get_json_data function)
+    
+    Returns
+    -------
+    dataframe
+
+    '''
+    cdc_groupings_df = pd.DataFrame(cdc_groupings)
+    cdc_groupings_df = cdc_groupings_df.rename(columns={'variant': 'lineage'})
+    cdc_groupings_df['expanded_lineage'] = cdc_groupings_df['lineage'] \
+        .apply(expand_lineage, alias_key=pango_alias_key)
+
+    return cdc_groupings_df
+
+def format_pangolin_df(pangolin_lineage_csv, cdc_groupings_df):
+    '''
+    This function reads in the pangolin lineage csv file, renames headers
+    and sets the sample_name to the index to create the pangolin_df. 
+    Then this function creates the aggregated_lineage_df from the pangolin_df. 
+    It copies the expanded lineage column and uses the get_cc_groupings lambda
+    function to determine the aggregated lineage. The aggregated lineage df 
+    has only the aggregated lineage column.
+
+    Parameters
+    ---------
+    pangolin_lineage_csv: pangolin_lineage.csv file 
+        (produed from pangolin task in wdl workflow)
+
+    cdc_groupings_df: dataframe of cdc aggregate data 
+        (output of generate_cdc_groupings_df function )
+
+    Returns
+    --------
+    dataframe 1 (pangolin), dataframe 2 (aggregrated lineage)
+    '''
+
+    # read in panlogin results
+    pangolin = pd.read_csv(pangolin_lineage_csv, dtype = pangolin_data_types)
+    pangolin = pangolin.rename(columns = {'lineage': 'pangolin_lineage',
+                                          'conflict' : 'pangoLEARN_conflict',
+                                          'taxon' : 'fasta_header',
+                                          'ambiguity_score' : 'pangolin_ambiguity_score',
+                                          'scorpio_call' : 'pangolin_scorpio_call',
+                                          'scorpio_support' : 'pangolin_scorpio_support',
+                                          'scorpio_conflict' : 'pangolin_scorpio_conflict',
+                                          'scorpio_notes' : 'pangolin_scorpio_notes',
+                                          'version' : 'pango_designation_version',
+                                          'scorpio_version' : 'pangolin_scorpio_version',
+                                          'constellation_version' : 'pangolin_constellation_version',
+                                          'is_designated' : 'pangolin_is_designated',
+                                          'qc_status' : 'pangolin_qc_status',
+                                          'qc_notes' : 'pangolin_qc_notes',
+                                          'note' : 'pangolin_note'})
+
+    sample_name = pangolin.apply(lambda x:get_sample_name(x.fasta_header), axis = 1)
+    pangolin.insert(value = sample_name, column = 'sample_name', loc = 0)
+    drop_columns = ['fasta_header', 'pango_designation_version', 'pangolin_scorpio_version',
+                    'pangolin_constellation_version']
+    pangolin = pangolin.drop(columns = drop_columns)
+    pangolin = pangolin.set_index('sample_name')
+
+    # determine  aggregrated lineage by using the expanded lineage column in pangolin df
+    aggregated_lineage_df = pangolin[['expanded_lineage']].copy()
+    aggregated_lineage_df['aggregrated_lineage'] = aggregated_lineage_df.apply(lambda x:get_cdc_grouping(x.expanded_lineage, cdc_groupings_df), axis = 1 )
+    aggregated_lineage_df.drop('expanded_lineage', axis=1, inplace=True)
+
+    return pangolin, aggregated_lineage_df
+
 def concat_results(sample_name_list, terra_data_table_path, project_name, 
-                    pangolin_lineage_csv, cdc_lineage_groups_json,
+                    pangolin_df,aggregated_lineage_df,
                     nextclade_clades_csv, nextclade_version,
                    cov_out_df, percent_cvg_df, spike_variants_df, 
                    workflow_version):
 
-    # set some functions for getting data formatted
-    def get_sample_name_from_fasta_header(fasta_header):
-        sample_name = str(re.findall('CO-CDPHE-([0-9a-zA-Z_\-\.]+)', fasta_header)[0])
-        return sample_name
+    '''
+    Joins together all the dataframes to create a single summary output dataframe.
+    This output file is written to a csv file called 
+    {project_name}_sequencing_results_{workflow_version}.csv
 
-    def create_fasta_header(sample_name):
-        return 'CO-CDPHE-%s' % sample_name
-    
+    Returns
+    -------
+    dataframe: j
+    '''
 
     # create dataframe and fill with constant strings
     df = pd.DataFrame()
@@ -261,36 +528,6 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     terra_data_table = terra_data_table.drop(columns = entity_col)
     terra_data_table = terra_data_table.set_index('sample_name')
 
-    # read in panlogin results
-    pangolin = pd.read_csv(pangolin_lineage_csv, dtype = pangolin_data_types)
-    pangolin = pangolin.rename(columns = {'lineage': 'pangolin_lineage',
-                                          'conflict' : 'pangoLEARN_conflict',
-                                          'taxon' : 'fasta_header',
-                                          'ambiguity_score' : 'pangolin_ambiguity_score',
-                                          'scorpio_call' : 'pangolin_scorpio_call',
-                                          'scorpio_support' : 'pangolin_scorpio_support',
-                                          'scorpio_conflict' : 'pangolin_scorpio_conflict',
-                                          'scorpio_notes' : 'pangolin_scorpio_notes',
-                                          'version' : 'pango_designation_version',
-                                          'scorpio_version' : 'pangolin_scorpio_version',
-                                          'constellation_version' : 'pangolin_constellation_version',
-                                          'is_designated' : 'pangolin_is_designated',
-                                          'qc_status' : 'pangolin_qc_status',
-                                          'qc_notes' : 'pangolin_qc_notes',
-                                          'note' : 'pangolin_note'})
-
-    sample_name = pangolin.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
-    pangolin.insert(value = sample_name, column = 'sample_name', loc = 0)
-    drop_columns = ['fasta_header', 'pango_designation_version', 'pangolin_scorpio_version',
-                    'pangolin_constellation_version']
-    pangolin = pangolin.drop(columns = drop_columns)
-    pangolin = pangolin.set_index('sample_name')
-
-    # read in list of CDC lineage groups
-    cdc_lineage_groups_df = pd.read_json(cdc_lineage_groups_json)
-    aggregated_lineage_df = aggregate_lineage(pangolin, cdc_lineage_groups_df)
-
-
     # read in nextclade csv
     nextclade = pd.read_csv(nextclade_clades_csv, dtype = nextclade_clades_data_types)
     nextclade = nextclade.drop(columns = ['fasta_header', 'hsn'])
@@ -307,7 +544,7 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     j = j.join(percent_cvg_df, how = 'left')
     j = j.join(cov_out_df, how = 'left')
     j = j.join(nextclade, how = 'left')
-    j = j.join(pangolin, how = 'left')
+    j = j.join(pangolin_df, how = 'left')
     j = j.join(aggregated_lineage_df, how = 'left')
     j = j.join(spike_variants_df, how = 'left')
     j = j.reset_index()
@@ -318,11 +555,6 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
     # add assembled column and fill in failed assembles with 0% coveage
     j.percent_coverage = j.percent_coverage.fillna(value = 0)
 
-    def get_assembly_pass(percent_coverage):
-        if percent_coverage == 0:
-            return False
-        if percent_coverage > 0:
-            return True      
     j['assembly_pass'] = j.apply(lambda x:get_assembly_pass(x.percent_coverage), axis = 1)
 
     # order columns
@@ -344,37 +576,6 @@ def concat_results(sample_name_list, terra_data_table_path, project_name,
 
     return j
 
-def aggregate_lineage(pangolin_df, cdc_lineage_groups_df):
-    aggregated_lineage_df = pangolin_df[['expanded_lineage']].copy()
-
-    def get_cdc_grouping(expanded_lineage, cdc_lineage_groups_df):
-        potential_matches = []
-        for cdc_expanded_lineage in cdc_lineage_groups_df['expanded_lineage']:
-            if (expanded_lineage == cdc_expanded_lineage 
-                or expanded_lineage.startswith(cdc_expanded_lineage + '.')
-            ):
-                potential_matches.append(cdc_expanded_lineage)
-
-        # get most specific CDC grouping 
-        # example: if XBB.1.5.2, aggregate to XBB.1.5, not XBB
-        try:
-            match = max(potential_matches, key=len)
-            aggregated_lineage = cdc_lineage_groups_df.loc[cdc_lineage_groups_df['expanded_lineage'] == match, 'pangolin_lineage'].item()
-        except ValueError:
-            if expanded_lineage == 'Unassigned':
-                aggregated_lineage = 'Unassigned'
-            else:
-                aggregated_lineage = 'Other'
-        
-        return aggregated_lineage
-
-
-    aggregated_lineage_df['aggregated_lineage'] = aggregated_lineage_df.apply(lambda x: get_cdc_grouping(x['expanded_lineage'],
-                                                                                                         cdc_lineage_groups_df), axis=1)
-    aggregated_lineage_df.drop('expanded_lineage', axis=1, inplace=True)
-    
-    return aggregated_lineage_df
-
 
 
 
@@ -382,14 +583,14 @@ if __name__ == '__main__':
 
     options = getOptions()
 
+    # read in input parameters
     sample_name_array = options.sample_name_array
     terra_data_table_path = options.terra_data_table_path
     cov_out_files = options.cov_out_files
     percent_cvg_files = options.percent_cvg_files
     project_name = options.project_name
-
+    
     pangolin_lineage_csv = options.pangolin_lineage_csv
-    cdc_lineage_groups_json = options.cdc_lineage_groups_json
 
     nextclade_clades_csv = options.nextclade_clades_csv
     nextclade_variants_csv = options.nextclade_variants_csv
@@ -410,12 +611,21 @@ if __name__ == '__main__':
     # get df of spike mutations from nextclade file
     spike_variants_df = get_df_spike_mutations(variants_csv = nextclade_variants_csv)
 
+    # set up pangolin dataframe for aggregated lineage
+    pango_alias_key = get_json_data(PANGO_ALIAS_KEY_URL)
+    cdc_groupings = get_json_data(CDC_GROUPINGS_URL)
+    cdc_groupings_df = generate_cdc_groupings_df(cdc_groupings = cdc_groupings,
+                                                 pango_alias_key = pango_alias_key)
+    pangolin_df, aggregated_lineage_df = format_pangolin_df(pangolin_lineage_csv = pangolin_lineage_csv,
+                                  cdc_groupings_df = cdc_groupings_df,
+                                  pango_alias_key = pango_alias_key)
+
     # create results file
     results_df = concat_results(sample_name_list = sample_name_list,
                                 terra_data_table_path = terra_data_table_path,
                                 project_name = project_name,
-                                pangolin_lineage_csv=pangolin_lineage_csv,
-                                cdc_lineage_groups_json=cdc_lineage_groups_json,
+                                pangolin_df=pangolin_df,
+                                aggregated_lineage_df = aggregated_lineage_df,
                                 nextclade_clades_csv=nextclade_clades_csv,
                                 nextclade_version=nextclade_version,
                                 cov_out_df=cov_out_df,
