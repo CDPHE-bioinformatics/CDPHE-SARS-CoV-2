@@ -9,6 +9,8 @@ import sys
 import pandas as pd
 from datetime import date
 import re
+import requests
+import json
 
 ###### URLs ########
 
@@ -487,7 +489,7 @@ def format_pangolin_df(pangolin_lineage_csv, cdc_groupings_df):
 
     # determine  aggregrated lineage by using the expanded lineage column in pangolin df
     aggregated_lineage_df = pangolin[['expanded_lineage']].copy()
-    aggregated_lineage_df['aggregrated_lineage'] = aggregated_lineage_df.apply(lambda x:get_cdc_grouping(x.expanded_lineage, cdc_groupings_df), axis = 1 )
+    aggregated_lineage_df['aggregated_lineage'] = aggregated_lineage_df.apply(lambda x:get_cdc_grouping(x.expanded_lineage, cdc_groupings_df), axis = 1 )
     aggregated_lineage_df.drop('expanded_lineage', axis=1, inplace=True)
 
     return pangolin, aggregated_lineage_df
@@ -617,8 +619,7 @@ if __name__ == '__main__':
     cdc_groupings_df = generate_cdc_groupings_df(cdc_groupings = cdc_groupings,
                                                  pango_alias_key = pango_alias_key)
     pangolin_df, aggregated_lineage_df = format_pangolin_df(pangolin_lineage_csv = pangolin_lineage_csv,
-                                  cdc_groupings_df = cdc_groupings_df,
-                                  pango_alias_key = pango_alias_key)
+                                  cdc_groupings_df = cdc_groupings_df)
 
     # create results file
     results_df = concat_results(sample_name_list = sample_name_list,

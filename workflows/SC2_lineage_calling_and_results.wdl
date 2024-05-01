@@ -246,7 +246,6 @@ task results_table {
       Array[File] cov_out
       Array[File] percent_cvg_csv
       File pangolin_lineage_csv
-      File cdc_lineage_groups_json
       File nextclade_clades_csv
       File nextclade_variants_csv
       String nextclade_version
