@@ -68,15 +68,11 @@ def check_collection_date_exists(df, project_name):
     
     # Exit if sample doesn't have collection date in metadata sheet
     if len(no_dates) > 0:
-        print('Error! The following sample(s) are not in the wwt_metadata sheet.')
-        error_list = []
-        for i in no_dates:
-            l = df[df.sample_name == i].iloc[0][['sample_name', 'project_name']].tolist()
-            error_list.append(l)
-            
-        no_dates.to_csv(f'{project_name}_missing_dates.tsv', sep = '\t', index = False)
+        no_dates_series = pd.Series(no_dates)
+        no_dates_series.to_csv(f'{project_name}_missing_dates.tsv', 
+                               sep = '\t', index = False)
         sys.exit(f'At least one sample from {project_name} didn\'t have a \
-collection date associated with it: {error_list}')
+collection date associated with it: {no_dates}')
        
     return df_dates
 
@@ -294,10 +290,15 @@ def parse_project_mutations(project_dict, df_metadata):
         # Drop freyja failures
         df = df[df['pass'] == True]
         
+        # Check if project is in metadata
+        df_meta = df_metadata[df_metadata.project_name == project]
+        if df_meta.shape[0] == 0:
+            sys.exit(f'None of the samples from {project} are in the metadata file.')
+        
         # Merge with metadata for collection date and site id and check that all 
         # samples have this info. Drop controls and verification samples
-        df = df.merge(df_metadata, on = 'sample_name', how = 'left')
-        df = df[df.sample_type == 'sample']
+        df = df.merge(df_meta, on = 'sample_name', how = 'left')
+        df = df[(df.sample_type == 'sample') | (df.sample_type.isna())]
 
         # Drop specified utility site ids if any
         if len(sites_to_drop) > 0:
