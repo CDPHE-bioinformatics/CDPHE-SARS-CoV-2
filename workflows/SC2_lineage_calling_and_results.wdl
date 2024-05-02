@@ -15,7 +15,7 @@ workflow SC2_lineage_calling_and_results {
         Array[File] terra_data_table_path_array
 
         # workspace data
-        File cdc_lineage_groups_json
+        # File cdc_lineage_groups_json
         
         # python scripts
         File nextclade_json_parser_py
@@ -65,7 +65,6 @@ workflow SC2_lineage_calling_and_results {
         cov_out = select_all(cov_out),
         percent_cvg_csv = select_all(percent_cvg_csv),
         pangolin_lineage_csv = pangolin.lineage,
-        cdc_lineage_groups_json = cdc_lineage_groups_json,
         nextclade_clades_csv = parse_nextclade.nextclade_clades_csv,
         nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
         nextclade_version = nextclade.nextclade_version,
@@ -247,7 +246,6 @@ task results_table {
       Array[File] cov_out
       Array[File] percent_cvg_csv
       File pangolin_lineage_csv
-      File cdc_lineage_groups_json
       File nextclade_clades_csv
       File nextclade_variants_csv
       String nextclade_version
@@ -265,7 +263,6 @@ task results_table {
         --cov_out_files "~{write_lines(cov_out)}" \
         --percent_cvg_files "~{write_lines(percent_cvg_csv)}" \
         --pangolin_lineage_csv "~{pangolin_lineage_csv}" \
-        --cdc_lineage_groups_json "~{cdc_lineage_groups_json}" \
         --nextclade_variants_csv "~{nextclade_variants_csv}" \
         --nextclade_clades_csv "~{nextclade_clades_csv}" \
         --nextclade_version "~{nextclade_version}" \
