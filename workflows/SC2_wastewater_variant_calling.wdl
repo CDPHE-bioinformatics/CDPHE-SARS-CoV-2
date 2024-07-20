@@ -222,7 +222,7 @@ task mutations_tsv {
     command <<<
         #add columns with sample_name and project_name
         paste ~{variants} <(yes ~{sample_name} | head -n $(cat ~{variants} | wc -l)) <(yes ~{project_name} | head -n $(cat ~{variants} | wc -l)) > ~{sample_name}_mutations.tsv
-        sed -i -e '1s/~{sample_name}/sample_name/' -e '1s/~{project_name}/project_name/' ~{sample_name}_mutations.tsv
+        sed -i -e '1s/REGION/ref_genome/' -e '1s/POS/position/' -e '1s/REF/ref_nucl/' -e '1s/ALT/alt_nucl/' -e '1s/REF_DP/ref_depth/' -e '1s/REF_QUAL/ref_qual/' -e '1s/REF_CODON/ref_codon/' -e '1s/REF_AA/ref_aa/' -e '1s/ALT_DP/alt_depth/' -e '1s/ALT_QUAL/alt_qual/' -e '1s/ALT_CODON/alt_codon/' -e '1s/ALT_AA/alt_aa/' -e '1s/ALT_FREQ/alt_freq/' -e '1s/TOTAL_DP/total_depth/' -e '1s/PVAL/pval/' -e '1s/PASS/pass/' -e '1s/GFF_FEATURE/gff_feature/' -e '1s/~{sample_name}/sample_name/' -e '1s/~{project_name}/project_name/' ~{sample_name}_mutations.tsv
     >>>
 
     output {
