@@ -21,7 +21,7 @@ task workflow_version_capture {
   }
   command <<<
 
-    Workflow_Version="v2-3-0"
+    Workflow_Version="v2-3-1"
 
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
