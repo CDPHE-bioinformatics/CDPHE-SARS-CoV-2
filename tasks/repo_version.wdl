@@ -1,8 +1,5 @@
 version 1.0
 
-workflow version_testing {
-    call print_version {}
-}
 task print_version {
     command <<<
         git describe --tags | tee repo_version
