@@ -8,3 +8,4 @@ workflow SC2_ont_assembly {
     output {
         String repo_version = repo_version.repo_version_output
     }
+}
