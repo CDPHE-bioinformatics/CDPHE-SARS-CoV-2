@@ -21,4 +21,7 @@ workflows:
  - name: SC2_novel_mutations
    subclass: WDL
    primaryDescriptorPath: /workflows/SC2_novel_mutations.wdl
+ - name: repo_version
+   subclass: WDL
+   primaryDescriptorPath: /tasks/repo_version.wdl
  
