@@ -237,8 +237,8 @@ task seqyclean {
     runtime {
         cpu:    4
         memory:    "16 GiB"
-        disks:    "local-disk 200 HDD"
-        bootDiskSizeGb:    200
+        disks:    "local-disk 500 HDD"
+        bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
         docker:    docker
@@ -339,7 +339,7 @@ task align_reads {
     runtime {
         cpu:    4
         memory:    "16 GiB"
-        disks:    "local-disk 200 HDD"
+        disks:    "local-disk 500 HDD"
         bootDiskSizeGb:    200
         preemptible:    0
         maxRetries:    0
