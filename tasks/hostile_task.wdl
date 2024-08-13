@@ -17,7 +17,7 @@ task hostile {
 
   # make these variables private and constant for now but may move to input to allow customization
   String docker = "quay.io/biocontainers/hostile:1.0.0--pyhdfd78af_0"
-  Int disk_size = 100
+  Int disk_size = 500
   Int cpu = 4
   Int mem = 16
 
