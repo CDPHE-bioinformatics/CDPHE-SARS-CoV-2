@@ -412,10 +412,10 @@ task ivar_var {
     }
 
     runtime {
-        cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 200 HDD"
-        bootDiskSizeGb:    200
+        cpu:    8
+        memory:    "16 GiB"
+        disks:    "local-disk 500 HDD"
+        bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
         docker:    docker
@@ -463,10 +463,10 @@ task ivar_consensus {
     }
 
     runtime {
-        cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 200 HDD"
-        bootDiskSizeGb:    200
+        cpu:    8
+        memory:    "16 GiB"
+        disks:    "local-disk 500 HDD"
+        bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
         docker:    docker
@@ -546,10 +546,10 @@ task bam_stats {
     }
 
     runtime {
-        cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 10 HDD"
-        bootDiskSizeGb:    100
+        cpu:    8
+        memory:    "16 GiB"
+        disks:    "local-disk 500 HDD"
+        bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
         docker:    docker
