@@ -357,7 +357,7 @@ task ivar_trim {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
-    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
 
@@ -397,7 +397,7 @@ task ivar_var {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
-    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
 
@@ -434,7 +434,7 @@ task ivar_consensus {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
-    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
 
@@ -488,7 +488,7 @@ task bam_stats {
     }
 
     String docker = "staphb/samtools:1.16"
-    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
 
