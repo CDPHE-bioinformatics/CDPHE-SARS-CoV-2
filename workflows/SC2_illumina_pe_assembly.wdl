@@ -357,6 +357,7 @@ task ivar_trim {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
+    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
 
     command <<<
 
@@ -377,7 +378,7 @@ task ivar_trim {
     runtime {
         cpu:    8
         memory:    "16 GiB"
-        disks:    "local-disk 500 HDD"
+        disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
@@ -396,6 +397,7 @@ task ivar_var {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
+    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
 
     command <<<
 
@@ -414,7 +416,7 @@ task ivar_var {
     runtime {
         cpu:    8
         memory:    "16 GiB"
-        disks:    "local-disk 500 HDD"
+        disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
@@ -432,6 +434,7 @@ task ivar_consensus {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
+    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
 
     command <<<
 
@@ -465,7 +468,7 @@ task ivar_consensus {
     runtime {
         cpu:    8
         memory:    "16 GiB"
-        disks:    "local-disk 500 HDD"
+        disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
@@ -485,6 +488,7 @@ task bam_stats {
     }
 
     String docker = "staphb/samtools:1.16"
+    Int dynamic_disk_size = ceil(size(clinical_input,"GiB"))*2  + 500
 
     command <<<
 
@@ -548,7 +552,7 @@ task bam_stats {
     runtime {
         cpu:    8
         memory:    "16 GiB"
-        disks:    "local-disk 500 HDD"
+        disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    500
         preemptible:    0
         maxRetries:    0
@@ -686,6 +690,6 @@ task transfer {
         docker: "theiagen/utility:1.0"
         memory: "2 GB"
         cpu: 4
-        disks: "local-disk 100 SSD"
+        disks: "local-disk 500 SSD"
     }
 }
