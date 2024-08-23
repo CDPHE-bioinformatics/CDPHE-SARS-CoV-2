@@ -397,12 +397,12 @@ task ivar_var {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 1000
 
     command <<<
 
         samtools faidx ~{ref}
-        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        samtools mpileup nthreads=8 -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
         ivar variants -p ~{sample_name}_variants -q 20 -t 0.6 -m 10 -r ~{ref} -g ~{gff}
 
     >>>
@@ -414,10 +414,10 @@ task ivar_var {
     }
 
     runtime {
-        cpu:    8
-        memory:    "16 GiB"
+        cpu:    16
+        memory:    "32 GiB"
         disks:    "local-disk " + dynamic_disk_size + " SSD"
-        bootDiskSizeGb:    500
+        bootDiskSizeGb:    1000
         preemptible:    0
         maxRetries:    0
         docker:    docker
@@ -434,7 +434,7 @@ task ivar_consensus {
     }
 
     String docker = "andersenlabapps/ivar:1.3.1"
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 1000
 
     command <<<
 
@@ -443,7 +443,7 @@ task ivar_consensus {
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION_samtools
 
         samtools faidx ~{ref}
-        samtools mpileup -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        samtools mpileup nthreads=8 -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
         ivar consensus -p ~{sample_name}_consensus -q 20 -t 0.6 -m 10
 
     >>>
@@ -466,10 +466,10 @@ task ivar_consensus {
     }
 
     runtime {
-        cpu:    8
-        memory:    "16 GiB"
+        cpu:    16
+        memory:    "32 GiB"
         disks:    "local-disk " + dynamic_disk_size + " SSD"
-        bootDiskSizeGb:    500
+        bootDiskSizeGb:    1000
         preemptible:    0
         maxRetries:    0
         docker:    docker
