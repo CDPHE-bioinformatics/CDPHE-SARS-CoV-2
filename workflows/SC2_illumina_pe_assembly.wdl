@@ -402,7 +402,7 @@ task ivar_var {
     command <<<
 
         samtools faidx ~{ref}
-        samtools mpileup nthreads=8 -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        samtools mpileup --input-fmt-option nthreads=8 -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
         ivar variants -p ~{sample_name}_variants -q 20 -t 0.6 -m 10 -r ~{ref} -g ~{gff}
 
     >>>
@@ -443,7 +443,7 @@ task ivar_consensus {
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION_samtools
 
         samtools faidx ~{ref}
-        samtools mpileup nthreads=8 -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
+        samtools mpileup --input-fmt-option nthreads=8 -A -aa -d 600000 -B -Q 20 -q 20 -f ~{ref} ~{bam} | \
         ivar consensus -p ~{sample_name}_consensus -q 20 -t 0.6 -m 10
 
     >>>
