@@ -419,7 +419,7 @@ task ivar_var {
         disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    1000
         preemptible:    0
-        maxRetries:    0
+        maxRetries:    2
         docker:    docker
     }
 }
@@ -471,7 +471,7 @@ task ivar_consensus {
         disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    1000
         preemptible:    0
-        maxRetries:    0
+        maxRetries:    2
         docker:    docker
     }
 }
