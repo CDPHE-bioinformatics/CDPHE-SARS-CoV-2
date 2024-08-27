@@ -182,7 +182,7 @@ task freyja_demix {
         File variants
         File depth
     }
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(variants,"GiB"))*2  + 500
     command <<<
 
         freyja --version | awk '{print $NF}' | tee VERSION
@@ -220,7 +220,7 @@ task mutations_tsv {
         String project_name
         File variants
     }
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
+    Int dynamic_disk_size = ceil(size(variants,"GiB"))*2  + 500
     command <<<
         #add columns with sample_name and project_name
         paste ~{variants} <(yes ~{sample_name} | head -n $(cat ~{variants} | wc -l)) <(yes ~{project_name} | head -n $(cat ~{variants} | wc -l)) > ~{sample_name}_mutations.tsv
@@ -244,7 +244,7 @@ task freyja_aggregate {
     input {
         Array[File] demix
     }
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
+    
     command <<<
 
         mkdir demix_outputs
@@ -262,7 +262,7 @@ task freyja_aggregate {
         memory: "32 GB"
         cpu: 8
         maxRetries:    2
-        disks: "local-disk " + dynamic_disk_size + " SSD"
+        disks: "local-disk 500 SSD"
     }
 }
 
@@ -270,7 +270,7 @@ task combine_mutations_tsv {
     input {
         Array[File] mutations
     }
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
+
     command <<<
         
         # combine the coutns and frequency files for all samples into one
@@ -287,7 +287,7 @@ task combine_mutations_tsv {
         memory: "32 GB"
         cpu: 8
         maxRetries:    2
-        disks: "local-disk " + dynamic_disk_size + " SSD"
+        disks: "local-disk 500 SSD"
     }
 }
 
@@ -342,7 +342,6 @@ task transfer_outputs {
 
     }
 
-    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
 
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
@@ -365,6 +364,6 @@ task transfer_outputs {
         memory: "32 GB"
         cpu: 1
         maxRetries:    2
-        disks: "local-disk " + dynamic_disk_size + " SSD"
+        disks: "local-disk 500 SSD"
     }
 }
