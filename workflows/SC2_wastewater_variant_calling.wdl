@@ -114,7 +114,7 @@ task add_RG {
         String sample_name
         File bam
     }
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
 
         # grab samtools version
@@ -131,9 +131,10 @@ task add_RG {
 
     runtime {
         docker: "staphb/samtools:1.10"
-        memory: "8 GB"
-        cpu: 2
-        disks: "local-disk 100 SSD"
+        memory: "32 GB"
+        cpu: 16
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -144,14 +145,14 @@ task variant_calling {
         File ref_gff
         String sample_name
     }
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
 
     # grab ivar and samtools versions
     ivar version | awk '/version/ {print $3}' | tee VERSION_ivar
     samtools --version | awk '/samtools/ {print $2}' | tee VERSION_samtools
 
-    samtools mpileup -A -aa -d 600000 -B -Q 20 -q 0 -f ~{ref} ~{bam} | tee >(cut -f1-4 > ~{sample_name}_depth.tsv) | \
+    samtools mpileup --input-fmt-option nthreads=8 -A -aa -d 600000 -B -Q 20 -q 0 -f ~{ref} ~{bam} | tee >(cut -f1-4 > ~{sample_name}_depth.tsv) | \
     ivar variants -p ~{sample_name}_variants.tsv -q 20 -t 0.0 -r ~{ref} -g ~{ref_gff}
     
     >>>
@@ -165,12 +166,12 @@ task variant_calling {
     }
 
      runtime {
-        cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 1 HDD"
+        cpu:    16
+        memory:    "32 GiB"
+        disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    10
         preemptible:    0
-        maxRetries:    0
+        maxRetries:    2
         docker:    "andersenlabapps/ivar:1.3.1"
     } 
 }
@@ -181,7 +182,7 @@ task freyja_demix {
         File variants
         File depth
     }
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
 
         freyja --version | awk '{print $NF}' | tee VERSION
@@ -207,7 +208,8 @@ task freyja_demix {
         docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 200 SSD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
         continueOnReturnCode: [0, 1]
     }
 }
@@ -218,7 +220,7 @@ task mutations_tsv {
         String project_name
         File variants
     }
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
         #add columns with sample_name and project_name
         paste ~{variants} <(yes ~{sample_name} | head -n $(cat ~{variants} | wc -l)) <(yes ~{project_name} | head -n $(cat ~{variants} | wc -l)) > ~{sample_name}_mutations.tsv
@@ -233,7 +235,8 @@ task mutations_tsv {
         docker: "theiagen/utility:1.0"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 500 HDD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -241,7 +244,7 @@ task freyja_aggregate {
     input {
         Array[File] demix
     }
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
 
         mkdir demix_outputs
@@ -258,7 +261,8 @@ task freyja_aggregate {
         docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 200 SSD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -266,7 +270,7 @@ task combine_mutations_tsv {
     input {
         Array[File] mutations
     }
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
         
         # combine the coutns and frequency files for all samples into one
@@ -282,7 +286,8 @@ task combine_mutations_tsv {
         docker: "theiagen/utility:1.0"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 500 HDD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -337,7 +342,7 @@ task transfer_outputs {
 
     }
 
-
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
     command <<<
 
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
@@ -357,8 +362,9 @@ task transfer_outputs {
 
     runtime {
         docker: "theiagen/utility:1.0"
-        memory: "1 GB"
+        memory: "32 GB"
         cpu: 1
-        disks: "local-disk 50 SSD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
