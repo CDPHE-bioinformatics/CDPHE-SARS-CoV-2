@@ -115,6 +115,8 @@ task add_RG {
         File bam
     }
 
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 1000
+
     command <<<
 
         # grab samtools version
@@ -131,9 +133,10 @@ task add_RG {
 
     runtime {
         docker: "staphb/samtools:1.10"
-        memory: "8 GB"
-        cpu: 2
-        disks: "local-disk 100 SSD"
+        memory: "32 GB"
+        cpu: 16
+        maxRetries: 2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -144,6 +147,8 @@ task variant_calling {
         File ref_gff
         String sample_name
     }
+
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 1000
 
     command <<<
 
@@ -165,12 +170,12 @@ task variant_calling {
     }
 
      runtime {
-        cpu:    2
-        memory:    "8 GiB"
-        disks:    "local-disk 1 HDD"
+        cpu:    16
+        memory:    "32 GiB"
+        disks:    "local-disk " + dynamic_disk_size + " SSD"
         bootDiskSizeGb:    10
         preemptible:    0
-        maxRetries:    0
+        maxRetries:    2
         docker:    "andersenlabapps/ivar:1.3.1"
     } 
 }
@@ -181,6 +186,8 @@ task freyja_demix {
         File variants
         File depth
     }
+
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 1000
 
     command <<<
 
@@ -206,8 +213,9 @@ task freyja_demix {
     runtime {
         docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 200 SSD"
+        cpu: 16
+        disks: "local-disk " + dynamic_disk_size + " SSD"
+        maxRetries:    2
         continueOnReturnCode: [0, 1]
     }
 }
@@ -218,6 +226,8 @@ task mutations_tsv {
         String project_name
         File variants
     }
+
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
         #add columns with sample_name and project_name
@@ -232,8 +242,9 @@ task mutations_tsv {
     runtime {
         docker: "theiagen/utility:1.0"
         memory: "32 GB"
-        cpu: 8
-        disks: "local-disk 500 HDD"
+        cpu: 16
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -241,6 +252,8 @@ task freyja_aggregate {
     input {
         Array[File] demix
     }
+
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
 
@@ -258,7 +271,8 @@ task freyja_aggregate {
         docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 200 SSD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -266,6 +280,8 @@ task combine_mutations_tsv {
     input {
         Array[File] mutations
     }
+
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
         
@@ -282,7 +298,8 @@ task combine_mutations_tsv {
         docker: "theiagen/utility:1.0"
         memory: "32 GB"
         cpu: 8
-        disks: "local-disk 500 HDD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
 
@@ -337,6 +354,7 @@ task transfer_outputs {
 
     }
 
+    Int dynamic_disk_size = ceil(size(bam,"GiB"))*2  + 500
 
     command <<<
 
@@ -357,8 +375,9 @@ task transfer_outputs {
 
     runtime {
         docker: "theiagen/utility:1.0"
-        memory: "1 GB"
+        memory: "32 GB"
         cpu: 1
-        disks: "local-disk 50 SSD"
+        maxRetries:    2
+        disks: "local-disk " + dynamic_disk_size + " SSD"
     }
 }
