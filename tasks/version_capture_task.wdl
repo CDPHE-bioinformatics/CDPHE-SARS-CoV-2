@@ -25,6 +25,7 @@ task workflow_version_capture {
   output {
     String analysis_date = read_string("TODAY")
     String workflow_version = read_string("WORKFLOW_VERSION")
+    String workflow_version_path = sub(workflow_version, "\\.", "_")
   }
   runtime {
     cpu: 1
