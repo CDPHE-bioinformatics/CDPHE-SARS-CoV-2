@@ -27,7 +27,7 @@ jobs:
     - name: update files with bumped version from tag-action dry run
       run: |
         NEXT_VERSION=${{ steps.tag_action_dry_run.outputs.new_tag }}
-        sed -i "s/echo \"v.*/echo \"${NEXT_VERSION}\" > WORKFLOW_VERSION/" tasks/version_capture_tasks.wdl
+        sed -i "s/echo \"v.*/echo \"${NEXT_VERSION}\" > WORKFLOW_VERSION/" tasks/version_capture_task.wdl
     - name: git config set up
       run: |
         git config user.name "GitHub Actions Bot"
