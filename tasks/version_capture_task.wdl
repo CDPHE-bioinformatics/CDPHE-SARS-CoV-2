@@ -20,11 +20,10 @@ task workflow_version_capture {
   }
   command <<<
     date + "%Y-%m-%d" > TODAY
-    echo "v2.3.1" > WORKFLOW_VERSION
   >>>
   output {
     String analysis_date = read_string("TODAY")
-    String workflow_version = read_string("WORKFLOW_VERSION")
+    String workflow_version = "v2.3.1"
     String workflow_version_path = sub(workflow_version, "\\.", "_")
   }
   runtime {
