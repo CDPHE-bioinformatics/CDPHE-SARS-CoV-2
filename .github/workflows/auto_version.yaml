@@ -27,14 +27,14 @@ jobs:
     - name: update files with bumped version from tag-action dry run
       run: |
         NEXT_VERSION=${{ steps.tag_action_dry_run.outputs.new_tag }}
-        sed -i "s/echo \"v.*/echo \"${NEXT_VERSION}\" > WORKFLOW_VERSION/" tasks/version_capture_task.wdl
+        sed -i "s/String workflow_version \"v.*/String workflow_version \"${NEXT_VERSION}\" > WORKFLOW_VERSION/" tasks/version_capture_task.wdl
     - name: git config set up
       run: |
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
     - name: commit bumped version
       run: |
-        git add tasks/version_capture_tasks.wdl
+        git add tasks/version_capture_task.wdl
         git commit -m "Auto bump version"
         git push origin main
     - name: bump version with tag-action
