@@ -1,0 +1,44 @@
+name: Auto version
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+    - name: bump version with tag-action but dry run
+      id: tag_action_dry_run
+      uses: anothrNick/github-tag-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
+        DRY_RUN: true
+    - name: update files with bumped version from tag-action dry run
+      run: |
+        NEXT_VERSION=${{ steps.tag_action_dry_run.outputs.new_tag }}
+        sed -i "s/echo \"v.*/echo \"${NEXT_VERSION}\" > WORKFLOW_VERSION/" tasks/version_capture_tasks.wdl
+    - name: git config set up
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+    - name: commit bumped version
+      run: |
+        git add tasks/version_capture_tasks.wdl
+        git commit -m "Auto bump version"
+        git push origin main
+    - name: bump version with tag-action
+      uses: anothrNick/github-tag-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
