@@ -16,7 +16,6 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.merge_commit_sha }}
         fetch-depth: '0'
     - name: bump version with tag-action but dry run
       id: tag_action_dry_run
@@ -27,7 +26,6 @@ jobs:
         DRY_RUN: true
     - name: update files with bumped version from tag-action dry run
       run: |
-        NEXT_VERSION=${{ steps.tag_action_dry_run.outputs.new_tag }}
         sed -i "s/String workflow_version = \"v.*/String workflow_version = \"${NEXT_VERSION}\" > WORKFLOW_VERSION/" tasks/version_capture_task.wdl
     - name: git config set up
       run: |
