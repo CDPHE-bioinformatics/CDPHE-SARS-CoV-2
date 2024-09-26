@@ -36,6 +36,9 @@ jobs:
         git add tasks/version_capture_task.wdl
         git commit -m "Auto bump version"
         git push origin main
+        git checkout develop
+        git merge main
+        git push --set-upstream origin develop
     - name: bump version with tag-action
       uses: anothrNick/github-tag-action@v1
       env:
