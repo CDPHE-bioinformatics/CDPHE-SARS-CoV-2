@@ -13,14 +13,14 @@ jobs:
     permissions:
       contents: write
     steps:
-    - name: git config set up
-      run: |
-        git config user.name "GitHub Actions Bot"
-        git config user.email "<>"
     - name: checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: '0'
+    - name: git config set up
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
     - name: bump version with tag-action but dry run
       id: tag_action_dry_run
       uses: anothrNick/github-tag-action@v1
