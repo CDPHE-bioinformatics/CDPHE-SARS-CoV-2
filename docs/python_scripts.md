@@ -308,7 +308,7 @@ This script is used to create a CSV file with version information: the workflow 
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------|
 | `--versions_json`     | JSON file with an array of VersionInfo objects (keys should be "software", "docker", and "version")                         |
 | `--workflow_name`     | workflow name (e.g. SC2_ont_assembly)                                                                                       |
-| `--workflow_version`  | workflow version with dashes (e.g. v2-2-0)                                                                                  |
+| `--workflow_version`  | workflow version with underscores (e.g. v2_2_0)                                                                                  |
 | `--project_name`      | project name of batch being analyzed (e.g. cov_2022_grid)                                                                   |
 | `--analysis_date`     | date to add to the analysis_date column in the output CSV                                                                   |
 

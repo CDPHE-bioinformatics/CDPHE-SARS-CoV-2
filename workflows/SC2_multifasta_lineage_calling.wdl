@@ -33,13 +33,13 @@ workflow SC2_multifasta_lineage_calling {
         input:
     }
     
-    call_create_version_catpure_file {
+    call create_version_capture_file {
         input:
             version_capture_multifasta_lineage_calling_py = version_capture_multifasta_lineage_calling_py,
             pangolin_version = pangolin.pangolin_version,
             nextclade_version = nextclade.nextclade_version, 
             analysis_date = workflow_version_capture.analysis_date,
-            workflow_version = workflow_version_capture.workflow_version     
+            workflow_version_path = workflow_version_capture.workflow_version_path
 
     } 
 
@@ -127,7 +127,7 @@ task create_version_capture_file {
         String pangolin_version
         String nextclade_version
         String analysis_date
-        String workflow_version
+        String workflow_version_path
     }
 
     command <<<
@@ -136,11 +136,11 @@ task create_version_capture_file {
         --pangolin_version "~{pangolin_version}" \
         --nextclade_version "~{nextclade_version" \
         --analysis_date "~{analysis_date}" \
-        --workfow_version "~{workflow_version}"
+        --workfow_version "~{workflow_version_path}"
      >>>
 
     output {
-        File version_capture_multifasta_lineage_calling = "version_capture_multifasta_lineage_calling_~{project_name}_~{workflow_version}.csv"
+        File version_capture_multifasta_lineage_calling = "version_capture_multifasta_lineage_calling_~{project_name}_~{workflow_version_path}.csv"
     }
 
     runtime {

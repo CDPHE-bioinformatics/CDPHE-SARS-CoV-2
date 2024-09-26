@@ -154,7 +154,7 @@ workflow SC2_ont_assembly {
         input:
             version_array = select_first([version_array_with_hostile, version_array]),
             workflow_name = "SC2_ont_assembly",
-            workflow_version = workflow_version_capture.workflow_version,
+            workflow_version_path = workflow_version_capture.workflow_version_path,
             project_name = project_name,
             analysis_date = workflow_version_capture.analysis_date,
             version_capture_py = version_capture_py
