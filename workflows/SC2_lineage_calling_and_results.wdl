@@ -54,7 +54,7 @@ workflow SC2_lineage_calling_and_results {
         project_name = project_name,
         nextclade_json_parser_py = nextclade_json_parser_py,
         nextclade_json = nextclade.nextclade_json,
-        workflow_version = workflow_version_capture.workflow_version
+        workflow_version_path = workflow_version_capture.workflow_version_path
     }
 
 
@@ -70,7 +70,7 @@ workflow SC2_lineage_calling_and_results {
         nextclade_version = nextclade.nextclade_version,
         project_name = project_name,
         terra_data_table_path = terra_data_table_path,
-        workflow_version = workflow_version_capture.workflow_version,
+        workflow_version_path = workflow_version_capture.workflow_version_path,
         analysis_date = workflow_version_capture.analysis_date
     }
 
@@ -83,7 +83,7 @@ workflow SC2_lineage_calling_and_results {
             pangolin_version = pangolin.pangolin_version,
             nextclade_version = nextclade.nextclade_version,
             project_name = project_name,
-            workflow_version = workflow_version_capture.workflow_version,
+            workflow_version_path = workflow_version_capture.workflow_version_path,
             analysis_date = workflow_version_capture.analysis_date,
             pangolin_lineage_csv = pangolin.lineage
     }
@@ -213,20 +213,20 @@ task parse_nextclade {
       File nextclade_json_parser_py
       File nextclade_json
       String project_name
-      String workflow_version
+      String workflow_version_path
     }
 
     command <<<
       python ~{nextclade_json_parser_py} \
           --nextclade_json ~{nextclade_json} \
           --project_name ~{project_name} \
-          --workflow_version ~{workflow_version}
+          --workflow_version ~{workflow_version_path}
 
     >>>
 
     output {
-      File nextclade_clades_csv = '${project_name}_nextclade_results_${workflow_version}.csv'
-      File nextclade_variants_csv = '${project_name}_nextclade_variant_summary_${workflow_version}.csv'
+      File nextclade_clades_csv = '${project_name}_nextclade_results_${workflow_version_path}.csv'
+      File nextclade_variants_csv = '${project_name}_nextclade_variant_summary_${workflow_version_path}.csv'
     }
 
     runtime {
@@ -251,7 +251,7 @@ task results_table {
       String nextclade_version
       String project_name
       File terra_data_table_path
-      String workflow_version
+      String workflow_version_path
       String analysis_date
       
 
@@ -268,13 +268,13 @@ task results_table {
         --nextclade_version "~{nextclade_version}" \
         --project_name "~{project_name}" \
         --terra_data_table_path "~{terra_data_table_path}" \
-        --workflow_version "~{workflow_version}" \
+        --workflow_version "~{workflow_version_path}" \
         --analysis_date "~{analysis_date}"
 
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version}.csv"
+        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version_path}.csv"
 
     }
 
@@ -298,7 +298,7 @@ task create_version_capture_file {
         String pangolin_version
         String nextclade_version
         String analysis_date
-        String workflow_version
+        String workflow_version_path
         File pangolin_lineage_csv
 
     }
@@ -310,13 +310,13 @@ task create_version_capture_file {
         --pangolin_version "~{pangolin_version}" \
         --nextclade_version "~{nextclade_version}" \
         --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}" \
+        --workflow_version "~{workflow_version_path}" \
         --pangolin_lineage_csv "~{pangolin_lineage_csv}"
 
     >>>
 
     output {
-        File version_capture_lineage_calling_and_results = "version_capture_lineage_calling_and_results_~{project_name}_~{workflow_version}.csv"
+        File version_capture_lineage_calling_and_results = "version_capture_lineage_calling_and_results_~{project_name}_~{workflow_version_path}.csv"
     }
 
     runtime {
