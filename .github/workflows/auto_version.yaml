@@ -30,7 +30,7 @@ jobs:
         DRY_RUN: true
     - name: update files with bumped version from tag-action dry run
       run: |
-        sed -i "s/String workflow_version = \"v.*/String workflow_version = \"${NEXT_VERSION}\"/" tasks/version_capture_task.wdl
+        sed -i "s/String workflow_version = .*/String workflow_version = \"${ steps.tag_action_dry_run.new_tag }\"/" tasks/version_capture_task.wdl
     - name: commit bumped version
       run: |
         git add tasks/version_capture_task.wdl
