@@ -13,6 +13,10 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: git config set up
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
     - name: checkout
       uses: actions/checkout@v4
       with:
@@ -27,10 +31,6 @@ jobs:
     - name: update files with bumped version from tag-action dry run
       run: |
         sed -i "s/String workflow_version = \"v.*/String workflow_version = \"${NEXT_VERSION}\"/" tasks/version_capture_task.wdl
-    - name: git config set up
-      run: |
-        git config user.name "GitHub Actions Bot"
-        git config user.email "<>"
     - name: commit bumped version
       run: |
         git add tasks/version_capture_task.wdl
