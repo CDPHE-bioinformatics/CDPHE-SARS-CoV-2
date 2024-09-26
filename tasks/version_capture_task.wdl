@@ -38,7 +38,7 @@ task task_version_capture {
   input {
     Array[VersionInfo] version_array
     String workflow_name
-    String workflow_version
+    String workflow_version_path
     String project_name
     String analysis_date
     File version_capture_py
@@ -50,13 +50,13 @@ task task_version_capture {
     python ~{version_capture_py} \
       --versions_json ~{write_json(versions)} \
       --workflow_name ~{workflow_name} \
-      --workflow_version ~{workflow_version} \
+      --workflow_version ~{workflow_version_path} \
       --project_name ~{project_name} \
       --analysis_date ~{analysis_date}
   >>>
 
   output {
-    File version_capture_file = "version_capture_${workflow_name}_${project_name}_${workflow_version}.csv"
+    File version_capture_file = "version_capture_${workflow_name}_${project_name}_${workflow_version_path}.csv"
   }
   runtime {
     memory: "1 GB"

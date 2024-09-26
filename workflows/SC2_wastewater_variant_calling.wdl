@@ -81,7 +81,7 @@ workflow SC2_wastewater_variant_calling {
             ivar_version = select_all(variant_calling.ivar_version)[0],
             freyja_version = select_all(freyja_demix.freyja_version)[0],
             analysis_date = workflow_version_capture.analysis_date,
-            workflow_version = workflow_version_capture.workflow_version
+            workflow_version_path = workflow_version_capture.workflow_version_path
             
 
     }
@@ -295,7 +295,7 @@ task create_version_capture_file {
         String ivar_version
         String freyja_version
         String analysis_date
-        String workflow_version
+        String workflow_version_path
     }
 
     command <<<
@@ -307,12 +307,12 @@ task create_version_capture_file {
         --ivar_version "~{ivar_version}" \
         --freyja_version "~{freyja_version}" \
         --analysis_date "~{analysis_date}" \
-        --workflow_version "~{workflow_version}"
+        --workflow_version "~{workflow_version_path}"
 
     >>>
 
     output {
-        File version_capture_wwt_variant_calling = 'version_capture_wastewater_variant_calling_~{project_name}_~{workflow_version}.csv'
+        File version_capture_wwt_variant_calling = 'version_capture_wastewater_variant_calling_~{project_name}_~{workflow_version_path}.csv'
     }
 
     runtime {
