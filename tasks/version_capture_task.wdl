@@ -19,7 +19,7 @@ task workflow_version_capture {
     description: "capture version release"
   }
   command <<<
-    date + "%Y-%m-%d" > TODAY
+    date "+%F" > TODAY
   >>>
   output {
     String analysis_date = read_string("TODAY")
