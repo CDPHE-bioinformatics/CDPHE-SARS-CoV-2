@@ -435,6 +435,11 @@ def generate_cdc_groupings_df (cdc_groupings, pango_alias_key):
     '''
     cdc_groupings_df = pd.DataFrame(cdc_groupings)
     cdc_groupings_df = cdc_groupings_df.rename(columns={'variant': 'lineage'})
+
+    # only include lineages in the CDC datset that exist in the PANGO dataset
+    valid_aliases = pango_alias_key.keys()
+    cdc_groupings_df = cdc_groupings_df[cdc_groupings_df['lineage'].isin(valid_aliases)]
+
     cdc_groupings_df['expanded_lineage'] = cdc_groupings_df['lineage'] \
         .apply(expand_lineage, alias_key=pango_alias_key)
 
