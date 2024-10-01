@@ -195,7 +195,10 @@ def get_nextclade(json_path, project_name, workflow_version):
 
     df['fasta_header'] = sample_name_list
     df['sample_name'] = df.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
-    df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
+    try:
+        df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
+    except ValueError:
+        df['hsn'] = None
     df['nextclade'] = clade_list
     df['total_nucleotide_mutations'] = totalSubstitutions_list
     df['total_nucleotide_deletions'] = totalDeletions_list
