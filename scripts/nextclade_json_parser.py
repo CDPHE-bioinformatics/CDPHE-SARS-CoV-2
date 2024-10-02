@@ -153,8 +153,10 @@ def extract_variant_list(json_path, project_name, workflow_version):
     df['sample_name'] = df.apply(lambda x:get_sample_name_from_fasta_header(x.fasta_header), axis = 1)
     print('')
     print(df)
-    df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
-    df['variant_name'] = mutation_list
+    try:
+        df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
+    except ValueError:
+        df['hsn'] = None    
     df['gene'] = gene_list
     df['codon_position'] = codon_pos_list
     df['refAA'] = refAA_list
