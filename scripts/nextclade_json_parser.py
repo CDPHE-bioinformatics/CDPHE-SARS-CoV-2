@@ -156,7 +156,8 @@ def extract_variant_list(json_path, project_name, workflow_version):
     try:
         df['hsn'] = df.apply(lambda x:hsn_from_id(x.sample_name), axis = 1)
     except ValueError:
-        df['hsn'] = None    
+        df['hsn'] = None 
+    df['variant_name'] = mutation_list   
     df['gene'] = gene_list
     df['codon_position'] = codon_pos_list
     df['refAA'] = refAA_list
