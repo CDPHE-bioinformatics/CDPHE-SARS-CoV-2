@@ -236,6 +236,7 @@ task mutations_tsv {
 task freyja_aggregate {
     input {
         Array[File] demix
+        String choose_freyja_version
     }
 
     command <<<
@@ -249,7 +250,7 @@ task freyja_aggregate {
     }
 
     runtime {
-        docker: "staphb/freyja:~{freyja_version}"
+        docker: "staphb/freyja:~{choose_freyja_version}"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
