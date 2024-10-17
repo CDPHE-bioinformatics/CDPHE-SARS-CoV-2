@@ -19,14 +19,14 @@ workflow SC2_wastewater_variant_calling {
         # python scripts
         File version_capture_wwt_variant_calling_py
 
-        String freyja_version = '1.5.1'
+        String choose_freyja_version = '1.5.1'
         String demix_solver = 'ECOS'
     }
-    
+
     # secret variables
     String project_name = project_name_array[0]
     String out_dir = out_dir_array[0] + demix_solver + '/'
-    String outdirpath = out_dir + freyja_version + '/' + demix_solver
+    String outdirpath = out_dir + choose_freyja_version + '/' + demix_solver
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
         call add_RG {
@@ -49,7 +49,7 @@ workflow SC2_wastewater_variant_calling {
                 depth = variant_calling.depth,
                 sample_name = id_bam.left,
                 demix_solver = demix_solver,
-                freyja_version = freyja_version
+                choose_freyja_version = choose_freyja_version
         }
         
         call mutations_tsv {
@@ -63,7 +63,7 @@ workflow SC2_wastewater_variant_calling {
     call freyja_aggregate {
         input:
             demix = freyja_demix.demix, 
-            freyja_version = freyja_version
+            choose_freyja_version = choose_freyja_version
     }
 
     call combine_mutations_tsv {
@@ -177,7 +177,7 @@ task freyja_demix {
         File variants
         File depth
         String demix_solver
-        String freyja_version
+        String choose_freyja_version
     }
 
     command <<<
@@ -200,7 +200,7 @@ task freyja_demix {
     }
 
     runtime {
-        docker: "staphb/freyja:~{freyja_version}"
+        docker: "staphb/freyja:~{choose_freyja_version}"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
