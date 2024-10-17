@@ -24,7 +24,7 @@ workflow SC2_wastewater_variant_calling {
     }
     # secret variables
     String project_name = project_name_array[0]
-    String out_dir = out_dir_array[0]
+    String out_dir = out_dir_array[0] + demix_solver + '/'
     String outdirpath = sub(out_dir, "/$", "")
 
 
