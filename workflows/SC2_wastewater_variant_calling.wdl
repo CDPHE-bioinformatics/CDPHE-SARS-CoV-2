@@ -25,8 +25,8 @@ workflow SC2_wastewater_variant_calling {
 
     # secret variables
     String project_name = project_name_array[0]
-    String out_dir = out_dir_array[0] + demix_solver + '/'
-    String outdirpath = out_dir + choose_freyja_version + '/' + demix_solver
+    String out_dir = out_dir_array[0] 
+    String outdirpath = out_dir + 'waste_water_variant_calling/' + choose_freyja_version + '/' + demix_solver
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
         call add_RG {
