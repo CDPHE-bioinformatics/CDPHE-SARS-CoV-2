@@ -19,6 +19,8 @@ workflow SC2_wastewater_variant_calling {
         # python scripts
         File version_capture_wwt_variant_calling_py
 
+        String demix_solver = 'ECOS'
+
     }
     # secret variables
     String project_name = project_name_array[0]
@@ -47,7 +49,8 @@ workflow SC2_wastewater_variant_calling {
             input:
                 variants = variant_calling.variants,
                 depth = variant_calling.depth,
-                sample_name = id_bam.left
+                sample_name = id_bam.left,
+                demix_solver = demix_solver
         }
         
         call mutations_tsv {
@@ -180,6 +183,7 @@ task freyja_demix {
         String sample_name
         File variants
         File depth
+        String demix_solver
     }
 
     command <<<
@@ -194,7 +198,7 @@ task freyja_demix {
         #creates a temp file with the same name as the intended output file that will get output in case of failure or overwritten in case of sucess
         echo -e "\t~{sample_name}\nsummarized\tLowCov\nlineages\tLowCov\nabundances\tLowCov\nresid\tLowCov\ncoverage\tLowCov" > ~{sample_name}_demixed.tsv
         
-        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
+        freyja demix --eps 0.01 --covcut 10 --solver ~{demix_solver} --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
 
     >>>
 
@@ -204,7 +208,7 @@ task freyja_demix {
     }
 
     runtime {
-        docker: "staphb/freyja:1.4.7"
+        docker: "staphb/freyja:1.5.1"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -255,7 +259,7 @@ task freyja_aggregate {
     }
 
     runtime {
-        docker: "staphb/freyja:1.4.7"
+        docker: "staphb/freyja:1.5.1"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
