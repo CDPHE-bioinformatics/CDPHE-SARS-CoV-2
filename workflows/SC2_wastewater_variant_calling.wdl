@@ -181,6 +181,8 @@ task freyja_demix {
     }
 
     String solver_command = if (demix_solver == '1.5.1') then '--solver ~{demix_solver}' else ''
+    String barcode_extension = if (demix_solver == '1.5.1') then '.feather' else '.csv'
+
     command <<<
         freyja --version | awk '{print $NF}' | tee VERSION
         # $NF refers to the last feild split by white spaces
@@ -194,7 +196,7 @@ task freyja_demix {
         
         freyja demix --eps 0.01 --covcut 10 \
             ~{solver_command}  \
-            --barcodes ./freyja_db/usher_barcodes.csv \
+            --barcodes ./freyja_db/usher_barcodes~{barcode_extension} \
             --meta ./freyja_db/curated_lineages.json \
             --confirmedonly ~{variants} ~{depth} \
             --output ~{sample_name}_demixed.tsv
