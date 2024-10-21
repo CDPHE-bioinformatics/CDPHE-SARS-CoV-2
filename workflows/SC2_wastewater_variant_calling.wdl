@@ -18,15 +18,12 @@ workflow SC2_wastewater_variant_calling {
 
         # python scripts
         File version_capture_wwt_variant_calling_py
-
-        String choose_freyja_version = '1.5.1'
-        String demix_solver = 'ECOS'
     }
 
     # secret variables
     String project_name = project_name_array[0]
-    String out_dir = out_dir_array[0] 
-    String outdirpath = out_dir + 'waste_water_variant_calling/' + choose_freyja_version + '/' + demix_solver
+    String out_dir = out_dir_array[0]
+    String outdirpath = sub(out_dir, "/$", "")
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
         call add_RG {
@@ -47,9 +44,7 @@ workflow SC2_wastewater_variant_calling {
             input:
                 variants = variant_calling.variants,
                 depth = variant_calling.depth,
-                sample_name = id_bam.left,
-                demix_solver = demix_solver,
-                choose_freyja_version = choose_freyja_version
+                sample_name = id_bam.left
         }
         
         call mutations_tsv {
@@ -62,8 +57,7 @@ workflow SC2_wastewater_variant_calling {
 
     call freyja_aggregate {
         input:
-            demix = freyja_demix.demix, 
-            choose_freyja_version = choose_freyja_version
+            demix = freyja_demix.demix
     }
 
     call combine_mutations_tsv {
@@ -185,7 +179,7 @@ task freyja_demix {
 
     command <<<
         freyja --version | awk '{print $NF}' | tee VERSION
-        # $NF refers to the last feild split by white spaces
+        # $NF refers to the last field split by white spaces
 
         #get updated lineages for demixing
         mkdir ./freyja_db
@@ -194,12 +188,7 @@ task freyja_demix {
         #creates a temp file with the same name as the intended output file that will get output in case of failure or overwritten in case of sucess
         echo -e "\t~{sample_name}\nsummarized\tLowCov\nlineages\tLowCov\nabundances\tLowCov\nresid\tLowCov\ncoverage\tLowCov" > ~{sample_name}_demixed.tsv
         
-        freyja demix --eps 0.01 --covcut 10 \
-            ~{solver_command}  \
-            --barcodes ./freyja_db/usher_barcodes~{barcode_extension} \
-            --meta ./freyja_db/curated_lineages.json \
-            --confirmedonly ~{variants} ~{depth} \
-            --output ~{sample_name}_demixed.tsv
+        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.feather --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
     >>>
 
     output {
@@ -208,7 +197,7 @@ task freyja_demix {
     }
 
     runtime {
-        docker: "staphb/freyja:~{choose_freyja_version}"
+        docker: "staphb/freyja:1.5.2"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -244,7 +233,6 @@ task mutations_tsv {
 task freyja_aggregate {
     input {
         Array[File] demix
-        String choose_freyja_version
     }
 
     command <<<
@@ -258,7 +246,7 @@ task freyja_aggregate {
     }
 
     runtime {
-        docker: "staphb/freyja:~{choose_freyja_version}"
+        docker: "staphb/freyja:1.5.2"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
