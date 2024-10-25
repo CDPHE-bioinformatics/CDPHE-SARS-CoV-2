@@ -326,7 +326,7 @@ task transfer_outputs {
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/freyja/
         gsutil -m cp ~{demix_aggregated} ~{outdirpath}
-        gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}
+        # gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}
         gsutil -m cp ~{version_capture_wwt_variant_calling} ~{outdirpath}/summary_results/
 
         transferdate=`date`
