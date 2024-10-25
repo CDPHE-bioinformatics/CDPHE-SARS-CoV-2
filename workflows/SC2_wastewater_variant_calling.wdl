@@ -170,12 +170,7 @@ task freyja_demix {
         String sample_name
         File variants
         File depth
-        String demix_solver
-        String choose_freyja_version
     }
-
-    String solver_command = if (choose_freyja_version == '1.5.1') then '--solver ~{demix_solver}' else ''
-    String barcode_extension = if (choose_freyja_version == '1.5.1') then '.feather' else '.csv'
 
     command <<<
         freyja --version | awk '{print $NF}' | tee VERSION
