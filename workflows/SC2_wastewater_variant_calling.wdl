@@ -317,11 +317,11 @@ task transfer_outputs {
     }
 
     command <<<
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/freyja/
-        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/freyja/
-        gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/freyja/
-        gsutil -m cp ~{demix_aggregated} ~{outdirpath}
-        # gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}
+        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
+        gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
+        gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}/waste_water_variant_calling/
         gsutil -m cp ~{version_capture_wwt_variant_calling} ~{outdirpath}/summary_results/
 
         transferdate=`date`
