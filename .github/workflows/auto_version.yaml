@@ -28,6 +28,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
         DRY_RUN: true
+        DEFAULT_BUMP: patch
     - name: update files with bumped version from tag-action dry run
       run: |
         NEXT_VERSION=${{ steps.tag_action_dry_run.outputs.new_tag }}
@@ -45,3 +46,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
+        DEFAULT_BUMP: patch
