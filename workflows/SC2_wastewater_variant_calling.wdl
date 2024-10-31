@@ -18,12 +18,13 @@ workflow SC2_wastewater_variant_calling {
 
         # python scripts
         File version_capture_wwt_variant_calling_py
-    }
 
+    }
     # secret variables
     String project_name = project_name_array[0]
     String out_dir = out_dir_array[0]
     String outdirpath = sub(out_dir, "/$", "")
+
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
         call add_RG {
@@ -32,12 +33,14 @@ workflow SC2_wastewater_variant_calling {
                 bam = id_bam.right
         }
 
+
         call variant_calling {
             input:
                 bam = add_RG.rgbam,
                 ref = covid_genome,
                 ref_gff = covid_gff,
                 sample_name = id_bam.left
+
         }
 
         call freyja_demix {
@@ -79,6 +82,8 @@ workflow SC2_wastewater_variant_calling {
             freyja_version = select_all(freyja_demix.freyja_version)[0],
             analysis_date = workflow_version_capture.analysis_date,
             workflow_version_path = workflow_version_capture.workflow_version_path
+            
+
     }
 
     call transfer_outputs {
@@ -111,8 +116,12 @@ task add_RG {
     }
 
     command <<<
+
+        # grab samtools version
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION
+
         samtools addreplacerg -r ID:~{sample_name} -r LB:L1 -r SM:~{sample_name} -o ~{sample_name}_addRG.bam ~{bam}
+
     >>>
 
     output {
@@ -152,6 +161,7 @@ task variant_calling {
         File depth = "~{sample_name}_depth.tsv"
         String samtools_version_andersenlabapps = read_string("VERSION_samtools")
         String ivar_version = read_string("VERSION_ivar")
+
     }
 
      runtime {
@@ -173,8 +183,9 @@ task freyja_demix {
     }
 
     command <<<
+
         freyja --version | awk '{print $NF}' | tee VERSION
-        # $NF refers to the last field split by white spaces
+        # $NF refers to the last feild split by white spaces
 
         #get updated lineages for demixing
         mkdir ./freyja_db
@@ -183,7 +194,8 @@ task freyja_demix {
         #creates a temp file with the same name as the intended output file that will get output in case of failure or overwritten in case of sucess
         echo -e "\t~{sample_name}\nsummarized\tLowCov\nlineages\tLowCov\nabundances\tLowCov\nresid\tLowCov\ncoverage\tLowCov" > ~{sample_name}_demixed.tsv
         
-        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.feather --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
+        freyja demix --eps 0.01 --covcut 10 --barcodes ./freyja_db/usher_barcodes.csv --meta ./freyja_db/curated_lineages.json --confirmedonly ~{variants} ~{depth} --output ~{sample_name}_demixed.tsv
+
     >>>
 
     output {
@@ -192,7 +204,7 @@ task freyja_demix {
     }
 
     runtime {
-        docker: "staphb/freyja:1.5.2"
+        docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -231,9 +243,11 @@ task freyja_aggregate {
     }
 
     command <<<
+
         mkdir demix_outputs
         mv ~{sep=' ' demix} demix_outputs/
         freyja aggregate demix_outputs/ --output demix_aggregated.tsv
+
     >>>
 
     output {
@@ -241,7 +255,7 @@ task freyja_aggregate {
     }
 
     runtime {
-        docker: "staphb/freyja:1.5.2"
+        docker: "staphb/freyja:1.4.7"
         memory: "32 GB"
         cpu: 8
         disks: "local-disk 200 SSD"
@@ -254,8 +268,10 @@ task combine_mutations_tsv {
     }
 
     command <<<
+        
         # combine the coutns and frequency files for all samples into one
         awk 'FNR==1 && NR!=1{next;}{print}' ~{sep=' ' mutations} >> combined_mutations.tsv
+    
     >>>
 
     output {
@@ -283,6 +299,7 @@ task create_version_capture_file {
     }
 
     command <<<
+    
         python ~{version_capture_wwt_variant_calling_py} \
         --project_name "~{project_name}" \
         --samtools_version_staphb "~{samtools_version_staphb}" \
@@ -291,6 +308,7 @@ task create_version_capture_file {
         --freyja_version "~{freyja_version}" \
         --analysis_date "~{analysis_date}" \
         --workflow_version "~{workflow_version_path}"
+
     >>>
 
     output {
@@ -298,10 +316,12 @@ task create_version_capture_file {
     }
 
     runtime {
+
       docker: "mchether/py3-bio:v4"
       memory: "1 GB"
       cpu: 4
       disks: "local-disk 10 SSD"
+
     }
 }
 
@@ -314,9 +334,12 @@ task transfer_outputs {
         File combined_mutations_tsv
         File version_capture_wwt_variant_calling
         String outdirpath
+
     }
 
+
     command <<<
+
         gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
         gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
