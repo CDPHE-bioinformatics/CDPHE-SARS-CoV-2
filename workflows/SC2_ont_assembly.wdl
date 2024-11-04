@@ -337,7 +337,7 @@ task Medaka {
         String medaka_model
     }
 
-    String docker = "staphb/artic:1.2.4-1.11.1"
+    String docker = "staphb/artic:v1.2.4-1.12.0"
 
     command <<<
 
