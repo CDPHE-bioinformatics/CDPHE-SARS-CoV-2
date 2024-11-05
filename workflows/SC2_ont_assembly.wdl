@@ -354,7 +354,7 @@ task Medaka {
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
-        echo $model > VERSION_medaka_model
+        echo $medaka_model > VERSION_medaka_model
 
     >>>
 
