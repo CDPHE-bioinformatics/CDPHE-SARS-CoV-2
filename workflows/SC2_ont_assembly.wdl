@@ -75,6 +75,7 @@ workflow SC2_ont_assembly {
     call Medaka{
         input:
             filtered_reads = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq]),
+            fastq_file = Demultiplex.guppy_demux_fastq[0],
             sample_name = sample_name,
             index_1_id = index_1_id,
             medaka_model = medaka_model
@@ -335,6 +336,7 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
+        File fastq_file  # need unzipped FASTQ with original header for model detection
         String? medaka_model
     }
 
@@ -344,7 +346,7 @@ task Medaka {
 
         # Auto-detect Medaka model from FASTQ if not provided
         if [[ -z "~{medaka_model}" ]]; then
-            medaka_model_path=$(medaka tools resolve_model --auto_model consensus ~{filtered_reads})
+            medaka_model_path=$(medaka tools resolve_model --auto_model consensus ~{fastq_file})
             medaka_model=$(basename $medaka_model_path '_model.tar.gz')
         else
             medaka_model="~{medaka_model}"
