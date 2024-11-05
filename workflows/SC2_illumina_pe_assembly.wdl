@@ -215,7 +215,7 @@ task seqyclean {
 
     command <<<
 
-        seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_1} -2 ~{fastq_2} -c ~{contam} -o ~{sample_name}_clean
+        seqyclean -minlen 25 -qual 30 30 -gz -1 ~{fastq_1} -2 ~{fastq_2} -c ~{contam} -o ~{sample_name}_clean
 
         # grab seqyclean version 
         seqyclean -h | awk '/Version/ {print $2}' | tee VERSION
