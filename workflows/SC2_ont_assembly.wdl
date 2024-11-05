@@ -12,7 +12,7 @@ workflow SC2_ont_assembly {
         String    index_1_id
         String    primer_set
         String    barcode_kit
-        String    medaka_model
+        String?    medaka_model
         Boolean  scrub_reads
         File?    scrub_genome_index
         File    covid_genome
@@ -142,6 +142,7 @@ workflow SC2_ont_assembly {
         Demultiplex.guppy_version_info,
         Medaka.artic_version_info,
         Medaka.medaka_version_info,
+        Medaka.medaka_model_version_info,
         Bam_stats.samtools_version_info,
         Scaffold.pyscaf_version_info,
         get_primer_site_variants.bcftools_version_info,
@@ -334,17 +335,26 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
-        String medaka_model
+        String? medaka_model
     }
 
     String docker = "staphb/artic:v1.2.4-1.12.0"
 
     command <<<
 
-        artic minion --medaka --medaka-model ~{medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        # Auto-detect Medaka model from FASTQ if not provided
+        if [[ -z "~{medaka_model}" ]]; then
+            medaka_model_path=$(medaka tools resolve_model --auto_model consensus ~{filtered_reads})
+            medaka_model=$(basename $model_path '_model.tar.gz')
+        else
+            medaka_model="~{medaka_model}"
+        fi
+
+        artic minion --medaka --medaka-model ${medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
+        echo $model > VERSION_medaka_model
 
     >>>
 
@@ -366,6 +376,12 @@ task Medaka {
             software: "medaka",
             docker: docker,
             version: read_string("VERSION_medaka")
+        }
+
+        VersionInfo medaka_model_version_info = object {
+            software: "medaka_model"
+            docker: docker,
+            version: read_string("VERSION_medaka_model")
         }
     }
 
