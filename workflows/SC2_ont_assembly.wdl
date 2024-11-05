@@ -379,7 +379,7 @@ task Medaka {
         }
 
         VersionInfo medaka_model_version_info = object {
-            software: "medaka_model"
+            software: "medaka_model",
             docker: docker,
             version: read_string("VERSION_medaka_model")
         }
