@@ -389,7 +389,8 @@ task Medaka {
         docker: docker
         memory: "16 GB"
         cpu: 8
-        disks: "local-disk 200 SSD"
+        disks: "local-disk 100 SSD"
+        bootDiskSizeGb: 15
         preemptible: 0
     }
 }
