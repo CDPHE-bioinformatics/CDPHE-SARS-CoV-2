@@ -345,7 +345,7 @@ task Medaka {
         # Auto-detect Medaka model from FASTQ if not provided
         if [[ -z "~{medaka_model}" ]]; then
             medaka_model_path=$(medaka tools resolve_model --auto_model consensus ~{filtered_reads})
-            medaka_model=$(basename $model_path '_model.tar.gz')
+            medaka_model=$(basename $medaka_model_path '_model.tar.gz')
         else
             medaka_model="~{medaka_model}"
         fi
