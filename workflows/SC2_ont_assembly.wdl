@@ -390,7 +390,7 @@ task Medaka {
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
-        bootDiskSizeGb: 15
+        bootDiskSizeGb: 15  # Since Terra allocating 0 GB for docker container for some reason
         preemptible: 0
     }
 }
