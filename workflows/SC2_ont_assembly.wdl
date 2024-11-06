@@ -12,7 +12,7 @@ workflow SC2_ont_assembly {
         String    index_1_id
         String    primer_set
         String    barcode_kit
-        String    medaka_model
+        String?    medaka_model
         Boolean  scrub_reads
         File?    scrub_genome_index
         File    covid_genome
@@ -75,6 +75,7 @@ workflow SC2_ont_assembly {
     call Medaka{
         input:
             filtered_reads = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq]),
+            fastq_file = Demultiplex.guppy_demux_fastq[0],
             sample_name = sample_name,
             index_1_id = index_1_id,
             medaka_model = medaka_model
@@ -142,6 +143,7 @@ workflow SC2_ont_assembly {
         Demultiplex.guppy_version_info,
         Medaka.artic_version_info,
         Medaka.medaka_version_info,
+        Medaka.medaka_model_version_info,
         Bam_stats.samtools_version_info,
         Scaffold.pyscaf_version_info,
         get_primer_site_variants.bcftools_version_info,
@@ -334,17 +336,27 @@ task Medaka {
         String index_1_id
         String sample_name
         File filtered_reads
-        String medaka_model
+        File fastq_file  # need unzipped FASTQ with original header for model detection
+        String? medaka_model
     }
 
-    String docker = "staphb/artic:1.2.4-1.11.1"
+    String docker = "staphb/artic:1.2.4-1.12.0"
 
     command <<<
 
-        artic minion --medaka --medaka-model ~{medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        # Auto-detect Medaka model from FASTQ if not provided
+        if [[ -z "~{medaka_model}" ]]; then
+            medaka_model_path=$(medaka tools resolve_model --auto_model consensus ~{fastq_file})
+            medaka_model=$(basename $medaka_model_path '_model.tar.gz')
+        else
+            medaka_model="~{medaka_model}"
+        fi
+
+        artic minion --medaka --medaka-model ${medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
+        echo $medaka_model > VERSION_medaka_model
 
     >>>
 
@@ -367,6 +379,12 @@ task Medaka {
             docker: docker,
             version: read_string("VERSION_medaka")
         }
+
+        VersionInfo medaka_model_version_info = object {
+            software: "medaka_model",
+            docker: docker,
+            version: read_string("VERSION_medaka_model")
+        }
     }
 
     runtime {
@@ -374,6 +392,7 @@ task Medaka {
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
+        bootDiskSizeGb: 15  # Since Terra allocating 0 GB for docker container for some reason
         preemptible: 0
     }
 }
