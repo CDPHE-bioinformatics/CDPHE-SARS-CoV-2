@@ -277,7 +277,7 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | `sample_name`              | this.{entity_name}\_id                   |
 | `scrub_reads`              | `true` or `false`                        |
 | `scrub_genome_index`       | workspace.hostile_human_t2t_hla_fa_gz (if using read scrubbing) |
-| `medaka_model`             | example: "r1041_e82_400bps_hac_v4.2.0"   |
+| `medaka_model`             | (optional, leave blank for auto-detection) example: "r1041_e82_400bps_hac_v4.2.0"   |
 | `barcode_kit`              | example: "SQK-NBD114-96"                 |
 | `version_capture_py`       | workspace.version_capture_py             |
 
