@@ -352,7 +352,7 @@ task Medaka {
             medaka_model="~{medaka_model}"
         fi
 
-        artic minion --medaka --medaka-model ${medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion --medaka --medaka-model ${medaka_model} --normalise 200 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
 
         artic -v > VERSION_artic
         medaka --version | tee VERSION_medaka
