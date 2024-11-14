@@ -344,7 +344,7 @@ task call_consensus_artic {
         File bed
     }
 
-    String docker = "quay.io/artic/fieldbioinformatics:1.5.2"
+    String docker = "quay.io/artic/fieldbioinformatics:1.5.3"
 
     command <<<
 
