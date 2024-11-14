@@ -12,7 +12,7 @@ workflow SC2_ont_assembly {
         String    index_1_id
         String    primer_set
         String    barcode_kit
-        String?    medaka_model
+        String?    model
         Boolean  scrub_reads
         File?    scrub_genome_index
         File    covid_genome
@@ -72,18 +72,20 @@ workflow SC2_ont_assembly {
         }
     }
 
-    call Medaka{
+    call call_consensus_artic{
         input:
             filtered_reads = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq]),
             fastq_file = Demultiplex.guppy_demux_fastq[0],
             sample_name = sample_name,
             index_1_id = index_1_id,
-            medaka_model = medaka_model
+            model = model,
+            ref = covid_genome,
+            bed = primer_bed,
     }
 
-    Boolean consensus_defined = defined(Medaka.consensus)
+    Boolean consensus_defined = defined(call_consensus_artic.consensus)
     if (consensus_defined) {
-        Float consensus_size = size(Medaka.consensus)
+        Float consensus_size = size(call_consensus_artic.consensus)
         Boolean empty_fasta = if (consensus_size < 30) then true else false
 
         if (empty_fasta) {
@@ -97,8 +99,8 @@ workflow SC2_ont_assembly {
 
     call Bam_stats {
         input:
-            bam = Medaka.trimsort_bam,
-            bai = Medaka.trimsort_bai,
+            bam = call_consensus_artic.trimsort_bam,
+            bai = call_consensus_artic.trimsort_bai,
             sample_name = sample_name,
             index_1_id = index_1_id,
             s_gene_amplicons = s_gene_amplicons,
@@ -111,7 +113,7 @@ workflow SC2_ont_assembly {
             sample_name = sample_name,
             index_1_id = index_1_id,
             ref = covid_genome,
-            fasta = Medaka.consensus
+            fasta = call_consensus_artic.consensus
     }
 
     call rename_fasta {
@@ -129,8 +131,8 @@ workflow SC2_ont_assembly {
 
     call get_primer_site_variants {
         input:
-            variants = Medaka.variants,
-            variants_index = Medaka.variants_index,
+            variants = call_consensus_artic.variants,
+            variants_index = call_consensus_artic.variants_index,
             sample_name = sample_name,
             s_gene_primer_bed = s_gene_primer_bed
     }
@@ -141,9 +143,9 @@ workflow SC2_ont_assembly {
 
     Array[VersionInfo] version_array = [
         Demultiplex.guppy_version_info,
-        Medaka.artic_version_info,
-        Medaka.medaka_version_info,
-        Medaka.medaka_model_version_info,
+        call_consensus_artic.artic_version_info,
+        call_consensus_artic.clair3_version_info,
+        call_consensus_artic.model_version_info,
         Bam_stats.samtools_version_info,
         Scaffold.pyscaf_version_info,
         get_primer_site_variants.bcftools_version_info,
@@ -166,8 +168,8 @@ workflow SC2_ont_assembly {
         input:
         outdirpath = outdirpath,
         fastq_scrubbed = hostile.fastq1_scrubbed,
-        trimsort_bam = Medaka.trimsort_bam,
-        trimsort_bai = Medaka.trimsort_bai,
+        trimsort_bam = call_consensus_artic.trimsort_bam,
+        trimsort_bai = call_consensus_artic.trimsort_bai,
         flagstat_out = Bam_stats.flagstat_out,
         samstats_out = Bam_stats.stats_out,
         covhist_out = Bam_stats.covhist_out,
@@ -175,7 +177,7 @@ workflow SC2_ont_assembly {
         depth_out = Bam_stats.depth_out,
         cov_s_gene_out = Bam_stats.cov_s_gene_out,
         cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
-        variants = Medaka.variants,
+        variants = call_consensus_artic.variants,
         renamed_consensus = rename_fasta.renamed_consensus,
         primer_site_variants = get_primer_site_variants.primer_site_variants,
         version_capture_ont_assembly = task_version_capture.version_capture_file
@@ -188,9 +190,9 @@ workflow SC2_ont_assembly {
         Int? human_reads_removed = hostile.human_reads_removed
         Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
         File filtered_fastq = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq])
-        File sorted_bam = Medaka.sorted_bam
-        File trimsort_bam = Medaka.trimsort_bam
-        File trimsort_bai = Medaka.trimsort_bai
+        File sorted_bam = call_consensus_artic.sorted_bam
+        File trimsort_bam = call_consensus_artic.trimsort_bam
+        File trimsort_bai = call_consensus_artic.trimsort_bai
         File flagstat_out = Bam_stats.flagstat_out
         File samstats_out = Bam_stats.stats_out
         File covhist_out = Bam_stats.covhist_out
@@ -198,8 +200,8 @@ workflow SC2_ont_assembly {
         File depth_out = Bam_stats.depth_out
         File cov_s_gene_out = Bam_stats.cov_s_gene_out
         File cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out
-        File variants = Medaka.variants
-        File consensus = Medaka.consensus
+        File variants = call_consensus_artic.variants
+        File consensus = call_consensus_artic.consensus
         File scaffold_consensus = Scaffold.scaffold_consensus
         File renamed_consensus = rename_fasta.renamed_consensus
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
@@ -331,32 +333,44 @@ task Read_Filtering {
     }
 }
 
-task Medaka {
+task call_consensus_artic {
     input {
         String index_1_id
         String sample_name
+        String? model
         File filtered_reads
         File fastq_file  # need unzipped FASTQ with original header for model detection
-        String? medaka_model
+        File ref
+        File bed
     }
 
-    String docker = "staphb/artic:1.2.4-1.12.0"
+    String docker = "quay.io/artic/fieldbioinformatics:1.5.2"
 
     command <<<
 
-        # Auto-detect Medaka model from FASTQ if not provided
-        if [[ -z "~{medaka_model}" ]]; then
-            medaka_model_path=$(medaka tools resolve_model --auto_model consensus ~{fastq_file})
-            medaka_model=$(basename $medaka_model_path '_model.tar.gz')
+        # Auto-detect model from FASTQ if not provided
+        if [[ -z "~{model}" ]]; then
+            model=$(
+                python -c \
+                "import artic.utils; \
+                model_dict = artic.utils.choose_model(\"~{fastq_file}\"); \
+                print(model_dict['name'])"
+            )
         else
-            medaka_model="~{medaka_model}"
+            model="~{model}"
         fi
 
-        artic minion --medaka --medaka-model ${medaka_model} --normalise 20000 --threads 8 --read-file ~{filtered_reads} nCoV-2019 ~{sample_name}_~{index_1_id}
+        artic minion \
+            --model "${model}" \
+            --normalise 20000 \
+            --read-file "~{filtered_reads}" \
+            --ref "~{ref}" \
+            --bed "~{bed}" \
+            "~{sample_name}_${index_1_id}"
 
         artic -v > VERSION_artic
-        medaka --version | tee VERSION_medaka
-        echo $medaka_model > VERSION_medaka_model
+        run_clair3.sh --version | tee VERSION_clair3
+        echo "${model}" > VERSION_model
 
     >>>
 
@@ -374,16 +388,16 @@ task Medaka {
             version: read_string("VERSION_artic")
         }
 
-        VersionInfo medaka_version_info = object {
-            software: "medaka",
+        VersionInfo clair3_version_info = object {
+            software: "clair3",
             docker: docker,
-            version: read_string("VERSION_medaka")
+            version: read_string("VERSION_clair3")
         }
 
-        VersionInfo medaka_model_version_info = object {
-            software: "medaka_model",
+        VersionInfo model_version_info = object {
+            software: "model",
             docker: docker,
-            version: read_string("VERSION_medaka_model")
+            version: read_string("VERSION_model")
         }
     }
 
