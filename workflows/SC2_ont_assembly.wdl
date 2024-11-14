@@ -367,7 +367,7 @@ task call_consensus_artic {
             --read-file "~{filtered_reads}" \
             --ref "~{ref}" \
             --bed "~{bed}" \
-            "~{sample_name}_${index_1_id}"
+            "~{sample_name}_~{index_1_id}"
 
         artic -v > VERSION_artic
         run_clair3.sh --version | tee VERSION_clair3
