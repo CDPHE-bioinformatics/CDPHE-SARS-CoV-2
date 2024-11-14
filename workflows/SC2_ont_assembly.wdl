@@ -344,7 +344,8 @@ task call_consensus_artic {
         File bed
     }
 
-    String docker = "quay.io/artic/fieldbioinformatics:1.5.3"
+    # sha256 corresponds to v1.5.3, using the version was not working on Terra
+    String docker = "quay.io/artic/fieldbioinformatics@sha256:d0e382d7e2f4747f56709cc724ecd46f02e4b8c395d3e52cfbee43a5ae7a6b33"
 
     command <<<
 
