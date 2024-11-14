@@ -350,6 +350,7 @@ task call_consensus_artic {
     command <<<
 
         PATH=$PATH:/opt/conda/bin
+        export CONDA_PREFIX=/opt/conda
 
         # Auto-detect model from FASTQ if not provided
         if [[ -z "~{model}" ]]; then
