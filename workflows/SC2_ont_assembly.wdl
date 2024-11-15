@@ -345,7 +345,7 @@ task call_consensus_artic {
     }
 
     # sha256 corresponds to v1.5.3, using the version was not working on Terra
-    String docker = "quay.io/artic/fieldbioinformatics@sha256:d0e382d7e2f4747f56709cc724ecd46f02e4b8c395d3e52cfbee43a5ae7a6b33"
+    String docker = "sambaird/artic/fieldbioinformatics:1.5.3"
 
     command <<<
 
@@ -407,6 +407,7 @@ task call_consensus_artic {
 
     runtime {
         docker: docker
+        docker_user: "root"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
