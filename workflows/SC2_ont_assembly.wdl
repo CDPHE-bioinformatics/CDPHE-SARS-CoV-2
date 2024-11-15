@@ -345,7 +345,7 @@ task call_consensus_artic {
     }
 
     # sha256 corresponds to v1.5.3, using the version was not working on Terra
-    String docker = "sambaird/artic/fieldbioinformatics:1.5.3"
+    String docker = "sambaird/artic-fieldbioinformatics:1.5.3"
 
     command <<<
 
