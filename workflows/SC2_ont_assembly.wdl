@@ -344,7 +344,7 @@ task call_consensus_artic {
         File bed
     }
 
-    String docker = "sambaird/artic-fieldbioinformatics:1.5.3"
+    String docker = "cdphelabbioinformatics/artic-fieldbioinformatics:1.5.3"
 
     command <<<
 
@@ -406,7 +406,6 @@ task call_consensus_artic {
 
     runtime {
         docker: docker
-        docker_user: "root"
         memory: "16 GB"
         cpu: 8
         disks: "local-disk 100 SSD"
