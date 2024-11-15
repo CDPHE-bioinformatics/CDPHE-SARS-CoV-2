@@ -230,9 +230,8 @@ This workflow was developed for the assembly of Oxford Nanopore Technology (ONT)
 2. Demuliplex basecalled fastq files using guppy_barcoder
 3. Perform quality filtering using guppyplex
     - guppyplex includes a min length parameter set to 400 and a max length set to 700 for Artic primers and a min length set ot 400 and a max length set to 1500 for midnight primers.
-4. Run artic minion --medaka for variant calling and to generate a consensus flagstat_out
-    - medaka uses minimap2 by default to align reads to the SARS-CoV-2 reference genome
-    - the default parameter in medaka for base calling is 20x depth and at least 60% of reads containing the base call
+4. Run artic minion for variant calling and to generate a consensus flagstat_out
+    - align reads to the SARS-CoV-2 reference genome
 5. Scaffold assembly with pyScaf
     - this step ensures a single continuous consensus sequence with only one sequence in the consensus fasta file
 6. Rename consensus to CO-CDPHE-{sample_id}
@@ -277,7 +276,7 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | `sample_name`              | this.{entity_name}\_id                   |
 | `scrub_reads`              | `true` or `false`                        |
 | `scrub_genome_index`       | workspace.hostile_human_t2t_hla_fa_gz (if using read scrubbing) |
-| `medaka_model`             | (optional, leave blank for auto-detection) example: "r1041_e82_400bps_hac_v4.2.0"   |
+| `model`             | (optional, leave blank for auto-detection) example: "r1041_e82_400bps_hac_v4.2.0"   |
 | `barcode_kit`              | example: "SQK-NBD114-96"                 |
 | `version_capture_py`       | workspace.version_capture_py             |
 
@@ -291,12 +290,12 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | hostile                     | hostile                                    | `fastq_files_scrubbed` | file                                                                                                                    |
 | hostile                     | hostile                                    | `human_reads_removed`  | integer                                                                                                                 |
 | hostile                     | hostile                                    | `human_reads_removed_porportion` | floating-point number                                                                                         |
-| Medaka                      | medaka and minimap2                        | `sorted_bam`           | file                                                                                                                    |
-| Medaka                      | medaka and minimap2                        | `trim_sort_bam`        | file                                                                                                                    |
-| Medaka                      | medaka and minimap2                        | `trimsort_bai`         | file                                                                                                                    |
-| Medaka                      | medaka and minimap2                        | `variants`             | file                                                                                                                    |
-| Medaka                      | medaka and minimap2                        | `consensus`            | file                                                                                                                    |
-| Medaka                      | medaka and minimap2                        | `assembler_version`    | string recording the version for artic medaka, this information is used later for submitting to public repositories.    |
+| call_consensus_artic        | artic minion                               | `sorted_bam`           | file                                                                                                                    |
+| call_consensus_artic        | artic minion                               | `trim_sort_bam`        | file                                                                                                                    |
+| call_consensus_artic        | artic minion                               | `trimsort_bai`         | file                                                                                                                    |
+| call_consensus_artic        | artic minion                               | `variants`             | file                                                                                                                    |
+| call_consensus_artic        | artic minion                               | `consensus`            | file                                                                                                                    |
+| call_consensus_artic        | artic minion                               | `assembler_version`    | string recording the version for artic medaka, this information is used later for submitting to public repositories.    |
 | Bam_stats                   | samtools flagstat, stats, percent_coverage | `flagstat_out`         | file                                                                                                                    |
 | Bam_stats                   | samtools flagstat, stats, percent_coverage | `stats_out`            | file                                                                                                                    |
 | Bam_stats                   | samtools flagstat, stats, percent_coverage | `covhist_out`          | file                                                                                                                    |
