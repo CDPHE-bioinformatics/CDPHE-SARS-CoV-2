@@ -3,6 +3,7 @@ version 1.0
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
 import "../tasks/hostile_task.wdl" as hostile_task
+import "../tasks/transfer_task.wdl" as transfer_task
 
 workflow SC2_ont_assembly {
 
@@ -164,23 +165,35 @@ workflow SC2_ont_assembly {
             version_capture_py = version_capture_py
     }
 
-    call transfer {
+
+    call transfer_task.transfer {
         input:
         outdirpath = outdirpath,
-        fastq_scrubbed = hostile.fastq1_scrubbed,
-        trimsort_bam = call_consensus_artic.trimsort_bam,
-        trimsort_bai = call_consensus_artic.trimsort_bai,
-        flagstat_out = Bam_stats.flagstat_out,
-        samstats_out = Bam_stats.stats_out,
-        covhist_out = Bam_stats.covhist_out,
-        cov_out = Bam_stats.cov_out,
-        depth_out = Bam_stats.depth_out,
-        cov_s_gene_out = Bam_stats.cov_s_gene_out,
-        cov_s_gene_amplicons_out = Bam_stats.cov_s_gene_amplicons_out,
-        variants = call_consensus_artic.variants,
-        renamed_consensus = rename_fasta.renamed_consensus,
-        primer_site_variants = get_primer_site_variants.primer_site_variants,
-        version_capture_ont_assembly = task_version_capture.version_capture_file
+        file_to_subdir = {
+            call_consensus_artic.trimsort_bam: "alignments",
+            call_consensus_artic.trimsort_bai: "alignments",
+            Bam_stats.flagstat_out: "bam_stats",
+            Bam_stats.stats_out: "bam_stats",
+            Bam_stats.covhist_out: "bam_stats",
+            Bam_stats.cov_out: "bam_stats",
+            Bam_stats.depth_out: "bam_stats",
+            Bam_stats.cov_s_gene_out: "bam_stats",
+            Bam_stats.cov_s_gene_amplicons_out: "bam_stats",
+            call_consensus_artic.variants: "variants",
+            get_primer_site_variants.primer_site_variants: "primer_site_variants",
+            rename_fasta.renamed_consensus: "assemblies",
+            task_version_capture.version_capture_file: "summary_results"
+        }
+    }
+
+    if (scrub_reads) {
+        call transfer_task.transfer as transfer_scrubbed_reads {
+            input:
+            outdirpath = outdirpath,
+            file_to_subdir = {
+                select_first([hostile.fastq1_scrubbed]): "fastq_scrubbed",
+            }
+        }
     }
 
     output {
@@ -207,7 +220,7 @@ workflow SC2_ont_assembly {
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
         File version_capture_ont_assembly = task_version_capture.version_capture_file
-        String transfer_date_assembly = transfer.transfer_date_assembly
+        String transfer_date_assembly = select_first([transfer.transfer_date, transfer_scrubbed_reads.transfer_date])
     }
 }
 
@@ -658,60 +671,5 @@ task get_primer_site_variants {
         memory: "1 GB"
         cpu: 1
         disks: "local-disk 10 SSD"
-    }
-}
-
-task transfer {
-    input {
-        String outdirpath
-        File? fastq_scrubbed
-        File trimsort_bam
-        File trimsort_bai
-        File flagstat_out
-        File samstats_out
-        File covhist_out
-        File cov_out
-        File depth_out
-        File cov_s_gene_out
-        File cov_s_gene_amplicons_out
-        File variants
-        File renamed_consensus
-        File primer_site_variants
-        File version_capture_ont_assembly
-    }
-
-    command <<<
-
-        gsutil -m cp ~{fastq_scrubbed} ~{outdirpath}/fastq_scrubbed/
-        gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
-        gsutil -m cp ~{trimsort_bai} ~{outdirpath}/alignments/
-        gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{samstats_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{depth_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{variants} ~{outdirpath}/variants/
-        gsutil -m cp ~{primer_site_variants} ~{outdirpath}/primer_site_variants/
-        gsutil -m cp ~{renamed_consensus} ~{outdirpath}/assemblies/
-        gsutil -m cp ~{version_capture_ont_assembly} ~{outdirpath}/summary_results/
-
-
-        transferdate=`date`
-        echo $transferdate | tee TRANSFERDATE
-
-    >>>
-
-
-    output {
-        String transfer_date_assembly = read_string("TRANSFERDATE")
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "2 GB"
-        cpu: 4
-        disks: "local-disk 100 SSD"
     }
 }
