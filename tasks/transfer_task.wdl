@@ -9,7 +9,7 @@ task transfer {
 
     command <<<
         while IFS=$'\t' read -r file subdir; do
-            gsutil -m cp "$file" "~{outdirpath}/${subdir}"
+            gsutil -m cp "$file" "~{outdirpath}/${subdir}/"
         done < ~{write_map(file_to_subdir)}
     
         transferdate=$(date)
