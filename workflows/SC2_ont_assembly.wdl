@@ -165,7 +165,6 @@ workflow SC2_ont_assembly {
             version_capture_py = version_capture_py
     }
 
-
     call transfer_task.transfer {
         input:
         outdirpath = outdirpath,
@@ -186,15 +185,6 @@ workflow SC2_ont_assembly {
         }
     }
 
-    if (scrub_reads) {
-        call transfer_task.transfer as transfer_scrubbed_reads {
-            input:
-            outdirpath = outdirpath,
-            file_to_subdir = {
-                select_first([hostile.fastq1_scrubbed]): "fastq_scrubbed",
-            }
-        }
-    }
 
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
