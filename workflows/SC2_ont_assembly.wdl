@@ -165,24 +165,26 @@ workflow SC2_ont_assembly {
             version_capture_py = version_capture_py
     }
 
+    Map[File, String] file_to_subdir = {
+        call_consensus_artic.trimsort_bam: "alignments",
+        call_consensus_artic.trimsort_bai: "alignments",
+        Bam_stats.flagstat_out: "bam_stats",
+        Bam_stats.stats_out: "bam_stats",
+        Bam_stats.covhist_out: "bam_stats",
+        Bam_stats.cov_out: "bam_stats",
+        Bam_stats.depth_out: "bam_stats",
+        Bam_stats.cov_s_gene_out: "bam_stats",
+        Bam_stats.cov_s_gene_amplicons_out: "bam_stats",
+        call_consensus_artic.variants: "variants",
+        get_primer_site_variants.primer_site_variants: "primer_site_variants",
+        rename_fasta.renamed_consensus: "assemblies",
+        task_version_capture.version_capture_file: "summary_results"
+    }
+
     call transfer_task.transfer {
         input:
         outdirpath = outdirpath,
-        file_to_subdir = {
-            call_consensus_artic.trimsort_bam: "alignments",
-            call_consensus_artic.trimsort_bai: "alignments",
-            Bam_stats.flagstat_out: "bam_stats",
-            Bam_stats.stats_out: "bam_stats",
-            Bam_stats.covhist_out: "bam_stats",
-            Bam_stats.cov_out: "bam_stats",
-            Bam_stats.depth_out: "bam_stats",
-            Bam_stats.cov_s_gene_out: "bam_stats",
-            Bam_stats.cov_s_gene_amplicons_out: "bam_stats",
-            call_consensus_artic.variants: "variants",
-            get_primer_site_variants.primer_site_variants: "primer_site_variants",
-            rename_fasta.renamed_consensus: "assemblies",
-            task_version_capture.version_capture_file: "summary_results"
-        }
+        file_to_subdir = file_to_subdir
     }
 
 
