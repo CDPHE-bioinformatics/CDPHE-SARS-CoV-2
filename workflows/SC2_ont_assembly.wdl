@@ -181,17 +181,11 @@ workflow SC2_ont_assembly {
         task_version_capture.version_capture_file: "summary_results"
     }
 
-    call transfer_task.transfer {
+    call transfer_task.transfer as transfer {
         input:
         outdirpath = outdirpath,
         file_to_subdir = file_to_subdir
     }
-
-    call finished {
-        input:
-            transfer.transfer_date
-    }
-
 
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
@@ -671,11 +665,3 @@ task get_primer_site_variants {
     }
 }
 
-task finished {
-    input:
-        String transfer_date
-
-    command <<<
-    echo $transfer_date
-    >>>
-}
