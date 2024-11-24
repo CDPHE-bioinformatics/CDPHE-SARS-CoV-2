@@ -220,7 +220,7 @@ workflow SC2_ont_assembly {
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
         File primer_site_variants = get_primer_site_variants.primer_site_variants
         File version_capture_ont_assembly = task_version_capture.version_capture_file
-        String transfer_date_assembly = transfer_date
+        String transfer_date_assembly = transfer.transfer_date
     }
 }
 
