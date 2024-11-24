@@ -3,18 +3,17 @@ version 1.0
 task transfer {
     input {
         String outdirpath
-        Map[File, String] file_to_subdir
+        Array[File] file_to_subdir
     }
 
 
     command <<<
-        while IFS=$'\t' read -r file subdir; do
-            gsutil -m cp "$file" "~{outdirpath}/${subdir}/"
-        done < ~{write_map(file_to_subdir)}
+        for file in ~{sep=' ' file_to_subdir}; do
+            gsutil -m cp "$file" "~{outdirpath}/all_files/"
+        done
     
         transferdate=$(date)
         echo "$transferdate" | tee TRANSFERDATE
-
     >>>
 
 
