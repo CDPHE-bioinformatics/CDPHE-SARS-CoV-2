@@ -165,20 +165,20 @@ workflow SC2_ont_assembly {
             version_capture_py = version_capture_py
     }
 
-    Array[File] file_to_subdir = [
-        call_consensus_artic.trimsort_bam,
-        call_consensus_artic.trimsort_bai,
-        Bam_stats.flagstat_out,
-        Bam_stats.stats_out,
-        Bam_stats.covhist_out,
-        Bam_stats.cov_out,
-        Bam_stats.depth_out,
-        Bam_stats.cov_s_gene_out,
-        Bam_stats.cov_s_gene_amplicons_out,
-        call_consensus_artic.variants,
-        get_primer_site_variants.primer_site_variants,
-        rename_fasta.renamed_consensus,
-        task_version_capture.version_capture_file
+    Array[Array[String]] file_to_subdir = [
+        [call_consensus_artic.trimsort_bam, "alignments"],
+        [call_consensus_artic.trimsort_bai, "alignments"],
+        [Bam_stats.flagstat_out, "bam_stats"],
+        [Bam_stats.stats_out, "bam_stats"],
+        [Bam_stats.covhist_out, "bam_stats"],
+        [Bam_stats.cov_out, "bam_stats"],
+        [Bam_stats.depth_out, "bam_stats"],
+        [Bam_stats.cov_s_gene_out, "bam_stats"],
+        [Bam_stats.cov_s_gene_amplicons_out, "bam_stats"],
+        [call_consensus_artic.variants, "variants"],
+        [get_primer_site_variants.primer_site_variants, "primer_site_variants"],
+        [rename_fasta.renamed_consensus, "assemblies"],
+        [task_version_capture.version_capture_file, "summary_results]"
     ]
 
     call transfer_task.transfer as transfer {
