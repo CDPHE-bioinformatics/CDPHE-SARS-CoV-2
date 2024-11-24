@@ -187,6 +187,11 @@ workflow SC2_ont_assembly {
         file_to_subdir = file_to_subdir
     }
 
+    call finished {
+        input:
+            transfer.transfer_date
+    }
+
 
     output {
         File index_1_id_summary = Demultiplex.index_1_id_summary
@@ -664,4 +669,13 @@ task get_primer_site_variants {
         cpu: 1
         disks: "local-disk 10 SSD"
     }
+}
+
+task finished {
+    input:
+        String transfer_date
+
+    command <<<
+    echo $transfer_date
+    >>>
 }
