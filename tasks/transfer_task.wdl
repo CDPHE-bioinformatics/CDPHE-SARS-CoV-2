@@ -28,12 +28,14 @@ task transfer {
         done < "$file_to_subdir_tsv"
         existing_files=( "$(gsutil ls "${destinations[@]}")" )
 
-        if [[ ~{overwrite} = true && ${#existing_files[@]} == 0 ]]; then
+        # existing_files will contain one element even if 'empty'
+        if [[ ~{overwrite} = true && ${#existing_files[@]} == 1 ]]; then
             echo "Error: overwrite set to true but no files at destination to overwrite" >&2
             exit 1
         fi
-        if [[ ~{overwrite} = false && ${#existing_files[@]} != 0 ]]; then
+        if [[ ~{overwrite} = false && ${#existing_files[@]} != 1 ]]; then
             echo "Error: overwrite set to false but files exist at destination" >&2
+            echo "Existing files: ${existing_files[@]}" >&2
             exit 1
         fi
 
