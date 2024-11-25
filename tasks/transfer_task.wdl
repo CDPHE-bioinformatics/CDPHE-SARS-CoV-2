@@ -41,7 +41,7 @@ task transfer {
 
         while IFS=$'\t' read -r file subdir; do
             if [[ -n "$file" ]]; then
-                gsutil -m cp "$file" "~{outdirpath}/${subdir}/"
+                gsutil cp "$file" "~{outdirpath}/${subdir}/"
             fi
         done < "$file_to_subdir_tsv"
 
@@ -58,7 +58,7 @@ task transfer {
     runtime {
         docker: "theiagen/utility:1.0"
         memory: "2 GB"
-        cpu: 4
+        cpu: 1
         disks: "local-disk 100 SSD"
     }
 }
