@@ -22,14 +22,12 @@ workflow SC2_ont_assembly {
         File    s_gene_amplicons
         String  project_name
         String  out_dir
+        Boolean overwrite
 
         # python scripts
         File    calc_percent_coverage_py
         File    version_capture_py
     }
-
-    # secret variables
-    String outdirpath = sub(out_dir, "/$", "")
 
     call ListFastqFiles {
         input:
@@ -165,26 +163,26 @@ workflow SC2_ont_assembly {
             version_capture_py = version_capture_py
     }
 
-    Array[Array[String]] file_to_subdir = [
-        [call_consensus_artic.trimsort_bam, "alignments"],
-        [call_consensus_artic.trimsort_bai, "alignments"],
-        [Bam_stats.flagstat_out, "bam_stats"],
-        [Bam_stats.stats_out, "bam_stats"],
-        [Bam_stats.covhist_out, "bam_stats"],
-        [Bam_stats.cov_out, "bam_stats"],
-        [Bam_stats.depth_out, "bam_stats"],
-        [Bam_stats.cov_s_gene_out, "bam_stats"],
-        [Bam_stats.cov_s_gene_amplicons_out, "bam_stats"],
-        [call_consensus_artic.variants, "variants"],
-        [get_primer_site_variants.primer_site_variants, "primer_site_variants"],
-        [rename_fasta.renamed_consensus, "assemblies"],
-        [task_version_capture.version_capture_file, "summary_results"]
-    ]
-
-    call transfer_task.transfer as transfer {
+    call transfer_task.transfer {
         input:
-        outdirpath = outdirpath,
-        file_to_subdir = file_to_subdir
+            out_dir = out_dir,
+            overwrite = overwrite,
+            file_to_subdir = [
+                [select_first([hostile.fastq1_scrubbed, ""]), "fastq_scrubbed"],
+                [call_consensus_artic.trimsort_bam, "alignments"],
+                [call_consensus_artic.trimsort_bai, "alignments"],
+                [Bam_stats.flagstat_out, "bam_stats"],
+                [Bam_stats.stats_out, "bam_stats"],
+                [Bam_stats.covhist_out, "bam_stats"],
+                [Bam_stats.cov_out, "bam_stats"],
+                [Bam_stats.depth_out, "bam_stats"],
+                [Bam_stats.cov_s_gene_out, "bam_stats"],
+                [Bam_stats.cov_s_gene_amplicons_out, "bam_stats"],
+                [call_consensus_artic.variants, "variants"],
+                [get_primer_site_variants.primer_site_variants, "primer_site_variants"],
+                [rename_fasta.renamed_consensus, "assemblies"],
+                [task_version_capture.version_capture_file, "summary_results"]
+            ]
     }
 
     output {
