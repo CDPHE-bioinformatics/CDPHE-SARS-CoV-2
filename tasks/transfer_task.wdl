@@ -43,7 +43,7 @@ task transfer {
             exit 1
         fi
 
-        while IFS=$'\t' read -r file subdir; do
+        while IFS='|' read -r file subdir; do
             if [[ -n "$file" ]]; then
                 gsutil cp "$file" "~{outdirpath}/${subdir}/"
             fi
