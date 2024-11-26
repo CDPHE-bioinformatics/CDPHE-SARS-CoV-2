@@ -159,30 +159,33 @@ workflow SC2_ont_assembly {
             workflow_name = "SC2_ont_assembly",
             workflow_version_path = workflow_version_capture.workflow_version_path,
             project_name = project_name,
+            sample_name = sample_name,
             analysis_date = workflow_version_capture.analysis_date,
             version_capture_py = version_capture_py
     }
+
+    FilesToSubdirs files_to_subdirs = object { files_to_subdirs: [
+        (hostile.fastq1_scrubbed, "fastq_scrubbed"),
+        (call_consensus_artic.trimsort_bam, "alignments"),
+        (call_consensus_artic.trimsort_bai, "alignments"),
+        (Bam_stats.flagstat_out, "bam_stats"),
+        (Bam_stats.stats_out, "bam_stats"),
+        (Bam_stats.covhist_out, "bam_stats"),
+        (Bam_stats.cov_out, "bam_stats"),
+        (Bam_stats.depth_out, "bam_stats"),
+        (Bam_stats.cov_s_gene_out, "bam_stats"),
+        (Bam_stats.cov_s_gene_amplicons_out, "bam_stats"),
+        (call_consensus_artic.variants, "variants"),
+        (get_primer_site_variants.primer_site_variants, "primer_site_variants"),
+        (rename_fasta.renamed_consensus, "assemblies"),
+        (task_version_capture.version_capture_file, "version_capture")
+    ]}
 
     call transfer_task.transfer {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
-            file_to_subdir = [
-                [select_first([hostile.fastq1_scrubbed, ""]), "fastq_scrubbed"],
-                [call_consensus_artic.trimsort_bam, "alignments"],
-                [call_consensus_artic.trimsort_bai, "alignments"],
-                [Bam_stats.flagstat_out, "bam_stats"],
-                [Bam_stats.stats_out, "bam_stats"],
-                [Bam_stats.covhist_out, "bam_stats"],
-                [Bam_stats.cov_out, "bam_stats"],
-                [Bam_stats.depth_out, "bam_stats"],
-                [Bam_stats.cov_s_gene_out, "bam_stats"],
-                [Bam_stats.cov_s_gene_amplicons_out, "bam_stats"],
-                [call_consensus_artic.variants, "variants"],
-                [get_primer_site_variants.primer_site_variants, "primer_site_variants"],
-                [rename_fasta.renamed_consensus, "assemblies"],
-                [task_version_capture.version_capture_file, "summary_results"]
-            ]
+            files_to_subdirs = files_to_subdirs
     }
 
     output {
@@ -225,7 +228,7 @@ task ListFastqFiles {
     >>>
 
     output {
-        Array[File] fastq_files = read_lines("fastq_files.txt")
+        Array[String] fastq_files = read_lines("fastq_files.txt")
     }
 
     runtime {
