@@ -46,8 +46,7 @@ task transfer {
         existing_files=( $(gsutil ls "${destinations[@]}") )
 
         if [[ ~{overwrite} = true && ${#existing_files[@]} == 0 ]]; then
-            echo "Error: overwrite set to true but no files at destination to overwrite" >&2
-            exit 1
+            echo "Warning: overwrite set to true but no files at destination to overwrite" >&2
         fi
         if [[ ~{overwrite} = false && ${#existing_files[@]} != 0 ]]; then
             echo "Error: overwrite set to false but files exist at destination" >&2
