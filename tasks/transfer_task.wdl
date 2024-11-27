@@ -18,7 +18,6 @@ task transfer {
     command <<<
         files_to_subdirs_json=~{write_json(files_to_subdirs)}
 
-
         if grep -q '|' "$files_to_subdirs_json"; then
             echo "Error: filename or directory cannot contain '|' character" >&2
             exit 1
@@ -44,7 +43,6 @@ task transfer {
                 destinations+=( "$destination" )
             fi
         done < files_to_subdirs.txt
-        cat files_to_subdirs.txt
         existing_files=( $(gsutil ls "${destinations[@]}") )
 
         if [[ ~{overwrite} = true && ${#existing_files[@]} == 0 ]]; then
