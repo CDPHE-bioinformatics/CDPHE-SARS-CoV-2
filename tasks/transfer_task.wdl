@@ -57,7 +57,13 @@ task transfer {
 
         while IFS='|' read -r file subdir; do
             if [[ -n "$file" ]]; then
-                gsutil cp "$file" "~{outdirpath}/${subdir}/"
+                if [[ ~{overwrite} = true ]]; then
+                    gsutil cp "$file" "~{outdirpath}/${subdir}/"
+
+                # Do not clobber in case of TOCTOU race condition
+                else
+                    gsutil cp -n "$file" "~{outdirpath}/${subdir}/"
+                fi
             fi
         done < files_to_subdirs.txt
 
