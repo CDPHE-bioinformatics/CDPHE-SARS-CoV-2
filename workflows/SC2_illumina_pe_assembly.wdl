@@ -134,35 +134,38 @@ workflow SC2_illumina_pe_assembly {
             analysis_date = workflow_version_capture.analysis_date,
             version_capture_py = version_capture_py
     }
+    
+    FilesToSubdirs files_to_subdirs = object { files_to_subdirs: [
+            (hostile.fastq1_scrubbed, "fastq_scrubbed"),
+            (hostile.fastq2_scrubbed, "fastq_scrubbed"),
+            (seqyclean.seqyclean_summary, "seqyclean"),
+            (fastqc_raw.fastqc1_html, "fastqc"),
+            (fastqc_raw.fastqc1_zip, "fastqc"),
+            (fastqc_raw.fastqc2_html, "fastqc"),
+            (fastqc_raw.fastqc2_zip, "fastqc"),
+            (fastqc_cleaned.fastqc1_html, "fastqc"),
+            (fastqc_cleaned.fastqc1_zip, "fastqc"),
+            (fastqc_cleaned.fastqc2_html, "fastqc"),
+            (fastqc_cleaned.fastqc2_zip, "fastqc"),
+            (ivar_trim.trimsort_bam, "alignments"),
+            (ivar_trim.trimsort_bamindex, "alignments"),
+            (ivar_var.var_out, "variants"),
+            (bam_stats.flagstat_out, "bam_stats"),
+            (bam_stats.stats_out, "bam_stats"),
+            (bam_stats.covhist_out, "bam_stats"),
+            (bam_stats.cov_out, "bam_stats"),
+            (bam_stats.depth_out, "bam_stats"),
+            (bam_stats.cov_s_gene_out, "bam_stats"),
+            (bam_stats.cov_s_gene_amplicons_out, "bam_stats"),
+            (rename_fasta.renamed_consensus, "assemblies"),
+            (task_version_capture.version_capture_file, "sample_version_capture")
+    ]}
+
     call transfer_task.transfer {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
-            file_to_subdir = [
-                [select_first([hostile.fastq1_scrubbed, ""]), "scrubbed_fastq"],
-                [select_first([hostile.fastq2_scrubbed, ""]), "scrubbed_fastq"],
-                [seqyclean.seqyclean_summary, "seqyclean"],
-                [fastqc_raw.fastqc1_html, "fastqc"],
-                [fastqc_raw.fastqc1_zip, "fastqc"],
-                [fastqc_raw.fastqc2_html, "fastqc"],
-                [fastqc_raw.fastqc2_zip, "fastqc"],
-                [fastqc_cleaned.fastqc1_html, "fastqc"],
-                [fastqc_cleaned.fastqc1_zip, "fastqc"],
-                [fastqc_cleaned.fastqc2_html, "fastqc"],
-                [fastqc_cleaned.fastqc2_zip, "fastqc"],
-                [ivar_trim.trimsort_bam, "alignments"],
-                [ivar_trim.trimsort_bamindex, "alignments"],
-                [ivar_var.var_out, "variants"],
-                [bam_stats.flagstat_out, "bam_stats"],
-                [bam_stats.stats_out, "bam_stats"],
-                [bam_stats.covhist_out, "bam_stats"],
-                [bam_stats.cov_out, "bam_stats"],
-                [bam_stats.depth_out, "bam_stats"],
-                [bam_stats.cov_s_gene_out, "bam_stats"],
-                [bam_stats.cov_s_gene_amplicons_out, "bam_stats"],
-                [rename_fasta.renamed_consensus, "assemblies"],
-                [task_version_capture.version_capture_file, "summary_results"]
-            ]
+            files_to_subdirs = files_to_subdirs
     }
 
     output {

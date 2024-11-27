@@ -2,6 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
+import "../tasks/transfer_task.wdl" as transfer_task
 
 workflow SC2_wastewater_variant_calling {
 
@@ -10,6 +11,7 @@ workflow SC2_wastewater_variant_calling {
         Array[File] trimsort_bam
         Array[String] sample_name
         Array[String] out_dir_array
+        Boolean overwrite
         Array[String] project_name_array
 
         # reference files/workspace data
@@ -23,7 +25,6 @@ workflow SC2_wastewater_variant_calling {
     # secret variables
     String project_name = project_name_array[0]
     String out_dir = out_dir_array[0]
-    String outdirpath = sub(out_dir, "/$", "")
 
     scatter (id_bam in zip(sample_name, trimsort_bam)) {
         call add_RG {
@@ -53,6 +54,20 @@ workflow SC2_wastewater_variant_calling {
                 sample_name = id_bam.left,
                 project_name = project_name
         }
+
+
+        FilesToSubdirs sample_files_to_subdirs = object { files_to_subdirs: [
+            (variant_calling.variants, "freyja"),
+            (variant_calling.depth, "freyja"),
+            (freyja_demix.demix, "freyja")
+        ]}
+
+        call transfer_task.transfer as transfer_sample_results {
+            input:
+                out_dir = out_dir,
+                overwrite = overwrite,
+                files_to_subdirs = sample_files_to_subdirs
+        }
     }
 
     call freyja_aggregate {
@@ -81,15 +96,17 @@ workflow SC2_wastewater_variant_calling {
             workflow_version_path = workflow_version_capture.workflow_version_path
     }
 
-    call transfer_outputs {
+    FilesToSubdirs set_files_to_subdirs = object { files_to_subdirs: [
+        (combine_mutations_tsv.combined_mutations_tsv, "waste_water_variant_calling"),
+        (freyja_aggregate.demix_aggregated, "waste_water_variant_calling"),
+        (create_version_capture_file.version_capture_wwt_variant_calling, "summary_results")
+    ]}
+
+    call transfer_task.transfer as transfer_set_results {
         input:
-            variants = variant_calling.variants,
-            depth = variant_calling.depth,
-            demix = freyja_demix.demix,
-            combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv,
-            demix_aggregated = freyja_aggregate.demix_aggregated,
-            outdirpath = outdirpath,
-            version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
+            out_dir = out_dir,
+            overwrite = overwrite,
+            files_to_subdirs = set_files_to_subdirs
     }
 
     output {
@@ -100,7 +117,7 @@ workflow SC2_wastewater_variant_calling {
         File demix_aggregated = freyja_aggregate.demix_aggregated
         File combined_mutations_tsv = combine_mutations_tsv.combined_mutations_tsv
         File version_capture_wwt_variant_calling = create_version_capture_file.version_capture_wwt_variant_calling
-        String transfer_date_wwt_variant_calling = transfer_outputs.transfer_date_wwt_variant_calling
+        String transfer_date_wwt_variant_calling = transfer_set_results.transfer_date
     }
 }
 
@@ -302,40 +319,5 @@ task create_version_capture_file {
       memory: "1 GB"
       cpu: 4
       disks: "local-disk 10 SSD"
-    }
-}
-
-task transfer_outputs {
-    input {
-        Array[File] variants
-        Array[File] depth
-        Array[File] demix
-        File demix_aggregated
-        File combined_mutations_tsv
-        File version_capture_wwt_variant_calling
-        String outdirpath
-    }
-
-    command <<<
-        gsutil -m cp ~{sep=' ' variants} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' depth} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{sep=' ' demix} ~{outdirpath}/waste_water_variant_calling/freyja/
-        gsutil -m cp ~{demix_aggregated} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{combined_mutations_tsv} ~{outdirpath}/waste_water_variant_calling/
-        gsutil -m cp ~{version_capture_wwt_variant_calling} ~{outdirpath}/summary_results/
-
-        transferdate=`date`
-        echo $transferdate | tee TRANSFERDATE
-    >>>
-
-    output {
-        String transfer_date_wwt_variant_calling = read_string("TRANSFERDATE")
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "1 GB"
-        cpu: 1
-        disks: "local-disk 50 SSD"
     }
 }

@@ -178,7 +178,7 @@ workflow SC2_ont_assembly {
         (call_consensus_artic.variants, "variants"),
         (get_primer_site_variants.primer_site_variants, "primer_site_variants"),
         (rename_fasta.renamed_consensus, "assemblies"),
-        (task_version_capture.version_capture_file, "version_capture")
+        (task_version_capture.version_capture_file, "sample_version_capture")
     ]}
 
     call transfer_task.transfer {

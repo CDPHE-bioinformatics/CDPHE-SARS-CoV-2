@@ -1,12 +1,16 @@
 version 1.0
 
+import "../tasks/transfer_task.wdl" as transfer_task
+
 workflow SC2_novel_mutations {
 
     input {
         Array[String] project_names_array
         Array[File] combined_mutations_array
         String covwwt_path 
+        Boolean overwite_project_and_set
         String historical_data_path
+        Boolean overwrite_historical
         String today
         Array[String] sites_to_drop
 
@@ -39,37 +43,50 @@ workflow SC2_novel_mutations {
     Boolean novel_mutations_defined = defined(append_new_mutations.novel_mutations)
     
 
-    scatter (project in append_new_mutations.project_unique_mutations) {
-        call transfer_project_outputs {
+    scatter (project_file in append_new_mutations.project_unique_mutations) {
+
+        String project_name = basename(project_file, "_unique_mutations.tsv")
+        String project_out_dir = "~{covwwt_path}/~{project_name}/terra_outputs"
+
+        FilesToSubdirs project_files_to_subdirs = object { files_to_subdirs: [
+            (project_file, "novel_mutations")
+        ]}
+
+        call transfer_task.transfer as transfer_project_outputs {
             input:
-                project_unique_mutations = project,
-                covwwt_path = covwwt_path
+                out_dir = project_out_dir,
+                overwrite = overwite_project_and_set,
+                files_to_subdirs = project_files_to_subdirs
         }    
     }
 
     String covwwt_novel_mutations_path = "~{covwwt_path}/novel_mutations/"
 
-    if (recurrent_mutations_defined) {
-        call transfer_optional_output as transfer_recurrent_mutations {
+    if (recurrent_mutations_defined || novel_mutations_defined) {
+
+        FilesToSubdirs set_files_to_subdirs = object { files_to_subdirs: [
+            (append_new_mutations.recurrent_mutations, ""),
+            (append_new_mutations.novel_mutations, "")
+        ]}
+
+        call transfer_task.transfer as transfer_set_outputs {
             input:
-                file_to_transfer = append_new_mutations.recurrent_mutations,
-                transfer_path = covwwt_novel_mutations_path
+                out_dir = covwwt_novel_mutations_path,
+                overwrite = overwite_project_and_set,
+                files_to_subdirs = set_files_to_subdirs
         }
     }
 
-    if (novel_mutations_defined) {
-        call transfer_optional_output as transfer_novel_mutations {
-            input: 
-                file_to_transfer = append_new_mutations.novel_mutations,
-                transfer_path = covwwt_novel_mutations_path
-        }
-    }
+    FilesToSubdirs historical_files_to_subdirs = object { files_to_subdirs: [
+        (append_new_mutations.historical_full_updated, ""),
+        (append_new_mutations.historical_unique_updated, "")
+    ]}
 
-    call transfer_appended_outputs {
+    call transfer_task.transfer as transfer_appended_outputs {
         input:
-            historical_full_updated = append_new_mutations.historical_full_updated,
-            historical_unique_updated = append_new_mutations.historical_unique_updated,
-            historical_data_path = historical_data_path,
+            out_dir = historical_data_path,
+            overwrite = overwrite_historical,
+            files_to_subdirs = historical_files_to_subdirs
     }
 
     output {
@@ -79,6 +96,7 @@ workflow SC2_novel_mutations {
         Array[File]? project_missing_dates = append_new_mutations.project_missing_dates
         File? recurrent_mutations = append_new_mutations.recurrent_mutations
         File? novel_mutations = append_new_mutations.novel_mutations
+        String transfer_date_novel_mutations = transfer_appended_outputs.transfer_date
     }
 }
 
@@ -127,65 +145,5 @@ task append_new_mutations {
         memory: "1 GB"
         cpu: 4
         disks: "local-disk 10 SSD"
-    }
-}
-
-task transfer_project_outputs {
-    input {
-        File project_unique_mutations
-        String covwwt_path
-    }
-
-    String project_name = basename(project_unique_mutations, "_unique_mutations.tsv")
-
-    command <<<
-        gsutil -m cp ~{project_unique_mutations} ~{covwwt_path}/~{project_name}/terra_outputs/novel_mutations/
-    >>>
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "1 GB"
-        cpu: 1
-        disks: "local-disk 50 SSD"
-    }
-}
-
-task transfer_appended_outputs {
-
-    input {
-        File historical_full_updated
-        File historical_unique_updated
-        String historical_data_path
-    }
-
-    command <<<
-        gsutil -m cp ~{historical_full_updated} ~{historical_data_path}
-        gsutil -m cp ~{historical_unique_updated} ~{historical_data_path}
-    >>>
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "1 GB"
-        cpu: 1
-        disks: "local-disk 50 SSD"
-    }
-}
-
-task transfer_optional_output {
-
-    input {
-        File? file_to_transfer
-        String transfer_path
-    }
-
-    command <<<
-        gsutil -m cp ~{file_to_transfer} ~{transfer_path}
-    >>>
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "1 GB"
-        cpu: 1
-        disks: "local-disk 50 SSD"
     }
 }
