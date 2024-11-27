@@ -131,6 +131,7 @@ workflow SC2_illumina_pe_assembly {
             workflow_name = "SC2_illumina_pe_assembly",
             workflow_version_path = workflow_version_capture.workflow_version_path,
             project_name = project_name,
+            sample_name = sample_name,
             analysis_date = workflow_version_capture.analysis_date,
             version_capture_py = version_capture_py
     }
