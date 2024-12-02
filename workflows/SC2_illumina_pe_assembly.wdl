@@ -340,9 +340,9 @@ task align_reads {
         cpu:    2
         memory:    "12 GiB"
         disks:    "local-disk 1 HDD"
-        bootDiskSizeGb:    10
+        bootDiskSizeGb:    20
         preemptible:    0
-        maxRetries:    0
+        maxRetries:    2
         docker:    docker
     }
 }
