@@ -57,9 +57,9 @@ workflow SC2_wastewater_variant_calling {
 
 
         FilesToSubdirs sample_files_to_subdirs = object { files_to_subdirs: [
-            (variant_calling.variants, "wastewater_variant_calling/freyja"),
-            (variant_calling.depth, "wastewater_variant_calling/freyja"),
-            (freyja_demix.demix, "wastewater_variant_calling/freyja")
+            (variant_calling.variants, "waste_water_variant_calling/freyja"),
+            (variant_calling.depth, "waste_water_variant_calling/freyja"),
+            (freyja_demix.demix, "waste_water_variant_calling/freyja")
         ]}
 
         call transfer_task.transfer as transfer_sample_results {
