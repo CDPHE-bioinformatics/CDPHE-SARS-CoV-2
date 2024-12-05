@@ -40,6 +40,7 @@ task task_version_capture {
     String workflow_name
     String workflow_version_path
     String project_name
+    String? sample_name
     String analysis_date
     File version_capture_py
   }
@@ -52,11 +53,12 @@ task task_version_capture {
       --workflow_name ~{workflow_name} \
       --workflow_version ~{workflow_version_path} \
       --project_name ~{project_name} \
-      --analysis_date ~{analysis_date}
+      --analysis_date ~{analysis_date} \
+      ~{"--sample_name " + sample_name}
   >>>
 
   output {
-    File version_capture_file = "version_capture_${workflow_name}_${project_name}_${workflow_version_path}.csv"
+    File version_capture_file = "version_capture${"_" + sample_name}_${workflow_name}_${project_name}_${workflow_version_path}.csv"
   }
   runtime {
     memory: "1 GB"
