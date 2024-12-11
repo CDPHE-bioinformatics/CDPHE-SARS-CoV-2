@@ -40,7 +40,7 @@ task transfer {
                 # outfile.write(filename + '|' + pair['right'] + '\n')
                 filenames = pair['right']
                 subdir = pair['left']
-                destination = os.path.join(~{outdirpath}, subdir)
+                destination = os.path.join('~{outdirpath}', subdir)
                 if filenames:
                     command = ['gsutil', '-m', 'cp', filenames, destination]
                     subprocess.run(command)
