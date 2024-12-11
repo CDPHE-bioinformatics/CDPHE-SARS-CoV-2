@@ -3,7 +3,7 @@ version 1.0
 # workaround cromwell bug with write_json of Array
 # https://github.com/broadinstitute/cromwell/issues/4625
 struct FilesToSubdirs {
-    Array[Pair[Array[File?], String]] files_to_subdirs
+    Array[Pair[String, Array[File?]]] files_to_subdirs
 }
 
 task transfer {
@@ -11,7 +11,7 @@ task transfer {
         String out_dir
         Boolean overwrite
         Int cpu = 1
-        Map[String, Array[File?]] files_to_subdirs
+        FilesToSubdirs files_to_subdirs
     }
 
     String outdirpath = sub(out_dir, "/$", "")

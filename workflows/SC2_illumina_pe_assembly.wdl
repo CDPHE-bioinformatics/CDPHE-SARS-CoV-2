@@ -135,54 +135,32 @@ workflow SC2_illumina_pe_assembly {
             analysis_date = workflow_version_capture.analysis_date,
             version_capture_py = version_capture_py
     }
-    
-    files_to_subdir = {
-        "fastq_scrubbed": [
-            hostile.fastq1_scrubbed,
-            hostile.fastq2_scrubbed
-        ],
-        "seqyclean": [
-            seqyclean.seqyclean_summary
-        ],
-        "fastqc": [
-            fastqc_raw.fastqc1_html, 
-            fastqc_raw.fastqc1_zip, 
-            fastqc_raw.fastqc2_html,
-            fastqc_raw.fastqc2_zip,
-            fastqc_cleaned.fastqc1_html,
-            fastqc_cleaned.fastqc1_zip,
-            fastqc_cleaned.fastqc2_html,
-            fastqc_cleaned.fastqc2_zip
-        ],
-        "alignments": [
-            ivar_trim.trimsort_bam,
-            ivar_trim.trimsort_bamindex
-        ],
-        "variants": [
-            ivar_var.var_out
-        ],
-        "bam_stats": [
-            bam_stats.flagstat_out,
-            bam_stats.stats_out,
-            bam_stats.covhist_out,
-            bam_stats.cov_out,
-            bam_stats.depth_out,
-            bam_stats.cov_s_gene_out,
-            bam_stats.cov_s_gene_amplicons_out
-        ]
-        "assemblies": [
-            rename_fasta.renamed_consensus
-        ],
-        "sample_version_capture": [
-            task_version_capture.version_capture_file
-        ]
-    }
 
-    call transfer_task.transfer {
+    FilesToSubdirs files_to_subdirs = object { files_to_subdirs: [
+        ("fastq_scrubbed", [hostile.fastq1_scrubbed, hostile.fastq2_scrubbed]),
+        ("seqyclean", [seqyclean.seqyclean_summary]),
+        ("fastqc", [
+            fastqc_raw.fastqc1_html,fastqc_raw.fastqc1_zip,
+            fastqc_raw.fastqc2_html, fastqc_raw.fastqc2_zip,
+            fastqc_cleaned.fastqc1_html, fastqc_cleaned.fastqc1_zip,
+            fastqc_cleaned.fastqc2_html, fastqc_cleaned.fastqc2_zip
+        ]),
+        ("alignments", [ivar_trim.trimsort_bam,ivar_trim.trimsort_bamindex]),
+        ("variants", [ivar_var.var_out]),
+        ("bam_stats", [
+            bam_stats.flagstat_out, bam_stats.stats_out, bam_stats.covhist_out,
+            bam_stats.cov_out, bam_stats.depth_out, bam_stats.cov_s_gene_out,
+            bam_stats.cov_s_gene_amplicons_out
+        ]),
+        ("assemblies", [rename_fasta.renamed_consensus]),
+        ("sample_version_capture", [task_version_capture.version_capture_file])
+    ]}
+
+call transfer_task.transfer {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
-            files_to_subdir = files_to_subdir
+            files_to_subdirs = files_to_subdirs
     }
 
     output {
