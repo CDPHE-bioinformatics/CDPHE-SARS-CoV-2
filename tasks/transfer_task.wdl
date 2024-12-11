@@ -11,7 +11,7 @@ task transfer {
         String out_dir
         Boolean overwrite
         Int cpu = 1
-        FilesToSubdirs files_to_subdirs
+        Map[String, Array[File?]] files_to_subdirs
     }
 
     String outdirpath = sub(out_dir, "/$", "")
@@ -34,12 +34,12 @@ task transfer {
         with open("${files_to_subdirs_json}", 'r') as infile:
             if '|' in infile.read():
                 sys.exit('Error: filename or directory cannot contain "|" character')
-            pairs = json.load(infile)['files_to_subdirs']
+            pairs = json.load(infile)
             for pair in pairs:
                 # filename = pair['left'] if pair['left'] is not None else ''
                 # outfile.write(filename + '|' + pair['right'] + '\n')
-                filenames = pair['left']
-                subdir = pair['right']
+                filenames = pair['right']
+                subdir = pair['left']
                 destination = os.path.join(~{outdirpath}, subdir)
                 if filenames:
                     command = ['gsutil', '-m', 'cp', filenames, destination]
