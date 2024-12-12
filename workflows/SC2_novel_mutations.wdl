@@ -42,14 +42,14 @@ workflow SC2_novel_mutations {
     Boolean recurrent_mutations_defined = defined(append_new_mutations.recurrent_mutations)
     Boolean novel_mutations_defined = defined(append_new_mutations.novel_mutations)
     
-
+    # need to scatter project files transfer because out_dir varies
     scatter (project_file in append_new_mutations.project_unique_mutations) {
 
         String project_name = basename(project_file, "_unique_mutations.tsv")
         String project_out_dir = "~{covwwt_path}/~{project_name}/terra_outputs"
 
         SubdirsToFiles project_subdirs_to_files = object { subdirs_to_files: [
-            (project_file, "novel_mutations")
+            ("novel_mutations", [project_file])
         ]}
 
         call transfer_task.transfer as transfer_project_outputs {
@@ -65,8 +65,10 @@ workflow SC2_novel_mutations {
     if (recurrent_mutations_defined || novel_mutations_defined) {
 
         SubdirsToFiles set_subdirs_to_files = object { subdirs_to_files: [
-            (append_new_mutations.recurrent_mutations, ""),
-            (append_new_mutations.novel_mutations, "")
+            ("", 
+                [append_new_mutations.recurrent_mutations,
+                 append_new_mutations.novel_mutations]
+            )
         ]}
 
         call transfer_task.transfer as transfer_set_outputs {
@@ -78,8 +80,7 @@ workflow SC2_novel_mutations {
     }
 
     SubdirsToFiles historical_subdirs_to_files = object { subdirs_to_files: [
-        (append_new_mutations.historical_full_updated, ""),
-        (append_new_mutations.historical_unique_updated, "")
+        ("", [append_new_mutations.historical_unique_updated])
     ]}
 
     call transfer_task.transfer as transfer_appended_outputs {

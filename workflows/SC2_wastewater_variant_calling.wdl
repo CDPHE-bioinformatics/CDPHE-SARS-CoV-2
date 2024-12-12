@@ -54,20 +54,6 @@ workflow SC2_wastewater_variant_calling {
                 sample_name = id_bam.left,
                 project_name = project_name
         }
-
-
-        SubdirsToFiles sample_subdirs_to_files = object { subdirs_to_files: [
-            (variant_calling.variants, "waste_water_variant_calling/freyja"),
-            (variant_calling.depth, "waste_water_variant_calling/freyja"),
-            (freyja_demix.demix, "waste_water_variant_calling/freyja")
-        ]}
-
-        call transfer_task.transfer as transfer_sample_results {
-            input:
-                out_dir = out_dir,
-                overwrite = overwrite,
-                subdirs_to_files = sample_subdirs_to_files
-        }
     }
 
     call freyja_aggregate {
@@ -96,16 +82,22 @@ workflow SC2_wastewater_variant_calling {
             workflow_version_path = workflow_version_capture.workflow_version_path
     }
 
+    
     SubdirsToFiles set_subdirs_to_files = object { subdirs_to_files: [
-        (combine_mutations_tsv.combined_mutations_tsv, "waste_water_variant_calling"),
-        (freyja_aggregate.demix_aggregated, "waste_water_variant_calling"),
-        (create_version_capture_file.version_capture_wwt_variant_calling, "summary_results")
+        ("waste_water_variant_calling/freyja",
+            flatten([variant_calling.variants, variant_calling.depth,
+                     freyja_demix.demix])),
+        ("waste_water_variant_calling",
+            [combine_mutations_tsv.combined_mutations_tsv,
+             freyja_aggregate.demix_aggregated]),
+        ("summary_results", [create_version_capture_file.version_capture_wwt_variant_calling])
     ]}
 
     call transfer_task.transfer as transfer_set_results {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
+            cpu = 8,
             subdirs_to_files = set_subdirs_to_files
     }
 

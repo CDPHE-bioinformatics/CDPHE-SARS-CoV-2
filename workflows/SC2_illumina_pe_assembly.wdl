@@ -154,7 +154,7 @@ workflow SC2_illumina_pe_assembly {
         ("sample_version_capture", [task_version_capture.version_capture_file])
     ]}
 
-call transfer_task.transfer {
+    call transfer_task.transfer {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
