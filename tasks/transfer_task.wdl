@@ -46,7 +46,7 @@ task transfer {
                 destinations_dict[destination].extend(sources)
 
         # check if files already exist at the destination
-        command = ['gsutil', '-ls', *destinations]
+        command = ['gsutil', 'ls', *destinations]
         output = subprocess.run(command, capture_output=True, text=True)
         existing_files = output.stdout.splitlines()
         if overwrite and not existing_files:
