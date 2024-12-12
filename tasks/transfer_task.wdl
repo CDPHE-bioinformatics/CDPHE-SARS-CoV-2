@@ -19,11 +19,6 @@ task transfer {
     command <<<
         files_to_subdirs_json=~{write_json(files_to_subdirs)}
 
-        if grep -q '|' "$files_to_subdirs_json"; then
-            echo "Error: filename or directory cannot contain '|' character" >&2
-            exit 1
-        fi
-
         python3 <<CODE
 
         import json
@@ -31,58 +26,45 @@ task transfer {
         import subprocess
         import sys
 
-        with open("${files_to_subdirs_json}", 'r') as infile:
-            if '|' in infile.read():
-                sys.exit('Error: filename or directory cannot contain "|" character')
-            pairs = json.load(infile)
+        from collections import defaultdict
+
+        overwrite = True if '~{overwrite}' == 'true' else False
+
+        # map destination folders to corresponding source files
+        with open('${files_to_subdirs_json}', 'r') as infile:
+            pairs = json.load(infile)['files_to_subdirs']
+            destinations = []
+            destinations_dict = defaultdict(list)
             for pair in pairs:
-                # filename = pair['left'] if pair['left'] is not None else ''
-                # outfile.write(filename + '|' + pair['right'] + '\n')
-                filenames = pair['right']
                 subdir = pair['left']
+                sources = [s for s in pair['right'] if s is not None]
                 destination = os.path.join('~{outdirpath}', subdir)
-                if filenames:
-                    command = ['gsutil', '-m', 'cp', filenames, destination]
-                    subprocess.run(command)
+                filenames = [os.path.basename(s) for s in sources]
+                destination_files = [os.path.join(destination, f) for f in filenames]
+                destinations.extend(destination_files)
+                destinations_dict[destination].extend(sources)
+
+        # check if files already exist at the destination
+        command = ['gsutil', '-ls', *destinations]
+        output = subprocess.run(command, capture_output=True, text=True)
+        existing_files = output.stdout.splitlines()
+        if overwrite and not existing_files:
+            print('Warning: overwrite set to true but no files at destination to overwrite', file=sys.stderr)
+        if not overwrite and existing_files:
+            sys.exit(f'Error: overwrite set to false but files exist at the destination: {existing_files}')
+
+        # copy files
+        for destination in destinations_dict:
+            sources = destinations_dict[destination]
+            if sources:
+                clobber = '-n' if not overwrite else ''
+                command = ['gsutil', '-m', 'cp', clobber, *sources, destination]
+                subprocess.run(command)
 
         CODE
 
-        # # Check if files already exist at the destination
-        # declare -a destinations
-        # declare -a existing_files
-        # while IFS='|' read -r file subdir; do
-        #     if [[ -n "$file" ]]; then
-        #         filename=$(basename "$file")
-        #         destination="~{outdirpath}/${subdir}/${filename}"
-        #         destinations+=( "$destination" )
-        #     fi
-        # done < files_to_subdirs.txt
-        # existing_files=( $(gsutil ls "${destinations[@]}") )
-
-        # if [[ ~{overwrite} = true && ${#existing_files[@]} == 0 ]]; then
-        #     echo "Warning: overwrite set to true but no files at destination to overwrite" >&2
-        # fi
-        # if [[ ~{overwrite} = false && ${#existing_files[@]} != 0 ]]; then
-        #     echo "Error: overwrite set to false but files exist at destination" >&2
-        #     echo "Existing files: ${existing_files[@]}" >&2
-        #     exit 1
-        # fi
-
-        # while IFS='|' read -r file subdir; do
-        #     if [[ -n "$file" ]]; then
-        #         if [[ ~{overwrite} = true ]]; then
-        #             gsutil -m cp "$file" "~{outdirpath}/${subdir}/"
-
-        #         # Do not clobber in case of TOCTOU race condition
-        #         else
-        #             gsutil -m cp -n "$file" "~{outdirpath}/${subdir}/"
-        #         fi
-        #     fi
-        # done < files_to_subdirs.txt
-
         transferdate=$(date)
         echo "$transferdate" | tee TRANSFERDATE
-
     >>>
 
 
@@ -91,7 +73,7 @@ task transfer {
     }
 
     runtime {
-        docker: "theiagen/utility:1.0"
+        docker: "theiagen/utility:1.2"
         memory: "2 GB"
         cpu: cpu
         disks: "local-disk 100 SSD"
