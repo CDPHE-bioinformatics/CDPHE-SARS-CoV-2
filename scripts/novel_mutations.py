@@ -9,7 +9,9 @@ import numpy as np
 import argparse
 import sys
 import math
+import warnings
 
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def parse_arguments(args = sys.argv[1:]):
     parser = argparse.ArgumentParser()
@@ -365,7 +367,9 @@ def recurrent_mutations(df):
                            axis = 1, result_type = 'expand')
     df_recurrent_mutations = df_recurrent_mutations[df_recurrent_mutations.recurrent == True]
     df_recurrent_mutations.drop(columns = ['recurrent'], inplace = True)
-    df_recurrent_mutations.to_csv(f'recurrent_mutations_{today}.tsv', sep = '\t', index = False)
+    if df_recurrent_mutations.shape[0] > 0:
+        df_recurrent_mutations.to_csv(f'recurrent_mutations_{today}.tsv', 
+                                      sep = '\t', index = False)
     
     return 
 
@@ -395,6 +399,14 @@ def add_features_new_mutations(df, df_new_full, cols):
     gff_merge_cols = ['position', 'ref_nucl', 'alt_nucl', 'alt_aa', 'ref_aa', 'gff_feature']
     df = df.merge(df_new_full[gff_merge_cols].drop_duplicates(subset = subset_cols), how = 'left')
     
+    if df.shape[0] == 0: # there are no new mutations to add
+        df = pd.concat([df, pd.DataFrame(columns = ['mutation_type', 
+                                        'id_return', 'parent_id', 'parent', 
+                                        'parent_start', 'parent_end', 
+                                        'gene_coordinate', 'nuc_coordinate', 
+                                        'indel_length'])])
+        return df
+
     # Columns to calculate
     # type
     df['mutation_type'] = df.apply(lambda x: get_mutation_type(x['alt_nucl']), axis = 1)
