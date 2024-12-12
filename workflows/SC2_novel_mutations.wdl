@@ -48,7 +48,7 @@ workflow SC2_novel_mutations {
         String project_name = basename(project_file, "_unique_mutations.tsv")
         String project_out_dir = "~{covwwt_path}/~{project_name}/terra_outputs"
 
-        FilesToSubdirs project_files_to_subdirs = object { files_to_subdirs: [
+        SubdirsToFiles project_subdirs_to_files = object { subdirs_to_files: [
             (project_file, "novel_mutations")
         ]}
 
@@ -56,7 +56,7 @@ workflow SC2_novel_mutations {
             input:
                 out_dir = project_out_dir,
                 overwrite = overwite_project_and_set,
-                files_to_subdirs = project_files_to_subdirs
+                subdirs_to_files = project_subdirs_to_files
         }    
     }
 
@@ -64,7 +64,7 @@ workflow SC2_novel_mutations {
 
     if (recurrent_mutations_defined || novel_mutations_defined) {
 
-        FilesToSubdirs set_files_to_subdirs = object { files_to_subdirs: [
+        SubdirsToFiles set_subdirs_to_files = object { subdirs_to_files: [
             (append_new_mutations.recurrent_mutations, ""),
             (append_new_mutations.novel_mutations, "")
         ]}
@@ -73,11 +73,11 @@ workflow SC2_novel_mutations {
             input:
                 out_dir = covwwt_novel_mutations_path,
                 overwrite = overwite_project_and_set,
-                files_to_subdirs = set_files_to_subdirs
+                subdirs_to_files = set_subdirs_to_files
         }
     }
 
-    FilesToSubdirs historical_files_to_subdirs = object { files_to_subdirs: [
+    SubdirsToFiles historical_subdirs_to_files = object { subdirs_to_files: [
         (append_new_mutations.historical_full_updated, ""),
         (append_new_mutations.historical_unique_updated, "")
     ]}
@@ -86,7 +86,7 @@ workflow SC2_novel_mutations {
         input:
             out_dir = historical_data_path,
             overwrite = overwrite_historical,
-            files_to_subdirs = historical_files_to_subdirs
+            subdirs_to_files = historical_subdirs_to_files
     }
 
     output {

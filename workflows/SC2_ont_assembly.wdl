@@ -164,7 +164,7 @@ workflow SC2_ont_assembly {
             version_capture_py = version_capture_py
     }
 
-    FilesToSubdirs files_to_subdirs = object { files_to_subdirs: [
+    SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
         (hostile.fastq1_scrubbed, "fastq_scrubbed"),
         (call_consensus_artic.trimsort_bam, "alignments"),
         (call_consensus_artic.trimsort_bai, "alignments"),
@@ -185,7 +185,7 @@ workflow SC2_ont_assembly {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
-            files_to_subdirs = files_to_subdirs
+            subdirs_to_files = subdirs_to_files
     }
 
     output {

@@ -136,7 +136,7 @@ workflow SC2_illumina_pe_assembly {
             version_capture_py = version_capture_py
     }
 
-    FilesToSubdirs files_to_subdirs = object { files_to_subdirs: [
+    SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
         ("fastq_scrubbed", [hostile.fastq1_scrubbed, hostile.fastq2_scrubbed]),
         ("seqyclean", [seqyclean.seqyclean_summary]),
         ("fastqc", [
@@ -160,7 +160,7 @@ call transfer_task.transfer {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
-            files_to_subdirs = files_to_subdirs
+            subdirs_to_files = subdirs_to_files
     }
 
     output {

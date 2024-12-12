@@ -89,7 +89,7 @@ workflow SC2_lineage_calling_and_results {
             pangolin_lineage_csv = pangolin.lineage
     }
 
-    FilesToSubdirs files_to_subdirs = object { files_to_subdirs: [
+    SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
         (concatenate.cat_fastas, "multifasta"),
         (pangolin.lineage, "pangolin_out"),
         (nextclade.nextclade_json, "nextclade_out"),
@@ -104,7 +104,7 @@ workflow SC2_lineage_calling_and_results {
       input:
             out_dir = out_dir,
             overwrite = overwrite,
-            files_to_subdirs = files_to_subdirs
+            subdirs_to_files = subdirs_to_files
     }
 
     output {

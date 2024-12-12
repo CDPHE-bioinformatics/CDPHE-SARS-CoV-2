@@ -56,7 +56,7 @@ workflow SC2_wastewater_variant_calling {
         }
 
 
-        FilesToSubdirs sample_files_to_subdirs = object { files_to_subdirs: [
+        SubdirsToFiles sample_subdirs_to_files = object { subdirs_to_files: [
             (variant_calling.variants, "waste_water_variant_calling/freyja"),
             (variant_calling.depth, "waste_water_variant_calling/freyja"),
             (freyja_demix.demix, "waste_water_variant_calling/freyja")
@@ -66,7 +66,7 @@ workflow SC2_wastewater_variant_calling {
             input:
                 out_dir = out_dir,
                 overwrite = overwrite,
-                files_to_subdirs = sample_files_to_subdirs
+                subdirs_to_files = sample_subdirs_to_files
         }
     }
 
@@ -96,7 +96,7 @@ workflow SC2_wastewater_variant_calling {
             workflow_version_path = workflow_version_capture.workflow_version_path
     }
 
-    FilesToSubdirs set_files_to_subdirs = object { files_to_subdirs: [
+    SubdirsToFiles set_subdirs_to_files = object { subdirs_to_files: [
         (combine_mutations_tsv.combined_mutations_tsv, "waste_water_variant_calling"),
         (freyja_aggregate.demix_aggregated, "waste_water_variant_calling"),
         (create_version_capture_file.version_capture_wwt_variant_calling, "summary_results")
@@ -106,7 +106,7 @@ workflow SC2_wastewater_variant_calling {
         input:
             out_dir = out_dir,
             overwrite = overwrite,
-            files_to_subdirs = set_files_to_subdirs
+            subdirs_to_files = set_subdirs_to_files
     }
 
     output {
