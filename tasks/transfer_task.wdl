@@ -17,8 +17,8 @@ task transfer {
     String outdirpath = sub(out_dir, "/$", "")
 
     command <<<
+        set -euox pipefail
         subdirs_to_files_json=~{write_json(subdirs_to_files)}
-
 
         python3 <<CODE
 
