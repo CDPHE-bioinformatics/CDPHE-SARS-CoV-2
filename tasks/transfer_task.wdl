@@ -38,7 +38,7 @@ task transfer {
             destinations_dict = defaultdict(list)
             for pair in pairs:
                 subdir = pair['left']
-                sources = pair['right'] if not all(i is None for s in pair['right']) else []
+                sources = pair['right'] if not all(s is None for s in pair['right']) else []
                 destination = os.path.join('~{outdirpath}', subdir)
                 filenames = [os.path.basename(s) for s in sources]
                 destination_files = [os.path.join(destination, f) for f in filenames]
