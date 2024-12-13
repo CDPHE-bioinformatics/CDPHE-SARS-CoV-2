@@ -39,7 +39,7 @@ task transfer {
             for pair in pairs:
                 subdir = pair['left']
                 sources = [s for s in pair['right'] if s is not None]
-                destination = os.path.join('~{outdirpath}', subdir)
+                destination = os.path.join('~{outdirpath}', subdir, '')
                 filenames = [os.path.basename(s) for s in sources]
                 destination_files = [os.path.join(destination, f) for f in filenames]
                 destinations.extend(destination_files)
