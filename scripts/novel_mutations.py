@@ -9,9 +9,6 @@ import numpy as np
 import argparse
 import sys
 import math
-# import warnings
-
-# warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def parse_arguments(args = sys.argv[1:]):
     parser = argparse.ArgumentParser()
