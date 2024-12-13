@@ -9,9 +9,9 @@ import numpy as np
 import argparse
 import sys
 import math
-import warnings
+# import warnings
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
+# warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def parse_arguments(args = sys.argv[1:]):
     parser = argparse.ArgumentParser()
@@ -398,14 +398,6 @@ def add_features_new_mutations(df, df_new_full, cols):
     subset_cols = ['position', 'ref_nucl', 'alt_nucl']
     gff_merge_cols = ['position', 'ref_nucl', 'alt_nucl', 'alt_aa', 'ref_aa', 'gff_feature']
     df = df.merge(df_new_full[gff_merge_cols].drop_duplicates(subset = subset_cols), how = 'left')
-    
-    if df.shape[0] == 0: # there are no new mutations to add
-        df = pd.concat([df, pd.DataFrame(columns = ['mutation_type', 
-                                        'id_return', 'parent_id', 'parent', 
-                                        'parent_start', 'parent_end', 
-                                        'gene_coordinate', 'nuc_coordinate', 
-                                        'indel_length'])])
-        return df
 
     # Columns to calculate
     # type
@@ -518,7 +510,7 @@ def update_unique_data(df_new_unique, df_new_full, df_historical_unique):
     
     # Update/fill in features of new mutations. Output files of novel and recurrent mutations
     df_new_updated_features = update_features_prev_seen_mutations(has_features, cols)
-    df_new_filled_features = add_features_new_mutations(needs_features, df_new_full, cols)
+    
     
     # Update historical file, first with updated mutations and then with new mutations
     static_cols = ['position', 'ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', 
@@ -536,11 +528,14 @@ def update_unique_data(df_new_unique, df_new_full, df_historical_unique):
         df_unique_updated[updated_col].fillna(df_unique_updated[old_col], inplace = True)
         df_unique_updated.drop(columns = [old_col], inplace = True)
         df_unique_updated.rename(columns = {updated_col : c}, inplace = True)
-        
-    df_unique = pd.concat([df_unique_updated, df_new_filled_features], ignore_index = True)
     
-    return df_unique
-
+    if needs_features.shape[0] > 0:
+        df_new_filled_features = add_features_new_mutations(needs_features, df_new_full, cols)
+        df_unique = pd.concat([df_unique_updated, df_new_filled_features], ignore_index = True)
+        return df_unique
+    else:
+        return df_unique_updated
+    
 
 def main():
     
