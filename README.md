@@ -26,7 +26,6 @@ Below is a list of available and maintained workflows and a brief description of
 | ``SC2_lineage_calling_and_results`` | Performs lineage calling on SARS-CoV-2 consensus sequences using Pangolin and Nextclade and generates a summary report of assembly metrics. Should be run following an assembly workflow. |
 | ``SC2_wastewater_variant_calling`` | Uses Freyja to recover relative lineage abundances from wastewater samples which are considered mixed SARS-CoV-2 samples. |
 | ``SC2_novel_mutations`` | Uses mutation outputs from Freyja to detect novel and recurrent mutations in wastewater samples. |
-| ``SC2_multifasta_lineage_calling`` | Performs lineage calling on SARS-CoV-2 consensus sequences using Pangolin.|
 
 
 <br/>
@@ -37,8 +36,6 @@ Below is a list of available and maintained workflows and a brief description of
 
 ### Clinical SC2 sequence assembly and lineage calling
 Sequence assembly and lineage calling for clinical SC2 samples requires two workflows (see figure 1). We first run either the ``SC2_illumina_pe_assembly`` or ``SC2_ont_assembly`` workflow, which performs quality control, trimming, and filtering of raw reads, followed by reference-guided whole genome assembly, and finally transfer of intermediate files and consensus sequences to a local GCP bucket for storage. Next, we run the ``SC2_lineage_calling_and_results`` which uses Pangolin and Nextclade to perform clade and lineage assignment on the consensus assemblies and produce a results summary file for the set of sequences analyzed. 
-
-If you already have a multifasta, you can use the ``SC2_multifasta_lineage_calling`` workflow for clade and lineage assignment. 
 
 <br/>
 
@@ -108,6 +105,5 @@ Below is a data table detailing the workspace data you will need to set up in or
 | ``covid_version_capture_ont_assembly_py`` | ``SC2_ont_assembly`` | version_capture_ont_assembly.py| generates version capture output file for software versions used in the SC2_ont_assembly workflow|
 | ``covid_version_capture_lineage_calling_py`` | ``SC2_lineage_calling_and_results`` | version_capture_lineage_calling_and_results.py| generates version capture output file for software versions used in the SC2_lineage_calling_and_results workflow|
 | ``covid_version_capture_wastewater_variant_calling_py`` | ``SC2_wastewater_variant_calling`` | version_capture_wastewater_variant_calling.py| generates version capture output file for software versions used in the SC2_wastewater_variant_calling workflow|
-| ``covid_version_capture_multifasta_lineage_calling_py`` | ``SC2_multifasta_lineage_calling`` | version_capture_multifasta_lineage_calling.py| generates version capture output file for software versions used in the SC2_multifasta_lineage_calling workflow|
 | ``novel_mutations_historical_full`` | ``SC2_novel_mutations`` | novel_mutations.py | for wastewater only. See detailed description in the readme file found in ``./python_scripts/`` repo directory |
 | ``novel_mutations_historical_unique`` | ``SC2_novel_mutations`` | novel_mutations.py | for wastewater only. See detailed description in the readme file found in ``./python_scripts/`` repo directory |

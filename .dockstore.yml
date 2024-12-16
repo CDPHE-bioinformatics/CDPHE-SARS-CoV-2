@@ -6,18 +6,12 @@ workflows:
  - name: SC2_illumina_pe_assembly
    subclass: WDL
    primaryDescriptorPath: /workflows/SC2_illumina_pe_assembly.wdl
- - name: SC2_illumina_se_assembly
-   subclass: WDL
-   primaryDescriptorPath: /workflows/SC2_illumina_se_assembly.wdl
  - name: SC2_lineage_calling_and_results
    subclass: WDL
    primaryDescriptorPath: /workflows/SC2_lineage_calling_and_results.wdl
  - name: SC2_wastewater_variant_calling
    subclass: WDL
    primaryDescriptorPath: /workflows/SC2_wastewater_variant_calling.wdl
- - name: SC2_multifasta_lineage_calling
-   subclass: WDL
-   primaryDescriptorPath: /workflows/SC2_multifasta_lineage_calling.wdl
  - name: SC2_novel_mutations
    subclass: WDL
    primaryDescriptorPath: /workflows/SC2_novel_mutations.wdl
