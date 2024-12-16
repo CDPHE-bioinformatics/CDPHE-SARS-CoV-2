@@ -8,7 +8,7 @@ workflow SC2_novel_mutations {
         Array[String] project_names_array
         Array[File] combined_mutations_array
         String covwwt_path 
-        Boolean overwite_project_and_set
+        Boolean overwrite_project_and_set
         String historical_data_path
         Boolean overwrite_historical
         String today
@@ -55,7 +55,7 @@ workflow SC2_novel_mutations {
         call transfer_task.transfer as transfer_project_outputs {
             input:
                 out_dir = project_out_dir,
-                overwrite = overwite_project_and_set,
+                overwrite = overwrite_project_and_set,
                 subdirs_to_files = project_subdirs_to_files
         }    
     }
@@ -74,7 +74,7 @@ workflow SC2_novel_mutations {
         call transfer_task.transfer as transfer_set_outputs {
             input:
                 out_dir = covwwt_novel_mutations_path,
-                overwrite = overwite_project_and_set,
+                overwrite = overwrite_project_and_set,
                 subdirs_to_files = set_subdirs_to_files
         }
     }
