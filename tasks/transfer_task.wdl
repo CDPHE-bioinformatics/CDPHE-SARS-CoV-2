@@ -58,8 +58,10 @@ task transfer {
         for destination in destinations_dict:
             sources = destinations_dict[destination]
             if filenames:
-                clobber = '-n' if not overwrite else ''
-                command = ['gsutil', '-m', 'cp', clobber, *sources, destination]
+                command_base = ['gsutil', '-m', 'cp']
+                if not overwrite:
+                    command_base.append('-n')
+                command = [*command_base, *sources, destination]
                 subprocess.run(command)
 
         CODE
