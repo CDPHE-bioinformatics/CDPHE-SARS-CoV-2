@@ -80,7 +80,10 @@ workflow SC2_novel_mutations {
     }
 
     SubdirsToFiles historical_subdirs_to_files = object { subdirs_to_files: [
-        ("", [append_new_mutations.historical_unique_updated])
+        ("", 
+            [append_new_mutations.historical_unique_updated,
+            append_new_mutations.historical_full_updated]
+        )
     ]}
 
     call transfer_task.transfer as transfer_appended_outputs {
