@@ -411,7 +411,8 @@ def add_features_new_mutations(df, df_new_full, cols):
     # Get parent gene info for those with gff_features
     parent_cols = ['id_return', 'parent_id', 'parent', 'parent_start', 'parent_end']
     df[parent_cols] = df.apply(lambda x: get_parent(x.position, x.gff_feature) 
-                               if(np.all(pd.notnull(x['gff_feature']))) else np.nan, axis = 1)
+                               if(pd.notnull(x['gff_feature'])) 
+                               else pd.Series([np.nan] * len(parent_cols)), axis = 1)
     
     # Get gene and nuc coordinates
     coordinate_cols = ['position', 'ref_nucl', 'alt_nucl', 'ref_aa', 'alt_aa', \
