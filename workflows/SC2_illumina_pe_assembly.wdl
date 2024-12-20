@@ -3,7 +3,7 @@ version 1.0
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
 import "../tasks/hostile_task.wdl" as hostile_task
-
+import "../tasks/transfer_task.wdl" as transfer_task
 
 workflow SC2_illumina_pe_assembly {
 
@@ -19,15 +19,13 @@ workflow SC2_illumina_pe_assembly {
         Array[File]? scrub_genome_index
         String  project_name
         String out_dir
+        Boolean overwrite
 
         # python scripts
         File    calc_percent_coverage_py
         File    s_gene_amplicons
         File    version_capture_py
     }
-
-    # secret variables
-    String outdirpath = sub(out_dir, "/$", "")
 
     if (scrub_reads) {
         call hostile_task.hostile as hostile {
@@ -133,35 +131,58 @@ workflow SC2_illumina_pe_assembly {
             workflow_name = "SC2_illumina_pe_assembly",
             workflow_version_path = workflow_version_capture.workflow_version_path,
             project_name = project_name,
+            sample_name = sample_name,
             analysis_date = workflow_version_capture.analysis_date,
             version_capture_py = version_capture_py
     }
-    call transfer {
+
+    SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
+        ("fastq_scrubbed", [
+            hostile.fastq1_scrubbed,
+            hostile.fastq2_scrubbed
+        ]),
+        ("seqyclean", [
+            seqyclean.seqyclean_summary
+        ]),
+        ("fastqc", [
+            fastqc_raw.fastqc1_html,
+            fastqc_raw.fastqc1_zip,
+            fastqc_raw.fastqc2_html,
+            fastqc_raw.fastqc2_zip,
+            fastqc_cleaned.fastqc1_html,
+            fastqc_cleaned.fastqc1_zip,
+            fastqc_cleaned.fastqc2_html, 
+            fastqc_cleaned.fastqc2_zip
+        ]),
+        ("alignments", [
+            ivar_trim.trimsort_bam,
+            ivar_trim.trimsort_bamindex
+        ]),
+        ("variants", [
+            ivar_var.var_out
+        ]),
+        ("bam_stats", [
+            bam_stats.flagstat_out,
+            bam_stats.stats_out,
+            bam_stats.covhist_out,
+            bam_stats.cov_out,
+            bam_stats.depth_out,
+            bam_stats.cov_s_gene_out,
+            bam_stats.cov_s_gene_amplicons_out
+        ]),
+        ("assemblies", [
+            rename_fasta.renamed_consensus
+        ]),
+        ("version_capture/assembly", [
+            task_version_capture.version_capture_file
+        ])
+    ]}
+
+    call transfer_task.transfer {
         input:
-            outdirpath = outdirpath,
-            fastq1_scrubbed = hostile.fastq1_scrubbed,
-            fastq2_scrubbed = hostile.fastq2_scrubbed,
-            seqyclean_summary = seqyclean.seqyclean_summary,
-            fastqc_raw1_html = fastqc_raw.fastqc1_html,
-            fastqc_raw1_zip = fastqc_raw.fastqc1_zip,
-            fastqc_raw2_html = fastqc_raw.fastqc2_html,
-            fastqc_raw2_zip = fastqc_raw.fastqc2_zip,
-            fastqc_clean1_html = fastqc_cleaned.fastqc1_html,
-            fastqc_clean1_zip = fastqc_cleaned.fastqc1_zip,
-            fastqc_clean2_html = fastqc_cleaned.fastqc2_html,
-            fastqc_clean2_zip = fastqc_cleaned.fastqc2_zip,
-            trimsort_bam = ivar_trim.trimsort_bam,
-            trimsort_bamindex = ivar_trim.trimsort_bamindex,
-            variants = ivar_var.var_out,
-            flagstat_out = bam_stats.flagstat_out,
-            stats_out = bam_stats.stats_out,
-            covhist_out = bam_stats.covhist_out,
-            cov_out = bam_stats.cov_out,
-            depth_out = bam_stats.depth_out,
-            cov_s_gene_out = bam_stats.cov_s_gene_out,
-            cov_s_gene_amplicons_out = bam_stats.cov_s_gene_amplicons_out,
-            renamed_consensus = rename_fasta.renamed_consensus,
-            version_capture_illumina_pe_assembly = task_version_capture.version_capture_file
+            out_dir = out_dir,
+            overwrite = overwrite,
+            subdirs_to_files = subdirs_to_files
     }
 
     output {
@@ -198,7 +219,7 @@ workflow SC2_illumina_pe_assembly {
         File percent_cvg_csv = calc_percent_cvg.percent_cvg_csv
 
         File version_capture_illumina_pe_assembly = task_version_capture.version_capture_file
-        String transfer_date_assembly = transfer.transfer_date_assembly
+        String transfer_date_assembly = transfer.transfer_date
 
     }
 }
@@ -615,77 +636,4 @@ task calc_percent_cvg {
 
     }
 
-}
-
-task transfer {
-    input {
-        String outdirpath
-        File? fastq1_scrubbed
-        File? fastq2_scrubbed
-        File seqyclean_summary 
-        File fastqc_raw1_html
-        File fastqc_raw1_zip
-        File fastqc_raw2_html
-        File fastqc_raw2_zip
-        File fastqc_clean1_html
-        File fastqc_clean1_zip
-        File fastqc_clean2_html
-        File fastqc_clean2_zip
-        File trimsort_bam
-        File trimsort_bamindex
-        File variants
-        File flagstat_out
-        File stats_out
-        File covhist_out
-        File cov_out
-        File depth_out
-        File cov_s_gene_out
-        File cov_s_gene_amplicons_out
-        File renamed_consensus
-        File version_capture_illumina_pe_assembly       
-
-    }
-
-    command <<<
-
-        gsutil -m cp ~{fastq1_scrubbed} ~{outdirpath}/scrubbed_fastq/
-        gsutil -m cp ~{fastq2_scrubbed} ~{outdirpath}/scrubbed_fastq/
-        gsutil -m cp ~{seqyclean_summary} ~{outdirpath}/seqyclean/
-        gsutil -m cp ~{fastqc_raw1_html} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_raw1_zip} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_raw2_html} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_raw2_zip} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_clean1_html} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_clean1_zip} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_clean2_html} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{fastqc_clean2_zip} ~{outdirpath}/fastqc/
-        gsutil -m cp ~{trimsort_bam} ~{outdirpath}/alignments/
-        gsutil -m cp ~{trimsort_bamindex} ~{outdirpath}/alignments/
-        gsutil -m cp ~{variants} ~{outdirpath}/variants/
-        gsutil -m cp ~{cov_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{depth_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{cov_s_gene_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{cov_s_gene_amplicons_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{covhist_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{flagstat_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{stats_out} ~{outdirpath}/bam_stats/
-        gsutil -m cp ~{renamed_consensus} ~{outdirpath}/assemblies/
-        gsutil -m cp ~{version_capture_illumina_pe_assembly} ~{outdirpath}/summary_results/
-
-        transferdate=`date`
-        echo $transferdate | tee TRANSFERDATE
-
-    >>>
-
-
-    output {
-        String transfer_date_assembly = read_string("TRANSFERDATE")
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "2 GB"
-        cpu: 4
-        disks: "local-disk 100 SSD"
-    }
 }

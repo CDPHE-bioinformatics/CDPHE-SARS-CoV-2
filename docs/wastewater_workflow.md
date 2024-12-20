@@ -23,35 +23,31 @@ Briefly, the workflow performs the following:
 
 Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this.sample{terra_data table_name}s." syntax tells Terra to pull the variable from the sample-level terra data table. These variables were either in the original terra data table as inputs for the assembly workflow or added as outputs during the assembly workflow (see reference based assembly workflow inputs and outputs sections for more details). The "workspace." syntax tells Terra to pull the variable from the terra workspace data. Workspace data is described in the `Getting Started` drop down menu above.
 
-| workflow variable | attribute (input syntax into workflow)                                |
-| ----------------- | --------------------------------------------------------------------- |
-| `covid_genome`    | workspace.covid_genome                                                |
-| `out_dir`         | 'gs://covid_terra/{seq_run}/terra_outputs' (must be written as a string in quotes-- we have not updated the workflow to accept the out_dir column from the terra data table) |
-| `sample_id`       | this.sample{terra_data_table_name}s.sample{terra_data_table_name}_id  |
-| `trimsort_bam`    | this.sample{terra_data_table_name}s.trimsort_bam                      |
-| `voc_annotations` | workspace.voc_annotations                                             |
-| `voc_bed`         | workspace.voc_bed                                                     |
+| workflow variable                        | attribute (input syntax into workflow)                                |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| `covid_genome`                           | workspace.covid_genome                                                |
+| `covid_gff`                              | workspace.covid_genome_gff                                            |
+| `out_dir_array`                          | this.{terra_data_table_names}s.out_dir                                |
+| `overwrite`                              | `true` or `false`                                                     |
+| `project_name_array`                     | `this.{terra_data_table_name}s.project_name                           |
+| `sample_name`                            | this.{terra_data_table_name}s.{terra_data_table_name}_id              |
+| `trimsort_bam`                           | this.{terra_data_table_name}s.trimsort_bam                            |
+| `version_capture_wwt_variant_calling_py` | workspace.covid_version_capture_wastewater_variant_calling_py         |
 
 ### Outputs
 
 This workflow generates several output files which are transferred to the user defined google bucket as defined by a string (e.g. "gs://covid_terra/NEXSEQ_101/terra_outputs"). The table below details each output. For more details regarding the values in each column, see either the software readmes or the readme for the specific python script listed in the description.
 
-| output variable name     | file_name                                    | description                                            | google bucket path         |
-| ------------------------ | -------------------------------------------- | ------------------------------------------------------ | -------------------------- |
-| `addrg_bam`              | `{sample_name}_addRG.bam`                    | ???                                                    | N/A                        |
-| `variants`               | `{sample_name}_variants.tsv`                 | generated for each sample; output from freyja demix    | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/freyja/`|
-| `depth`                  | `{sample_name}_depth.tsv`                    | generated for each sample; output from freyja variants | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/freyja/`|
-| `demix`                  | `{sample_name}_demixed.tsv`                  | generated for each sample; output from freyja demix    | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/freyja/`|
-| `fill_NA_tsv`            | `{sample_name}_voc_fill_NA.tsv`              |                                                        | N/A                        |
-| `reformatted_tsv`        | `{sample_name}_voc_reformat.tsv`             | generated for each sample                              | N/A                        |
-| `sample_voc_tsv_summary` | `{sample_name}_voc_mutations_forsummary.tsv` | generated for each sample                              | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/sample_variants/` |
-| `sample_voc_tsv_counts`  | `{sample_name}_voc_mutations_counts.tsv`     | generated for each sample                              | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/sample_variants/` |
-| `demix_reformatted`      | `{sample_id}_demixed_reformatted.tsv`        | generated for each sample                              | N/A                        |
-| `voc_summary_temp`       | `voc_mutations_summary_temp.tsv`             |                                                        | N/A                        |
-| `voc_counts`             | `voc_mutations_counts.tsv`                   |                                                        | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/` |
-| `voc_summary`            | `voc_mutations_summary.tsv`                  |                                                        | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/` |
-| `demix_summary`          | `lineage_abundances.tsv`                     |                                                        | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/` |
-| `transfer_date`          | N/A                                          | date the workflow was run                              | N/A                        |
+| output variable name                  | file_name                                                               | description                                            | google bucket path                                                            |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `addrg_bam`                           | `{sample_name}_addRG.bam`                                               | ???                                                    | N/A                                                                           |
+| `combined_mutations_tsv`              | `combined_mutations.tsv`                                                | mutation counts for all samples                        | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/`                 |
+| `variants`                            | `{sample_name}_variants.tsv`                                            | generated for each sample; output from freyja demix    | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/freyja/`          |
+| `depth`                               | `{sample_name}_depth.tsv`                                               | generated for each sample; output from freyja variants | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/freyja/`          |
+| `demix`                               | `{sample_name}_demixed.tsv`                                             | generated for each sample; output from freyja demix    | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/freyja/`          |
+| `demix_aggregated`                    | `demix_aggregated.tsv`                                                  |                                                        | `gs://{user_defined_gcp_bucket}/waste_water_variant_calling/`                 |
+| `transfer_date_wwt_variant_calling`   | N/A                                                                     | date the workflow was run                              | N/A                                                                           |
+| `version_capture_wwt_variant_calling` | `version_capture_{workflow_name}_{project_name}_{workflow_version}.csv` | software versions used in analysis                     | `gs://{user_defined_gcp_bucket}/summary_results/`                             |
 
 
 ## SC2_novel_mutations
@@ -85,30 +81,33 @@ The terra data table must include the following columns listed below.
 
 #### Workflow inputs
 
-| workflow variable          | attribute (input syntax into workflow)                                |
-| -------------------------- | --------------------------------------------------------------------- |
-| `project_names_array`      | this.{terra_data_table_name}s.{terra_data_table_name}_id              |
-| `combined_mutations_array` | this.{terra_data_table_name}s.combined_mutations                      |
-| `covwwt_path`              | "gs://bucket/folder"                                                  |
-| `gff_mutations`            | workspace.novel_mutations_gff                                         |
-| `historical_data_path`     | "gs://bucket/folder"                                                  |
-| `historical_full`          | workspace.novel_mutations_historical_full                             |
-| `historical_unique`        | workspace.novel_mutations_historical_unique                           |
-| `metadata`                 | workspace.wwt_metadata                                                |
-| `novel_mutations_append_py`| workspace.novel_mutations_append_py                                   |
-| `sites_to_drop`            | this.sites_to_drop                                                    |
-| `today`                    | "yyyy-mm-dd" (fill in today's date with this format)                  |
+| workflow variable           | attribute (input syntax into workflow)                                |
+| --------------------------- | --------------------------------------------------------------------- |
+| `project_names_array`       | this.{terra_data_table_name}s.{terra_data_table_name}_id              |
+| `combined_mutations_array`  | this.{terra_data_table_name}s.combined_mutations                      |
+| `covwwt_path`               | "gs://bucket/folder"                                                  |
+| `gff_mutations`             | workspace.novel_mutations_gff                                         |
+| `historical_data_path`      | "gs://bucket/folder"                                                  |
+| `historical_full`           | workspace.novel_mutations_historical_full                             |
+| `historical_unique`         | workspace.novel_mutations_historical_unique                           |
+| `metadata`                  | workspace.wwt_metadata                                                |
+| `novel_mutations_append_py` | workspace.novel_mutations_append_py                                   |
+| `sites_to_drop`             | this.sites_to_drop                                                    |
+| `today`                     | "yyyy-mm-dd" (fill in today's date with this format)                  |
+| `overwrite_project_and_set` | `true` or `false` (should typically be set to `false`)                | 
+| `overwrite_historical`      | `true` or `false` (should typically be set to `true`)                 |
 
 
 ### Outputs
 
 This workflow generates several output files which are transferred to the user defined google bucket. The table below details each output. For more details, see either the software readmes or the readme for the novel_mutations.py python script.
 
-| output variable name              | file_name                             | description                  | google bucket path                                              |
-| --------------------------------- | ------------------------------------- | ---------------------------- | --------------------------------------------------------------- |
-| `{project_name}_missing_dates`    | `{project_name}_missing_dates.tsv`    | generated if any samples are missing a collection date | N/A                                   |
-| `{project_name}_unique_mutations` | `{project_name}_unique_mutations.tsv` | generated for each project   | `gs://{user_defined_gcp_bucket}/{project_name}/novel_mutations/`|
-| `novel_mutations_historical_full` | `novel_mutations_historical_full.tsv` | generated for entire set     | `gs://{user_defined_gcp_bucket}/`                               |
-| `novel_mutations_historical_unique` | `novel_mutations_historical_unique.tsv` | generated for entire set | `gs://{user_defined_gcp_bucket}/`                               |
-| `novel_mutations_{today}`         | `novel_mutations_{today}.tsv`         | generated for entire set     | `gs://{user_defined_gcp_bucket}/novel_mutations/`               |
-| `recurrent_mutations_{today}`     |    `recurrent_mutations_{today}.tsv`  | generated for entire set     | `gs://{user_defined_gcp_bucket}/novel_mutations/`               |
+| output variable name                | file_name                               | description                                            | google bucket path                                              |
+| ----------------------------------- | --------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
+| `{project_name}_missing_dates`      | `{project_name}_missing_dates.tsv`      | generated if any samples are missing a collection date | N/A                                                             |
+| `{project_name}_unique_mutations`   | `{project_name}_unique_mutations.tsv`   | generated for each project                             | `gs://{user_defined_gcp_bucket}/{project_name}/novel_mutations/`|
+| `novel_mutations_historical_full`   | `novel_mutations_historical_full.tsv`   | generated for entire set                               | `gs://{user_defined_gcp_bucket}/`                               |
+| `novel_mutations_historical_unique` | `novel_mutations_historical_unique.tsv` | generated for entire set                               | `gs://{user_defined_gcp_bucket}/`                               |
+| `novel_mutations_{today}`           | `novel_mutations_{today}.tsv`           | generated for entire set                               | `gs://{user_defined_gcp_bucket}/novel_mutations/`               |
+| `recurrent_mutations_{today}`       | `recurrent_mutations_{today}.tsv`       | generated for entire set                               | `gs://{user_defined_gcp_bucket}/novel_mutations/`               |
+| `transfer_date_novel_mutations`     | N/A                                     | date transfer task was run                             | N/A                                                             |

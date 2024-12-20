@@ -1,6 +1,6 @@
 # Assembly Workflows
 
-The following three workflows describe the reference based assembly methods for paired-end and single end illumina sequencing data and ONT sequencing data. Each workflow accepts "sample" as the root entity type.
+The following three workflows describe the reference based assembly methods for paired-end sequencing data and ONT sequencing data. Each workflow accepts "sample" as the root entity type.
 
 ## Illumina PE
 
@@ -55,7 +55,10 @@ For setting up the workflow inputs, use the `SC2_illumina_pe_assembly-input.json
 | `covid_gff`                 | workspace.covid_genome_gff               |
 | `fastq_1`                   | this.fastq_1                             |
 | `fastq_2`                   | this.fastq_2                             |
+| `out_dir`                   | this.out_dir                             |
+| `overwrite`                 | `true` or `false`                        |
 | `primer_bed`                | workspace.artic_v4-1_bed                 |
+| `project_name`              | this.project_name                        |
 | `s_gene_amplicons`          | workspace.artic_v4-1_s_gene_amplicons    |
 | `sample_name`               | this.{entity_name}\_id                   |
 | `scrub_reads`               | `true` or `false`                        |
@@ -103,122 +106,7 @@ For setting up the workflow inputs, use the `SC2_illumina_pe_assembly-input.json
 
 ## Illumina SE
 
-**This workflow is no longer maintained.**
-
-File: SC2_illumina_se_assembly.wdl
-
-This workflow was developed for the assembly of Illumina 72 bp single-end read data using the Illumina COVIDSEQ library prep protocol. The workflow accepts "sample" as the root entity type. The workflow will:
-
-1. Use Trimmomatic and bbduk to quality filter, trim, and remove adapters from raw fastq files
-    - Trimmomatic parameters include a sliding window set to trim reads when the 4bp sliding window quality score falls below a mean Phred quality score of 30 (i.e. 4:30) and a minimum read length of 25 bp.
-    - bbduk parameters include adapter trimming set to trim everything to the right of a k-mer match and removal of PhiX sequences.
-2. Run FastQC on both the raw and cleaned reads
-3. Align reads to the reference genome using bwa and then sort the bam by coordinates using Samtools
-4. Use iVar trim to trim primer regions and then sort the trimmed bam by coordinates using Samtools
-5. Use iVar variants to call variants from the trimmed and sorted bam
-    - iVar variants parameters include a minimum quality score set to 20, a minimum variant base frequency set to 0.6 and a minimum read depth set to 10.
-6. Use iVar consensus to call the consensus genome sequence from the trimmed and sorted bam
-    - iVar consensus parameters include a minimum quality score set to 20, a minimum variant base frequency set to 0.6 and a minimum read depth set to 10.
-7. Use Samtools flagstat, stats, and coverage to output statistics from the bam
-8. Rename the fasta header of consensus sequences in the format: CO-CDPHE{sample_id}
-9. Calculate the percent coverage using the `calc_percent_coverage.py` script available in the [python_scripts](https://github.com/CDPHE-bioinformatics/CDPHE-SARS-CoV-2/tree/main/workflows/python_scripts) directory of this repo.
-
-![SC2_illumina_se_assembly.wdl workflow diagram](img/SC2_illumina_se_assembly.png)
-
-### Inputs
-
-#### 1. Terra Data Table
-
-The terra data table can be generated using the pre-process python scripts available in the [data preprocessing repository](https://github.com/CDPHE-bioinformatics/seq_data_preprocessing-private). The terra data table must include the following columns as listed below. Note that optional columns are not necessary for the assembly workflow but be present for the SC2_lineage_calling_and results.wdl and Transfer workflows described below under `Lineage Calling Workflows` and `Transfer Workflows`, respectively.
-
-1. `entity:sample_id`: column with the list of sample names/ids. Note that if there is more than one data table in the Terra Workspace, you need to add a number after the word sample to keep the data tables separate (e.g. `entity:sample2_id`).
-2. `fastq`: The google bucket path to the fastq file.
-3. `seq_run` (optional): the name of the sequencing run (e.g. NEXSEQ_101)
-4. `tech_platform` (optional) : e.g. Illumina NexSeq
-5. `read_type` (optional): single
-6. `primer_set` (optional): e.g. COVIDSeqV3
-7. `plate_name` (optional): name of sequencing plate  
-8. `plate_sample_well` (optional): location of well on sequencing plate
-9. `out_dir` (optional): user defined google bucket fro where the files will be transferred during the transfer workflows.
-
-#### 2. Terra Workspace Data
-
- The following reference files can be found in the [workspace_data](https://github.com/CDPHE-bioinformatics/CDPHE-SARS-CoV-2/tree/main/workflows/workspace_data) directory and the [python_scripts](https://github.com/CDPHE-bioinformatics/CDPHE-SARS-CoV-2/tree/main/workflows/python_scripts) directory. These files should be saved as Workspace data in your Terra Workspace. To do so, upload the files to a google bucket an link the file path to the workspace data variable. Once saved as workspace data variables, they can be used as inputs for the workflow.
-
-1. `covid_genome`: the path to the google bucket directory containing the SARS-CoV-2 reference genome fasta (we use NCBI genbank ID MN908947.3).
-2. `covid_gff`: the path to the google bucket directory containing the SARS-CoV-2 reference genome gff annotation file (we use NCBI genbank ID MN908947.3)
-3. `primer_bed`: the path to the google bucket directory containing a bed file with the primers used for amplicon sequencing
-    - currently we have bed files for Artic V3, Artic V4, Artic V4.1 and Midnight.
-4. `preprocess_python_script`: the path to the google bucket containing the `calc_percent_coverage.py` script.
-
-Below is a summary of the workflow input variables along with the syntax used for the attribute column when setting up the workflow to run on Terra.bio. For the attributes, the "this." syntax refers Terra to pull the variable from the terra data table (#1 above). The "workspace." syntax refers Terra to pull the variable from the terra workspace data (#2 above).
-
-| workflow variable          | attribute (input syntax into workflow) |
-| -------------------------- | -------------------------------------- |
-| `covid_genome`             | workspace.covid_genome                 |
-| `covid_gff`                | workspace.covid_gff                    |
-| `fastq`                    | this.fastq                             |
-| `preprocess_python_script` | workspace.preprocess_python_script     |
-| `primer_bed`               | workspace.V4-1Artic                    |
-| `sample_id`                | this.sample{terra_data_table_name}\_id  |
-
-### Outputs
-
-#### 1. Output Files from Trimmomatic and bbduk
-
-- `trimmed_reads`: file
-- `trim_stats`: file
-- `filtered_reads`: file
-- `adapter_stats`: file
-- `PhiX_stats`: file
-
-#### 2. Output Files from FastQC
-
-- `fastqc_raw1_html`: file
-- `fastqc_raw1_zip`: file
-- `fastqc_raw2_html`: file
-- `fastqc_raw2_zip`: file
-- `fastqc_clean1_html`: file
-- `fastqc_clean1_zip`: file
-- `fastqc_clean2_html`: file
-- `fastqc_clean2_zip`: file
-
-#### 3. Output files from bwa and samtools (align reads)
-
-- `out_bam`: file
-
-#### 4. Output files from iVar trim and samtools
-
-- `trim_bam`: file
-- `trimsort_bam`: file
-- `trimsort_bamindex`: file
-
-#### 5. Output files from iVar variants
-
-- `variants`: vcf file formatted as a tsv
-
-#### 6. Output files from iVar consensus
-
-- `consensus`: fasta file of consensus genome, Ns are called in places with less than 10 bp read depth. 
-
-#### 7. Output files from Samtools flagstat, stats, and percent_coverage
-
-- `fagstat_out`: file
-- `stats_out`: file
-- `covhist_out`: file
-- `cov_out`: file
-
-#### 8. Output from rename consensus fasta headers
-
-- `renamed_consensus`: fasta file; consesnus genome sequence with the fasta header renamed to be CO-CDPHE-{sample_id}
-
-#### 9. Output from calc_percent_coverage.py
-
-- `percent_cvg_csv`: csv file, see calc_percent_cvg.py script readme for details.
-
-#### 10. bwa assembler version string output  
-
-- `assembler_version`: string recording the version for bwa, this information is used later for submitting to public repositories.
+This workflow has been removed. The workflow and its documentation can still be accessed from the v2.4.1 release.
 
 ## Oxford Nanopore Technologies (ONT)
 
@@ -269,8 +157,11 @@ For setting up the worklfow inputs, use the `SC2_ont_assembly-input.json` in the
 | `covid_genome`             | workspace.covid_genome_fa                |
 | `gcs_fastq_dir`            | this.fastq_dir                           |
 | `index_1_id`               | this.index_1_id                          |
+| `out_dir`                   | this.out_dir                             |
+| `overwrite`                 | `true` or `false`                        |
 | `primer_bed`               | workspace.artic_v4-1_bed                 |
 | `primer_set`               | this.primer_set                          |
+| `project_name`              | this.project_name                        |
 | `s_gene_amplicons`         | workspace.artic_v4-1_s_gene_amplicons    |
 | `s_gene_primer_bed`        | workspace.artic_v4-1_s_gene_primer_bed   |
 | `sample_name`              | this.{entity_name}\_id                   |
