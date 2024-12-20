@@ -23,7 +23,7 @@ task workflow_version_capture {
   >>>
   output {
     String analysis_date = read_string("TODAY")
-    String workflow_version = "v2.4.1"
+    String workflow_version = "v2.4.2"
     String workflow_version_path = sub(workflow_version, "\\.", "_")
   }
   runtime {
