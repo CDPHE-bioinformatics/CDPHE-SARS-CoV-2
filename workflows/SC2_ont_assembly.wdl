@@ -165,18 +165,34 @@ workflow SC2_ont_assembly {
     }
 
     SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
-        ("fastq_scrubbed", [hostile.fastq1_scrubbed]),
-        ("alignments",
-            [call_consensus_artic.trimsort_bam,
-             call_consensus_artic.trimsort_bai]),
-        ("bam_stats",
-            [Bam_stats.flagstat_out, Bam_stats.stats_out, Bam_stats.covhist_out,
-             Bam_stats.cov_out, Bam_stats.depth_out, Bam_stats.cov_s_gene_out,
-             Bam_stats.cov_s_gene_amplicons_out]),
-        ("variants", [call_consensus_artic.variants]),
-        ("primer_site_variants", [get_primer_site_variants.primer_site_variants]),
-        ("assemblies", [rename_fasta.renamed_consensus]),
-        ("sample_version_capture", [task_version_capture.version_capture_file])
+        ("fastq_scrubbed", [
+            hostile.fastq1_scrubbed
+        ]),
+        ("alignments", [
+            call_consensus_artic.trimsort_bam,
+            call_consensus_artic.trimsort_bai
+        ]),
+        ("bam_stats", [
+            Bam_stats.flagstat_out,
+            Bam_stats.stats_out,
+            Bam_stats.covhist_out,
+            Bam_stats.cov_out,
+            Bam_stats.depth_out,
+            Bam_stats.cov_s_gene_out,
+            Bam_stats.cov_s_gene_amplicons_out
+        ]),
+        ("variants", [
+            call_consensus_artic.variants
+        ]),
+        ("primer_site_variants", [
+            get_primer_site_variants.primer_site_variants
+        ]),
+        ("assemblies", [
+            rename_fasta.renamed_consensus
+        ]),
+        ("sample_version_capture", [
+            task_version_capture.version_capture_file
+        ])
     ]}
 
     call transfer_task.transfer {

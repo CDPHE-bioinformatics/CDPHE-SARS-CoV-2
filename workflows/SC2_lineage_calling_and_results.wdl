@@ -90,15 +90,22 @@ workflow SC2_lineage_calling_and_results {
     }
 
     SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
-        ("multifasta", [concatenate.cat_fastas]),
-        ("pangolin_out", [pangolin.lineage]),
-        ("nextclade_out", 
-            [nextclade.nextclade_json, nextclade.nextclade_csv,
-             parse_nextclade.nextclade_clades_csv]),
-        ("summary_results",
-            [parse_nextclade.nextclade_variants_csv,
-             results_table.sequencing_results_csv,
-             create_version_capture_file.version_capture_lineage_calling_and_results])
+        ("multifasta", [
+            concatenate.cat_fastas
+        ]),
+        ("pangolin_out", [
+            pangolin.lineage
+        ]),
+        ("nextclade_out", [
+            nextclade.nextclade_json,
+            nextclade.nextclade_csv,
+            parse_nextclade.nextclade_clades_csv
+        ]),
+        ("summary_results", [
+            parse_nextclade.nextclade_variants_csv,
+            results_table.sequencing_results_csv,
+            create_version_capture_file.version_capture_lineage_calling_and_results
+        ])
     ]}
 
     call transfer_task.transfer {
