@@ -99,8 +99,8 @@ workflow SC2_lineage_calling_and_results {
         ("nextclade_out", [
             nextclade.nextclade_json,
             nextclade.nextclade_csv,
-            parse_nextclade.nextclade_clades_csv
-            parse_nextclade.nextclade_variants_csv,
+            parse_nextclade.nextclade_clades_csv,
+            parse_nextclade.nextclade_variants_csv
         ]),
         ("summary_results", [
             results_table.sequencing_results_csv
