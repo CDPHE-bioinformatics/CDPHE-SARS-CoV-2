@@ -95,7 +95,7 @@ workflow SC2_wastewater_variant_calling {
             combine_mutations_tsv.combined_mutations_tsv,
             freyja_aggregate.demix_aggregated
         ]),
-        ("summary_results", [
+        ("version_capture", [
             create_version_capture_file.version_capture_wwt_variant_calling
         ])
     ]}

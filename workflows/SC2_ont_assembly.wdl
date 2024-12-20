@@ -190,7 +190,7 @@ workflow SC2_ont_assembly {
         ("assemblies", [
             rename_fasta.renamed_consensus
         ]),
-        ("sample_version_capture", [
+        ("version_capture/assembly", [
             task_version_capture.version_capture_file
         ])
     ]}
