@@ -2,6 +2,7 @@ version 1.0
 
 # import workflow version capture task
 import "../tasks/version_capture_task.wdl" as version_capture
+import "../tasks/transfer_task.wdl" as transfer_task
 
 workflow SC2_lineage_calling_and_results {
 
@@ -11,6 +12,7 @@ workflow SC2_lineage_calling_and_results {
         Array[File?] cov_out
         Array[File?] percent_cvg_csv
         Array[String] out_dir_array
+        Boolean overwrite
         Array[String] project_name_array
         Array[File] terra_data_table_path_array
 
@@ -28,7 +30,6 @@ workflow SC2_lineage_calling_and_results {
     String project_name = select_all(project_name_array)[0]
     File terra_data_table_path = select_all(terra_data_table_path_array)[0]
     String out_dir = select_all(out_dir_array)[0]
-    String outdirpath = sub(out_dir, "/$", "")
 
     call concatenate {
         input:
@@ -88,17 +89,32 @@ workflow SC2_lineage_calling_and_results {
             pangolin_lineage_csv = pangolin.lineage
     }
 
-    call transfer {
+    SubdirsToFiles subdirs_to_files = object { subdirs_to_files: [
+        ("multifasta", [
+            concatenate.cat_fastas
+        ]),
+        ("pangolin_out", [
+            pangolin.lineage
+        ]),
+        ("nextclade_out", [
+            nextclade.nextclade_json,
+            nextclade.nextclade_csv,
+            parse_nextclade.nextclade_clades_csv,
+            parse_nextclade.nextclade_variants_csv
+        ]),
+        ("summary_results", [
+            results_table.sequencing_results_csv
+        ]),
+        ("version_capture", [
+            create_version_capture_file.version_capture_lineage_calling_and_results
+        ])
+    ]}
+
+    call transfer_task.transfer {
       input:
-          outdirpath = outdirpath,
-          cat_fastas = concatenate.cat_fastas,
-          pangolin_lineage = pangolin.lineage,
-          nextclade_json = nextclade.nextclade_json,
-          nextclade_csv = nextclade.nextclade_csv,
-          nextclade_clades_csv = parse_nextclade.nextclade_clades_csv,
-          nextclade_variants_csv = parse_nextclade.nextclade_variants_csv,
-          sequencing_results_csv = results_table.sequencing_results_csv,
-          version_capture_lineage_calling_and_results = create_version_capture_file.version_capture_lineage_calling_and_results
+            out_dir = out_dir,
+            overwrite = overwrite,
+            subdirs_to_files = subdirs_to_files
     }
 
     output {
@@ -112,7 +128,7 @@ workflow SC2_lineage_calling_and_results {
         File nextclade_variants_csv = parse_nextclade.nextclade_variants_csv
         File sequencing_results_csv = results_table.sequencing_results_csv
         File version_capture_lineage_calling_and_results = create_version_capture_file.version_capture_lineage_calling_and_results
-        String transfer_date_lineage_calling = transfer.transfer_date_lineage_calling
+        String transfer_date_lineage_calling = transfer.transfer_date
     }
 }
 
@@ -326,48 +342,5 @@ task create_version_capture_file {
       cpu: 4
       disks: "local-disk 10 SSD"
 
-    }
-}
-
-task transfer {
-    input {
-        String outdirpath
-        File cat_fastas
-        File pangolin_lineage
-        File nextclade_json
-        File nextclade_csv
-        File nextclade_clades_csv
-        File nextclade_variants_csv
-        File sequencing_results_csv
-        File version_capture_lineage_calling_and_results
-    }
-
-
-    command <<<
-
-        gsutil -m cp ~{cat_fastas} ~{outdirpath}/multifasta/
-        gsutil -m cp ~{pangolin_lineage} ~{outdirpath}/pangolin_out/
-        gsutil -m cp ~{nextclade_json} ~{outdirpath}/nextclade_out/
-        gsutil -m cp ~{nextclade_csv} ~{outdirpath}/nextclade_out/
-        gsutil -m cp ~{nextclade_clades_csv} ~{outdirpath}/nextclade_out/
-        gsutil -m cp ~{nextclade_variants_csv} ~{outdirpath}/summary_results/
-        gsutil -m cp ~{sequencing_results_csv} ~{outdirpath}/summary_results/
-        gsutil -m cp ~{version_capture_lineage_calling_and_results} ~{outdirpath}/summary_results/
-
-        transferdate=`date`
-        echo $transferdate | tee TRANSFER_DATE
-    
-    >>>
-
-    output {
-
-        String transfer_date_lineage_calling = read_string("TRANSFER_DATE")
-    }
-
-    runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "16 GB"
-        cpu: 4
-        disks: "local-disk 100 SSD"
     }
 }
