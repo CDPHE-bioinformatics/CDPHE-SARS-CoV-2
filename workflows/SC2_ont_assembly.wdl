@@ -23,6 +23,8 @@ workflow SC2_ont_assembly {
         String  project_name
         String  out_dir
         Boolean overwrite
+        Int min_read_len = 400 #default 400 option to change in inputs
+        Int max_read_len = 700 #default 700 option to chane in inputs
 
         # python scripts
         File    calc_percent_coverage_py
@@ -325,9 +327,11 @@ task Read_Filtering {
         String index_1_id
         String sample_name
         String primer_set
+        Int min_read_len
+        Int max_read_len
     }
 
-    Int max_length = if primer_set == "Midnight" then 1500 else 700
+    # Int max_length = if primer_set == "Midnight" then 1500 else 700
 
     command <<<
         set -e
@@ -335,7 +339,7 @@ task Read_Filtering {
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
 
-        artic guppyplex --min-length 400 --max-length ~{max_length} --directory fastq_files --output ~{sample_name}_~{index_1_id}.fastq
+        artic guppyplex --min-length {min_read_len}--max-length ~{max_read_len} --directory fastq_files --output ~{sample_name}_~{index_1_id}.fastq
 
     >>>
 
