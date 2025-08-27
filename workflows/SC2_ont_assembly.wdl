@@ -343,7 +343,7 @@ task Read_Filtering {
         ln -s ~{sep=' ' fastq_files} fastq_files
         ls -alF fastq_files
 
-        artic guppyplex --min-length {min_read_len} --max-length ~{max_read_len} --directory fastq_files --output ~{sample_name}_~{index_1_id}.fastq
+        artic guppyplex --min-length ~{min_read_len} --max-length ~{max_read_len} --directory fastq_files --output ~{sample_name}_~{index_1_id}.fastq
 
     >>>
 
