@@ -59,7 +59,9 @@ workflow SC2_ont_assembly {
                 fastq_files = [hostile.fastq1_scrubbed],
                 index_1_id = index_1_id,
                 sample_name = sample_name,
-                primer_set = primer_set
+                primer_set = primer_set,
+                min_read_len = min_read_len,
+                max_read_len = max_read_len
         }
     }
 
