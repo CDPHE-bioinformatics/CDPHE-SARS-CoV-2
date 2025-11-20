@@ -360,7 +360,7 @@ task align_reads {
     runtime {
         cpu:    4
         memory:    "50 GiB"
-        disks:    "local-disk 1 HDD"
+        disks:    "local-disk 50 HDD"
         bootDiskSizeGb:    50
         preemptible:    0
         maxRetries:    0
@@ -398,7 +398,7 @@ task ivar_trim {
     runtime {
         cpu:    2
         memory:    "50 GiB"
-        disks:    "local-disk 1 HDD"
+        disks:    "local-disk 50 HDD"
         bootDiskSizeGb:    50
         preemptible:    0
         maxRetries:    0
@@ -435,7 +435,7 @@ task ivar_var {
     runtime {
         cpu:    2
         memory:    "50 GiB"
-        disks:    "local-disk 1 HDD"
+        disks:    "local-disk 50 HDD"
         bootDiskSizeGb:    50
         preemptible:    0
         maxRetries:    0
@@ -486,7 +486,7 @@ task ivar_consensus {
     runtime {
         cpu:    2
         memory:    "50 GiB"
-        disks:    "local-disk 1 HDD"
+        disks:    "local-disk 50 HDD"
         bootDiskSizeGb:    50
         preemptible:    0
         maxRetries:    0
