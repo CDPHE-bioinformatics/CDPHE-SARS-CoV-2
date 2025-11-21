@@ -257,9 +257,9 @@ task seqyclean {
 
     runtime {
         cpu:    2
-        memory:    "6 GiB"
-        disks:    "local-disk 1 HDD"
-        bootDiskSizeGb:    10
+        memory:    "50 GiB"
+        disks:    "local-disk 50 HDD"
+        bootDiskSizeGb:    50
         preemptible:    0
         maxRetries:    0
         docker:    docker
@@ -302,10 +302,10 @@ task fastqc {
     }
 
     runtime {
-        cpu:    1
-        memory:    "2 GiB"
-        disks:    "local-disk 1 HDD"
-        bootDiskSizeGb:    10
+        cpu:    2
+        memory:    "50 GiB"
+        disks:    "local-disk 50 HDD"
+        bootDiskSizeGb:    50
         preemptible:    0
         maxRetries:    0
         docker:    docker
