@@ -384,7 +384,7 @@ task call_consensus_artic {
 
         artic minion \
             --model "${model}" \
-            --normalise 20000 \
+            --normalise 0 \
             --read-file "~{filtered_reads}" \
             --ref "~{ref}" \
             --bed "~{bed}" \
