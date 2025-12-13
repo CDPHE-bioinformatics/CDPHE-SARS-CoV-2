@@ -367,6 +367,9 @@ task call_consensus_artic {
 
     command <<<
 
+        # Activate env since terra overrides the entrypoint command
+        source /usr/local/bin/_activate_current_env.sh
+
         # Auto-detect model from FASTQ if not provided
         if [[ -z "~{model}" ]]; then
             model=$(
