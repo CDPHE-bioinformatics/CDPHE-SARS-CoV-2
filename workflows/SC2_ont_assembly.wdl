@@ -363,12 +363,9 @@ task call_consensus_artic {
         File bed
     }
 
-    String docker = "sambaird/artic-fieldbioinformatics:1.5.3"
+    String docker = "ariannaesmith/artic-fieldbioinformatics:v1.8.5"
 
     command <<<
-
-        PATH=$PATH:/opt/conda/bin
-        export CONDA_PREFIX=/opt/conda
 
         # Auto-detect model from FASTQ if not provided
         if [[ -z "~{model}" ]]; then
