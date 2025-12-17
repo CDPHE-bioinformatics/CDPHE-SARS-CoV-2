@@ -362,7 +362,7 @@ task call_consensus_artic {
         File bed
     }
 
-    String docker = "ariannaesmith/artic-fieldbioinformatics:v1.8.5"
+    String docker = "ariannaesmith/artic-fieldbioinformatics:v1.6.4"
 
     command <<<
 
