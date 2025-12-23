@@ -209,7 +209,6 @@ workflow SC2_ont_assembly {
         Int? human_reads_removed = hostile.human_reads_removed
         Float? human_reads_removed_proportion = hostile.human_reads_removed_proportion
         File filtered_fastq = select_first([Read_Filtering.guppyplex_fastq, Scrubbed_Read_Filtering.guppyplex_fastq])
-        File sorted_bam = call_consensus_artic.sorted_bam
         File trimsort_bam = call_consensus_artic.trimsort_bam
         File trimsort_bai = call_consensus_artic.trimsort_bai
         File flagstat_out = Bam_stats.flagstat_out
@@ -363,12 +362,12 @@ task call_consensus_artic {
         File bed
     }
 
-    String docker = "sambaird/artic-fieldbioinformatics:1.5.3"
+    String docker = "ariannaesmith/artic-fieldbioinformatics:v1.6.4"
 
     command <<<
 
-        PATH=$PATH:/opt/conda/bin
-        export CONDA_PREFIX=/opt/conda
+        # Activate env since terra overrides the entrypoint command
+        source /usr/local/bin/_activate_current_env.sh
 
         # Auto-detect model from FASTQ if not provided
         if [[ -z "~{model}" ]]; then
@@ -384,7 +383,7 @@ task call_consensus_artic {
 
         artic minion \
             --model "${model}" \
-            --normalise 20000 \
+            --normalise 0 \
             --read-file "~{filtered_reads}" \
             --ref "~{ref}" \
             --bed "~{bed}" \
@@ -398,7 +397,6 @@ task call_consensus_artic {
 
     output {
         File consensus = "${sample_name}_${index_1_id}.consensus.fasta"
-        File sorted_bam = "${sample_name}_${index_1_id}.trimmed.rg.sorted.bam"
         File trimsort_bam = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam"
         File trimsort_bai = "${sample_name}_${index_1_id}.primertrimmed.rg.sorted.bam.bai"
         File variants = "${sample_name}_${index_1_id}.pass.vcf.gz"
